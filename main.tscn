@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://csbau0y38v3vv"]
+
+[ext_resource type="PackedScene" uid="uid://ci30p1cc0qye5" path="res://player/player.tscn" id="1_ig7tw"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1n5kv"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
+size = Vector2(1043.25, 14)
+
+[node name="Main" type="Node2D" unique_id=1562279049]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1143825516]
+position = Vector2(372, 409)
+physics_material_override = SubResource("PhysicsMaterial_1n5kv")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1245545347]
+position = Vector2(204, 208)
+shape = SubResource("RectangleShape2D_1n5kv")
+
+[node name="Player" parent="." unique_id=84809404 instance=ExtResource("1_ig7tw")]
+position = Vector2(538, 225)
