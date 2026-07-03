@@ -17,6 +17,7 @@ var is_hurting := false
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
 @onready var visual_root: Node2D = $VisualRoot
+@onready var weapon_collision_shape: CollisionShape2D = $VisualRoot/WeaponMount/Area2D/CollisionShape2D
 
 
 func change_state(new_state: int) -> void:
@@ -24,6 +25,7 @@ func change_state(new_state: int) -> void:
 		return
 
 	state = new_state
+	set_weapon_collision_enabled(state == ATTACK)
 	match state:
 		IDLE:
 			animation_state.travel("idle")
@@ -39,6 +41,10 @@ func change_state(new_state: int) -> void:
 			hide()
 
 
+func set_weapon_collision_enabled(enabled: bool) -> void:
+	weapon_collision_shape.set_deferred("disabled", not enabled)
+
+
 func set_attack_return_conditions(direction: float) -> void:
 	var should_jump := not is_on_floor()
 	var should_run := not should_jump and not is_zero_approx(direction)
@@ -50,6 +56,7 @@ func set_attack_return_conditions(direction: float) -> void:
 
 func _ready() -> void:
 	animation_tree.active = true
+	set_weapon_collision_enabled(false)
 	change_state(IDLE)
 
 

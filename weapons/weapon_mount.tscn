@@ -21,3 +21,4 @@ position = Vector2(35.250004, -35.250004)
 rotation = 0.7853982
 scale = Vector2(0.9999999, 0.9999999)
 shape = SubResource("RectangleShape2D_1n5kv")
+disabled = true
