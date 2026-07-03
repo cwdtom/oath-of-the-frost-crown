@@ -12,6 +12,7 @@ var state = -1
 
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
+@onready var visual_root: Node2D = $VisualRoot
 
 
 func change_state(new_state: int) -> void:
@@ -62,7 +63,7 @@ func _physics_process(delta: float) -> void:
 	# As good practice, you should replace UI actions with custom gameplay actions.
 	var direction := Input.get_axis("left", "right")
 	if direction:
-		$Sprite2D.flip_h = (direction < 0)
+		visual_root.scale.x = -1.0 if direction < 0.0 else 1.0
 		velocity.x = direction * SPEED
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)

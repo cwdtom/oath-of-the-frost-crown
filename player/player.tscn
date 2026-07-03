@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://csxe3cq6w2ehu" path="res://player/player.gd" id="1_g6k8r"]
 [ext_resource type="Texture2D" uid="uid://dkh1qcsa7r5cv" path="res://assets/player/south-east.png" id="1_qjkh3"]
+[ext_resource type="PackedScene" uid="uid://bh7bnjp45qjru" path="res://weapons/weapon_mount.tscn" id="2_a2xo5"]
 [ext_resource type="Texture2D" uid="uid://du1io1dkatahl" path="res://assets/player/attack/east/frame_000.png" id="3_1s1yo"]
 [ext_resource type="Texture2D" uid="uid://dvws431bsxnoy" path="res://assets/player/idle/south-east/frame_000.png" id="3_g6k8r"]
 [ext_resource type="Texture2D" uid="uid://b8sgikkbxsawi" path="res://assets/player/attack/east/frame_001.png" id="4_5ejfk"]
@@ -27,12 +28,19 @@
 [ext_resource type="Texture2D" uid="uid://cewihfs6oggsh" path="res://assets/player/running/east/frame_005.png" id="11_e7oew"]
 [ext_resource type="Texture2D" uid="uid://basfcs5qkeynd" path="res://assets/player/jump/east/frame_004.png" id="11_uw77l"]
 [ext_resource type="Texture2D" uid="uid://7iecyffw6wuv" path="res://assets/player/running/east/frame_006.png" id="12_c35mf"]
+[ext_resource type="Texture2D" uid="uid://dg7hjqkh7w2ia" path="res://assets/player/hurt/south-east/frame_000.png" id="12_dx5ib"]
 [ext_resource type="Texture2D" uid="uid://b2nutuvbps4rm" path="res://assets/player/jump/east/frame_005.png" id="12_rptt4"]
 [ext_resource type="Texture2D" uid="uid://8roy6rxmap3f" path="res://assets/player/running/east/frame_007.png" id="13_65viv"]
+[ext_resource type="Texture2D" uid="uid://clp4kiykievb3" path="res://assets/player/hurt/south-east/frame_001.png" id="13_a2xo5"]
 [ext_resource type="Texture2D" uid="uid://doykm8sgmsb4x" path="res://assets/player/jump/east/frame_006.png" id="13_r7pn3"]
+[ext_resource type="Texture2D" uid="uid://cb5guoqhwnn2j" path="res://assets/player/hurt/south-east/frame_002.png" id="14_art4l"]
 [ext_resource type="Texture2D" uid="uid://bcsq82du7xjtp" path="res://assets/player/jump/east/frame_007.png" id="14_b8hi5"]
 [ext_resource type="Texture2D" uid="uid://dd442ielnnamc" path="res://assets/player/running/east/frame_008.png" id="14_x7c3f"]
 [ext_resource type="Texture2D" uid="uid://bsm1lm1apry8a" path="res://assets/player/jump/east/frame_008.png" id="15_2uvqg"]
+[ext_resource type="Texture2D" uid="uid://dy37u438yocf6" path="res://assets/player/hurt/south-east/frame_003.png" id="15_fjxoa"]
+[ext_resource type="Texture2D" uid="uid://dohs8i03nc8o5" path="res://assets/player/hurt/south-east/frame_004.png" id="16_gswnw"]
+[ext_resource type="Texture2D" uid="uid://cmvndakchlmdi" path="res://assets/player/hurt/south-east/frame_005.png" id="17_xcnuv"]
+[ext_resource type="Texture2D" uid="uid://c1tmsi4vedl0y" path="res://assets/player/hurt/south-east/frame_006.png" id="18_j55il"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
 size = Vector2(36, 100)
@@ -42,7 +50,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/path = NodePath("VisualRoot/Sprite2D:texture")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -51,14 +59,38 @@ tracks/0/keys = {
 "update": 0,
 "values": [ExtResource("1_qjkh3")]
 }
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VisualRoot/WeaponMount:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(18.999994, 16)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("VisualRoot/WeaponMount:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.34906584]
+}
 
 [sub_resource type="Animation" id="Animation_a2xo5"]
 resource_name = "attack"
-length = 0.39999999999999997
+length = 0.4
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/path = NodePath("VisualRoot/Sprite2D:texture")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -66,6 +98,46 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [ExtResource("3_1s1yo"), ExtResource("4_5ejfk"), ExtResource("5_jd2rm"), ExtResource("6_q28gw"), ExtResource("7_ge24q"), ExtResource("8_pnw6m"), ExtResource("9_1so5t"), ExtResource("10_55jnj"), ExtResource("11_dx5ib")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VisualRoot/WeaponMount:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(15, 17), Vector2(15, 17), Vector2(22, 12), Vector2(59, -8), Vector2(59, -8), Vector2(52, -8), Vector2(41, 8)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("VisualRoot/WeaponMount:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.34906584, 0.34906584, 0.4363323129985824, 0.5235987755982988, 0.6108652381980153, 0.6981317007977318, 0.4363323129985824]
+}
+
+[sub_resource type="Animation" id="Animation_hjies"]
+resource_name = "hurt"
+length = 0.35
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("VisualRoot/Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("12_dx5ib"), ExtResource("13_a2xo5"), ExtResource("14_art4l"), ExtResource("15_fjxoa"), ExtResource("16_gswnw"), ExtResource("17_xcnuv"), ExtResource("18_j55il")]
 }
 
 [sub_resource type="Animation" id="Animation_2ieo8"]
@@ -75,7 +147,7 @@ loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/path = NodePath("VisualRoot/Sprite2D:texture")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -84,6 +156,30 @@ tracks/0/keys = {
 "update": 0,
 "values": [ExtResource("3_g6k8r"), ExtResource("4_boad6"), ExtResource("5_rgyib"), ExtResource("6_hg6s5")]
 }
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VisualRoot/WeaponMount:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(18.999994, 16)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("VisualRoot/WeaponMount:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.34906584]
+}
 
 [sub_resource type="Animation" id="Animation_1s1yo"]
 resource_name = "jump"
@@ -91,7 +187,7 @@ length = 0.9
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/path = NodePath("VisualRoot/Sprite2D:texture")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -99,6 +195,30 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [ExtResource("7_s7qer"), ExtResource("8_g4c7l"), ExtResource("9_knn7v"), ExtResource("10_7pqkx"), ExtResource("11_uw77l"), ExtResource("12_rptt4"), ExtResource("13_r7pn3"), ExtResource("14_b8hi5"), ExtResource("15_2uvqg")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VisualRoot/WeaponMount:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(10, 17), Vector2(10, 17), Vector2(10, 4), Vector2(13, -7), Vector2(13, -10), Vector2(-2, -8), Vector2(-15, -7), Vector2(-14, 3), Vector2(-11, 12)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("VisualRoot/WeaponMount:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.34906584, 0.34906584, 0.2617993877991494, 0.2617994, 0.3490658503988659, 1.0471975511965976, 1.6580627893946132, 1.6580628, 1.3089969389957472]
 }
 
 [sub_resource type="Animation" id="Animation_bjvpn"]
@@ -108,7 +228,7 @@ loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/path = NodePath("VisualRoot/Sprite2D:texture")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -117,11 +237,36 @@ tracks/0/keys = {
 "update": 0,
 "values": [ExtResource("7_kb6p2"), ExtResource("8_wodsf"), ExtResource("9_32hag"), ExtResource("10_tqiix"), ExtResource("11_4pofm"), ExtResource("11_e7oew"), ExtResource("12_c35mf"), ExtResource("13_65viv"), ExtResource("14_x7c3f")]
 }
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VisualRoot/WeaponMount:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.08, 0.16, 0.24, 0.32, 0.4, 0.48, 0.56, 0.64),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(10, 17), Vector2(11, 15), Vector2(5, 11), Vector2(3, 13), Vector2(9, 19), Vector2(25, 13), Vector2(33, 7), Vector2(31, -6), Vector2(28, -6)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("VisualRoot/WeaponMount:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.08, 0.16, 0.24, 0.32, 0.4, 0.48, 0.56, 0.64),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.34906584, 0.2617993877991494, 0.2617993877991494, 0.3490658503988659, 0.4363323129985824, 0.08726646259971647, 0.0, -0.7853981633974483, -1.0471975511965976]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_ebec5"]
 _data = {
 &"RESET": SubResource("Animation_8t03j"),
 &"attack": SubResource("Animation_a2xo5"),
+&"hurt": SubResource("Animation_hjies"),
 &"idle": SubResource("Animation_2ieo8"),
 &"jump": SubResource("Animation_1s1yo"),
 &"running": SubResource("Animation_bjvpn")
@@ -183,19 +328,26 @@ states/jump/position = Vector2(343.0296, -39.414963)
 states/running/node = SubResource("AnimationNodeAnimation_q28gw")
 states/running/position = Vector2(342.46463, 251.74504)
 transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_ge24q"), "idle", "attack", SubResource("AnimationNodeStateMachineTransition_pnw6m"), "attack", "idle", SubResource("AnimationNodeStateMachineTransition_1so5t"), "idle", "jump", SubResource("AnimationNodeStateMachineTransition_55jnj"), "jump", "idle", SubResource("AnimationNodeStateMachineTransition_dx5ib"), "idle", "running", SubResource("AnimationNodeStateMachineTransition_a2xo5"), "running", "idle", SubResource("AnimationNodeStateMachineTransition_art4l"), "jump", "attack", SubResource("AnimationNodeStateMachineTransition_5ejfk"), "attack", "jump", SubResource("AnimationNodeStateMachineTransition_jd2rm"), "running", "attack", SubResource("AnimationNodeStateMachineTransition_q28gw"), "attack", "running", SubResource("AnimationNodeStateMachineTransition_fjxoa")]
-graph_offset = Vector2(-30.030365, -85.185)
+graph_offset = Vector2(-2.4903686, -104.400024)
 
 [node name="Player" type="CharacterBody2D" unique_id=1483695229]
 collision_layer = 2
 collision_mask = 3
 script = ExtResource("1_g6k8r")
 
+[node name="VisualRoot" type="Node2D" parent="." unique_id=792037367]
+
+[node name="WeaponMount" parent="VisualRoot" unique_id=162017398 instance=ExtResource("2_a2xo5")]
+position = Vector2(18.999994, 16)
+rotation = 0.34906584
+scale = Vector2(0.25, 0.25)
+
+[node name="Sprite2D" type="Sprite2D" parent="VisualRoot" unique_id=1208040514]
+texture = ExtResource("1_qjkh3")
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=174940981]
 position = Vector2(-1, 3)
 shape = SubResource("RectangleShape2D_1n5kv")
-
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1208040514]
-texture = ExtResource("1_qjkh3")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=287397958]
 libraries/ = SubResource("AnimationLibrary_ebec5")
@@ -203,7 +355,6 @@ libraries/ = SubResource("AnimationLibrary_ebec5")
 [node name="AnimationTree" type="AnimationTree" parent="." unique_id=2143539950]
 tree_root = SubResource("AnimationNodeStateMachine_1n5kv")
 anim_player = NodePath("../AnimationPlayer")
-active = true
-"parameters/conditions/attack_to_idle" = false
-"parameters/conditions/attack_to_jump" = false
-"parameters/conditions/attack_to_running" = false
+parameters/conditions/attack_to_idle = false
+parameters/conditions/attack_to_jump = false
+parameters/conditions/attack_to_running = false
