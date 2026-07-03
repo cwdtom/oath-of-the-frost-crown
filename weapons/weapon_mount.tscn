@@ -5,7 +5,7 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
 size = Vector2(27.359735, 214.25339)
 
-[node name="WeaponMount" type="Marker2D" unique_id=162017398]
+[node name="WeaponMount" type="Marker2D" unique_id=162017398 groups=["weapons"]]
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1847020479]
 position = Vector2(58, -50)
@@ -13,8 +13,8 @@ texture = ExtResource("1_u5in7")
 
 [node name="Area2D" type="Area2D" parent="." unique_id=282928503]
 position = Vector2(58, -50)
-collision_layer = 4
-collision_mask = 0
+collision_layer = 2
+collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=366218392]
 position = Vector2(35.250004, -35.250004)
