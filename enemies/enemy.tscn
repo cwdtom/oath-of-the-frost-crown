@@ -32,7 +32,7 @@
 [ext_resource type="Texture2D" uid="uid://bbn6hbpf8r4i6" path="res://assets/enemies/wolf/hurt/east/frame_006.png" id="16_ceace"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ymuxt"]
-size = Vector2(100, 99)
+size = Vector2(100, 100)
 
 [sub_resource type="Animation" id="Animation_d8eyj"]
 length = 0.001
@@ -47,6 +47,18 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [ExtResource("1_fw1ev")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
 }
 
 [sub_resource type="Animation" id="Animation_2rp1f"]
@@ -79,6 +91,18 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [ExtResource("10_tobgu"), ExtResource("11_byhdk"), ExtResource("12_y886q"), ExtResource("13_gq3ci"), ExtResource("14_05db2"), ExtResource("15_wdeg7"), ExtResource("16_ceace")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true]
 }
 
 [sub_resource type="Animation" id="Animation_6krve"]
@@ -124,6 +148,55 @@ _data = {
 &"running": SubResource("Animation_0mknq")
 }
 
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_6krve"]
+animation = &"dead"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_0mknq"]
+animation = &"hurt"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_0dc0p"]
+animation = &"idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_bsw4q"]
+animation = &"running"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_hvri8"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_s5kak"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_n0e8f"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_tobgu"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_byhdk"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_y886q"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_gq3ci"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_05db2"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_6krve"]
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_1n5kv"]
+states/End/position = Vector2(763.5, 99.55438)
+states/dead/node = SubResource("AnimationNodeAnimation_6krve")
+states/dead/position = Vector2(614.35, 100.42938)
+states/hurt/node = SubResource("AnimationNodeAnimation_0mknq")
+states/hurt/position = Vector2(460.89, 249.71751)
+states/idle/node = SubResource("AnimationNodeAnimation_0dc0p")
+states/idle/position = Vector2(324.39, 99.10876)
+states/running/node = SubResource("AnimationNodeAnimation_bsw4q")
+states/running/position = Vector2(460.89, 100.85876)
+transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_hvri8"), "idle", "running", SubResource("AnimationNodeStateMachineTransition_s5kak"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_n0e8f"), "running", "hurt", SubResource("AnimationNodeStateMachineTransition_tobgu"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_byhdk"), "hurt", "running", SubResource("AnimationNodeStateMachineTransition_y886q"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_gq3ci"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_05db2"), "running", "idle", SubResource("AnimationNodeStateMachineTransition_6krve")]
+graph_offset = Vector2(-27.539993, -31.98749)
+
 [node name="Enemy" type="CharacterBody2D" unique_id=2030230368 groups=["enemies"]]
 collision_layer = 4
 collision_mask = 3
@@ -134,9 +207,23 @@ scale = Vector2(2, 2)
 texture = ExtResource("1_fw1ev")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=665226154]
-position = Vector2(7, 11.499999)
+position = Vector2(7, 11)
 shape = SubResource("RectangleShape2D_ymuxt")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=158519573]
 libraries/ = SubResource("AnimationLibrary_0dc0p")
 autoplay = &"idle"
+
+[node name="AnimationTree" type="AnimationTree" parent="." unique_id=1795779147]
+tree_root = SubResource("AnimationNodeStateMachine_1n5kv")
+anim_player = NodePath("../AnimationPlayer")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=1437790023]
+collision_layer = 4
+collision_mask = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=1216210073]
+position = Vector2(7, 11)
+shape = SubResource("RectangleShape2D_ymuxt")
+
+[connection signal="area_entered" from="HurtBox" to="." method="_on_hurt_box_area_entered"]

@@ -11,7 +11,7 @@ size = Vector2(27.359735, 214.25339)
 position = Vector2(58, -50)
 texture = ExtResource("1_u5in7")
 
-[node name="Area2D" type="Area2D" parent="." unique_id=282928503]
+[node name="Area2D" type="Area2D" parent="." unique_id=282928503 groups=["weapons"]]
 position = Vector2(58, -50)
 collision_layer = 2
 collision_mask = 4

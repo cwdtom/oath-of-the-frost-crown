@@ -5,18 +5,25 @@ extends CharacterBody2D
 @export var run_speed := 80.0
 @export var idle_duration := 1.0
 
-enum {IDLE, RUN}
+const HURT_ANIMATION = "hurt"
+const HURT_KNOCKBACK_DISTANCE = 100.0
+
+enum {IDLE, RUN, HURT}
 
 var state := -1
+var is_hurting := false
 var start_x := 0.0
 var move_direction := 1.0
 var idle_time_left := 0.0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var animation_tree: AnimationTree = $AnimationTree
+@onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
 
 
 func _ready() -> void:
+	animation_tree.active = true
 	start_x = global_position.x
 	change_state(IDLE)
 
@@ -30,10 +37,13 @@ func change_state(new_state: int) -> void:
 		IDLE:
 			idle_time_left = idle_duration
 			velocity.x = 0.0
-			animation_player.play("idle")
+			animation_state.travel("idle")
 		RUN:
 			face_move_direction()
-			animation_player.play("running")
+			animation_state.travel("running")
+		HURT:
+			velocity.x = 0.0
+			animation_state.travel(HURT_ANIMATION)
 
 
 func face_move_direction() -> void:
@@ -76,6 +86,11 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity += get_gravity() * delta
 
+	if is_hurting:
+		velocity.x = 0.0
+		move_and_slide()
+		return
+
 	match state:
 		IDLE:
 			update_idle(delta)
@@ -83,3 +98,24 @@ func _physics_process(delta: float) -> void:
 			update_run(delta)
 
 	move_and_slide()
+
+
+func _on_hurt_box_area_entered(area: Area2D) -> void:
+	if not area.is_in_group("weapons"):
+		return
+
+	hurt(global_position - area.global_position)
+
+
+func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
+	if is_hurting:
+		return
+
+	var return_state := state
+	is_hurting = true
+	if not knockback_direction.is_zero_approx():
+		global_position += knockback_direction.normalized() * HURT_KNOCKBACK_DISTANCE
+	change_state(HURT)
+	await get_tree().create_timer(animation_player.get_animation(HURT_ANIMATION).length).timeout
+	is_hurting = false
+	change_state(return_state)
