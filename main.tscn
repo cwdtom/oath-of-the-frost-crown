@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://csbau0y38v3vv"]
 
 [ext_resource type="PackedScene" uid="uid://ci30p1cc0qye5" path="res://player/player.tscn" id="1_ig7tw"]
+[ext_resource type="PackedScene" uid="uid://cc3wkfmmrm0n7" path="res://enemies/enemy.tscn" id="2_0xm2m"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1n5kv"]
 
@@ -18,4 +19,7 @@ position = Vector2(204, 208)
 shape = SubResource("RectangleShape2D_1n5kv")
 
 [node name="Player" parent="." unique_id=84809404 instance=ExtResource("1_ig7tw")]
-position = Vector2(538, 225)
+position = Vector2(306, 381)
+
+[node name="Enemy" parent="." unique_id=2030230368 instance=ExtResource("2_0xm2m")]
+position = Vector2(906, 547)

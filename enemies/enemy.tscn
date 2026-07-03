@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://cc3wkfmmrm0n7"]
+
+[ext_resource type="Script" uid="uid://dt56vuorgrvwi" path="res://enemies/enemy.gd" id="1_8cidi"]
+[ext_resource type="Texture2D" uid="uid://dkxc556s8ofav" path="res://assets/enemies/wolf/east.png" id="1_fw1ev"]
+[ext_resource type="Texture2D" uid="uid://d0uwa67eu1wck" path="res://assets/enemies/wolf/idle/east/frame_000.png" id="2_0h01o"]
+[ext_resource type="Texture2D" uid="uid://b1k3fa3niwd4u" path="res://assets/enemies/wolf/idle/east/frame_001.png" id="3_8cidi"]
+[ext_resource type="Texture2D" uid="uid://cfwt77sgavkie" path="res://assets/enemies/wolf/idle/east/frame_002.png" id="4_grymm"]
+[ext_resource type="Texture2D" uid="uid://dg8sjfdqhxrt3" path="res://assets/enemies/wolf/idle/east/frame_003.png" id="5_ymuxt"]
+[ext_resource type="Texture2D" uid="uid://beid83mmfbt0c" path="res://assets/enemies/wolf/idle/east/frame_004.png" id="6_2dcpb"]
+[ext_resource type="Texture2D" uid="uid://cfbcp46uwiwg" path="res://assets/enemies/wolf/idle/east/frame_005.png" id="7_xvjrt"]
+[ext_resource type="Texture2D" uid="uid://b8ednwsdb1rlf" path="res://assets/enemies/wolf/idle/east/frame_006.png" id="8_kg1no"]
+[ext_resource type="Texture2D" uid="uid://dybsurtwrjopp" path="res://assets/enemies/wolf/running/east/frame_000.png" id="9_ofl0k"]
+[ext_resource type="Texture2D" uid="uid://do3hqlni0dev4" path="res://assets/enemies/wolf/running/east/frame_001.png" id="10_n7mk6"]
+[ext_resource type="Texture2D" uid="uid://dmi2dw0v4yay4" path="res://assets/enemies/wolf/running/east/frame_002.png" id="11_cve8t"]
+[ext_resource type="Texture2D" uid="uid://bct7mkt7wajh8" path="res://assets/enemies/wolf/running/east/frame_003.png" id="12_5hpbo"]
+[ext_resource type="Texture2D" uid="uid://clu1f4n1l83ul" path="res://assets/enemies/wolf/running/east/frame_004.png" id="13_hd7e4"]
+[ext_resource type="Texture2D" uid="uid://bhk7drskva8xw" path="res://assets/enemies/wolf/running/east/frame_005.png" id="14_xb6rl"]
+[ext_resource type="Texture2D" uid="uid://dmxpj85hnrnwf" path="res://assets/enemies/wolf/running/east/frame_006.png" id="15_o6wa6"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ymuxt"]
+size = Vector2(100, 99)
+
+[sub_resource type="Animation" id="Animation_d8eyj"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_fw1ev")]
+}
+
+[sub_resource type="Animation" id="Animation_6krve"]
+resource_name = "idle"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("2_0h01o"), ExtResource("3_8cidi"), ExtResource("4_grymm"), ExtResource("5_ymuxt"), ExtResource("6_2dcpb"), ExtResource("7_xvjrt"), ExtResource("8_kg1no")]
+}
+
+[sub_resource type="Animation" id="Animation_0mknq"]
+resource_name = "running"
+length = 0.7
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("9_ofl0k"), ExtResource("10_n7mk6"), ExtResource("11_cve8t"), ExtResource("12_5hpbo"), ExtResource("13_hd7e4"), ExtResource("14_xb6rl"), ExtResource("15_o6wa6")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0dc0p"]
+_data = {
+&"RESET": SubResource("Animation_d8eyj"),
+&"idle": SubResource("Animation_6krve"),
+&"running": SubResource("Animation_0mknq")
+}
+
+[node name="Enemy" type="CharacterBody2D" unique_id=2030230368 groups=["enimies"]]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_8cidi")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=814845308]
+scale = Vector2(2, 2)
+texture = ExtResource("1_fw1ev")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=665226154]
+position = Vector2(7, 11.499999)
+shape = SubResource("RectangleShape2D_ymuxt")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=158519573]
+libraries/ = SubResource("AnimationLibrary_0dc0p")
+autoplay = &"idle"
