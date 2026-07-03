@@ -3,19 +3,33 @@
 [ext_resource type="Script" uid="uid://dt56vuorgrvwi" path="res://enemies/enemy.gd" id="1_8cidi"]
 [ext_resource type="Texture2D" uid="uid://dkxc556s8ofav" path="res://assets/enemies/wolf/east.png" id="1_fw1ev"]
 [ext_resource type="Texture2D" uid="uid://d0uwa67eu1wck" path="res://assets/enemies/wolf/idle/east/frame_000.png" id="2_0h01o"]
+[ext_resource type="Texture2D" uid="uid://cpl6h4isvuagv" path="res://assets/enemies/wolf/dead/east/frame_000.png" id="3_6krve"]
 [ext_resource type="Texture2D" uid="uid://b1k3fa3niwd4u" path="res://assets/enemies/wolf/idle/east/frame_001.png" id="3_8cidi"]
+[ext_resource type="Texture2D" uid="uid://d2lh8xtukjfo4" path="res://assets/enemies/wolf/dead/east/frame_001.png" id="4_0mknq"]
 [ext_resource type="Texture2D" uid="uid://cfwt77sgavkie" path="res://assets/enemies/wolf/idle/east/frame_002.png" id="4_grymm"]
+[ext_resource type="Texture2D" uid="uid://doam3u53h7u83" path="res://assets/enemies/wolf/dead/east/frame_002.png" id="5_0dc0p"]
 [ext_resource type="Texture2D" uid="uid://dg8sjfdqhxrt3" path="res://assets/enemies/wolf/idle/east/frame_003.png" id="5_ymuxt"]
 [ext_resource type="Texture2D" uid="uid://beid83mmfbt0c" path="res://assets/enemies/wolf/idle/east/frame_004.png" id="6_2dcpb"]
+[ext_resource type="Texture2D" uid="uid://dk4uebstgqkbr" path="res://assets/enemies/wolf/dead/east/frame_003.png" id="6_bsw4q"]
+[ext_resource type="Texture2D" uid="uid://cjfuvdtix7ppu" path="res://assets/enemies/wolf/dead/east/frame_004.png" id="7_hvri8"]
 [ext_resource type="Texture2D" uid="uid://cfbcp46uwiwg" path="res://assets/enemies/wolf/idle/east/frame_005.png" id="7_xvjrt"]
 [ext_resource type="Texture2D" uid="uid://b8ednwsdb1rlf" path="res://assets/enemies/wolf/idle/east/frame_006.png" id="8_kg1no"]
+[ext_resource type="Texture2D" uid="uid://bj03xfm1o4fij" path="res://assets/enemies/wolf/dead/east/frame_005.png" id="8_s5kak"]
+[ext_resource type="Texture2D" uid="uid://dij15ueiqyqyf" path="res://assets/enemies/wolf/dead/east/frame_006.png" id="9_n0e8f"]
 [ext_resource type="Texture2D" uid="uid://dybsurtwrjopp" path="res://assets/enemies/wolf/running/east/frame_000.png" id="9_ofl0k"]
 [ext_resource type="Texture2D" uid="uid://do3hqlni0dev4" path="res://assets/enemies/wolf/running/east/frame_001.png" id="10_n7mk6"]
+[ext_resource type="Texture2D" uid="uid://ds0si4oh6ens3" path="res://assets/enemies/wolf/hurt/east/frame_000.png" id="10_tobgu"]
+[ext_resource type="Texture2D" uid="uid://3oou7ep5txve" path="res://assets/enemies/wolf/hurt/east/frame_001.png" id="11_byhdk"]
 [ext_resource type="Texture2D" uid="uid://dmi2dw0v4yay4" path="res://assets/enemies/wolf/running/east/frame_002.png" id="11_cve8t"]
 [ext_resource type="Texture2D" uid="uid://bct7mkt7wajh8" path="res://assets/enemies/wolf/running/east/frame_003.png" id="12_5hpbo"]
+[ext_resource type="Texture2D" uid="uid://ds568dkstux8w" path="res://assets/enemies/wolf/hurt/east/frame_002.png" id="12_y886q"]
+[ext_resource type="Texture2D" uid="uid://c7meye4j2xdxm" path="res://assets/enemies/wolf/hurt/east/frame_003.png" id="13_gq3ci"]
 [ext_resource type="Texture2D" uid="uid://clu1f4n1l83ul" path="res://assets/enemies/wolf/running/east/frame_004.png" id="13_hd7e4"]
+[ext_resource type="Texture2D" uid="uid://bahksb1ufv3ny" path="res://assets/enemies/wolf/hurt/east/frame_004.png" id="14_05db2"]
 [ext_resource type="Texture2D" uid="uid://bhk7drskva8xw" path="res://assets/enemies/wolf/running/east/frame_005.png" id="14_xb6rl"]
 [ext_resource type="Texture2D" uid="uid://dmxpj85hnrnwf" path="res://assets/enemies/wolf/running/east/frame_006.png" id="15_o6wa6"]
+[ext_resource type="Texture2D" uid="uid://bkmgcrrf5mgcw" path="res://assets/enemies/wolf/hurt/east/frame_005.png" id="15_wdeg7"]
+[ext_resource type="Texture2D" uid="uid://bbn6hbpf8r4i6" path="res://assets/enemies/wolf/hurt/east/frame_006.png" id="16_ceace"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ymuxt"]
 size = Vector2(100, 99)
@@ -33,6 +47,38 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [ExtResource("1_fw1ev")]
+}
+
+[sub_resource type="Animation" id="Animation_2rp1f"]
+resource_name = "dead"
+length = 0.7
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("3_6krve"), ExtResource("4_0mknq"), ExtResource("5_0dc0p"), ExtResource("6_bsw4q"), ExtResource("7_hvri8"), ExtResource("8_s5kak"), ExtResource("9_n0e8f")]
+}
+
+[sub_resource type="Animation" id="Animation_nkd1c"]
+resource_name = "hurt"
+length = 0.35
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("10_tobgu"), ExtResource("11_byhdk"), ExtResource("12_y886q"), ExtResource("13_gq3ci"), ExtResource("14_05db2"), ExtResource("15_wdeg7"), ExtResource("16_ceace")]
 }
 
 [sub_resource type="Animation" id="Animation_6krve"]
@@ -72,12 +118,14 @@ tracks/0/keys = {
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_0dc0p"]
 _data = {
 &"RESET": SubResource("Animation_d8eyj"),
+&"dead": SubResource("Animation_2rp1f"),
+&"hurt": SubResource("Animation_nkd1c"),
 &"idle": SubResource("Animation_6krve"),
 &"running": SubResource("Animation_0mknq")
 }
 
-[node name="Enemy" type="CharacterBody2D" unique_id=2030230368 groups=["enimies"]]
-collision_layer = 4
+[node name="Enemy" type="CharacterBody2D" unique_id=2030230368 groups=["enemies"]]
+collision_layer = 6
 collision_mask = 3
 script = ExtResource("1_8cidi")
 
