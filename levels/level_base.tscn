@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://c51ln2t7to2xu"]
+
+[ext_resource type="PackedScene" uid="uid://ci30p1cc0qye5" path="res://player/player.tscn" id="1_vmt1o"]
+[ext_resource type="PackedScene" uid="uid://cc3wkfmmrm0n7" path="res://enemies/enemy.tscn" id="2_da5si"]
+[ext_resource type="PackedScene" uid="uid://bi4cujqbvf3h0" path="res://ui/HUD.tscn" id="3_ep22m"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ts4ud"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jd1fy"]
+size = Vector2(4000, 19)
+
+[node name="LevelBase" type="Node2D" unique_id=1993614508]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1262466687]
+position = Vector2(372, 409)
+physics_material_override = SubResource("PhysicsMaterial_ts4ud")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1422362067]
+position = Vector2(1554, 207)
+shape = SubResource("RectangleShape2D_jd1fy")
+
+[node name="Player" parent="." unique_id=1483695229 instance=ExtResource("1_vmt1o")]
+position = Vector2(314, 329)
+
+[node name="Enemy" parent="." unique_id=2030230368 instance=ExtResource("2_da5si")]
+position = Vector2(870, 546)
+
+[node name="HUD" parent="." unique_id=1501471726 instance=ExtResource("3_ep22m")]
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 441.0
+offset_bottom = 109.0
+
+[node name="SpawnPoint" type="Marker2D" parent="." unique_id=1046513896]
+position = Vector2(114, 557)

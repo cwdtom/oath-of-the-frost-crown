@@ -484,3 +484,7 @@ anim_player = NodePath("../AnimationPlayer")
 parameters/conditions/attack_to_idle = false
 parameters/conditions/attack_to_jump = false
 parameters/conditions/attack_to_running = false
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=917349503]
+limit_left = 0
+limit_top = 0
