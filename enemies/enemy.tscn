@@ -30,6 +30,7 @@
 [ext_resource type="Texture2D" uid="uid://dmxpj85hnrnwf" path="res://assets/enemies/wolf/running/east/frame_006.png" id="15_o6wa6"]
 [ext_resource type="Texture2D" uid="uid://bkmgcrrf5mgcw" path="res://assets/enemies/wolf/hurt/east/frame_005.png" id="15_wdeg7"]
 [ext_resource type="Texture2D" uid="uid://bbn6hbpf8r4i6" path="res://assets/enemies/wolf/hurt/east/frame_006.png" id="16_ceace"]
+[ext_resource type="Texture2D" uid="uid://b3am6ou5f7i2r" path="res://assets/enemies/wolf/skill/east/frame_002.png" id="31_0mknq"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ymuxt"]
 size = Vector2(100, 100)
@@ -139,13 +140,29 @@ tracks/0/keys = {
 "values": [ExtResource("9_ofl0k"), ExtResource("10_n7mk6"), ExtResource("11_cve8t"), ExtResource("12_5hpbo"), ExtResource("13_hd7e4"), ExtResource("14_xb6rl"), ExtResource("15_o6wa6")]
 }
 
+[sub_resource type="Animation" id="Animation_0dc0p"]
+resource_name = "skill"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("31_0mknq")]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_0dc0p"]
 _data = {
 &"RESET": SubResource("Animation_d8eyj"),
 &"dead": SubResource("Animation_2rp1f"),
 &"hurt": SubResource("Animation_nkd1c"),
 &"idle": SubResource("Animation_6krve"),
-&"running": SubResource("Animation_0mknq")
+&"running": SubResource("Animation_0mknq"),
+&"skill": SubResource("Animation_0dc0p")
 }
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_6krve"]
@@ -159,6 +176,9 @@ animation = &"idle"
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_bsw4q"]
 animation = &"running"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_hvri8"]
+animation = &"skill"
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_hvri8"]
 advance_mode = 2
@@ -184,6 +204,13 @@ switch_mode = 2
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_6krve"]
 
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_wdeg7"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_ceace"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_2rp1f"]
+switch_mode = 2
+
 [sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_1n5kv"]
 states/End/position = Vector2(763.5, 99.55438)
 states/dead/node = SubResource("AnimationNodeAnimation_6krve")
@@ -194,8 +221,13 @@ states/idle/node = SubResource("AnimationNodeAnimation_0dc0p")
 states/idle/position = Vector2(324.39, 99.10876)
 states/running/node = SubResource("AnimationNodeAnimation_bsw4q")
 states/running/position = Vector2(460.89, 100.85876)
-transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_hvri8"), "idle", "running", SubResource("AnimationNodeStateMachineTransition_s5kak"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_n0e8f"), "running", "hurt", SubResource("AnimationNodeStateMachineTransition_tobgu"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_byhdk"), "hurt", "running", SubResource("AnimationNodeStateMachineTransition_y886q"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_gq3ci"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_05db2"), "running", "idle", SubResource("AnimationNodeStateMachineTransition_6krve")]
-graph_offset = Vector2(-27.539993, -31.98749)
+states/skill/node = SubResource("AnimationNodeAnimation_hvri8")
+states/skill/position = Vector2(462.695, -64.94748)
+transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_hvri8"), "idle", "running", SubResource("AnimationNodeStateMachineTransition_s5kak"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_n0e8f"), "running", "hurt", SubResource("AnimationNodeStateMachineTransition_tobgu"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_byhdk"), "hurt", "running", SubResource("AnimationNodeStateMachineTransition_y886q"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_gq3ci"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_05db2"), "running", "idle", SubResource("AnimationNodeStateMachineTransition_6krve"), "idle", "skill", SubResource("AnimationNodeStateMachineTransition_wdeg7"), "running", "skill", SubResource("AnimationNodeStateMachineTransition_ceace"), "skill", "idle", SubResource("AnimationNodeStateMachineTransition_2rp1f")]
+graph_offset = Vector2(96.38999, -121.657486)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
+size = Vector2(300, 73)
 
 [node name="Enemy" type="CharacterBody2D" unique_id=2030230368 groups=["enemies"]]
 collision_layer = 4
@@ -226,4 +258,17 @@ collision_mask = 3
 position = Vector2(7, 11)
 shape = SubResource("RectangleShape2D_ymuxt")
 
+[node name="SkillDetect" type="Area2D" parent="." unique_id=12688605]
+collision_layer = 4
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SkillDetect" unique_id=467527254]
+position = Vector2(183, 0)
+shape = SubResource("RectangleShape2D_1n5kv")
+
+[node name="Cooldown" type="Timer" parent="SkillDetect" unique_id=445454829]
+wait_time = 5.0
+one_shot = true
+
 [connection signal="area_entered" from="HurtBox" to="." method="_on_hurt_box_area_entered"]
+[connection signal="body_entered" from="SkillDetect" to="." method="_on_skill_detect_body_entered"]

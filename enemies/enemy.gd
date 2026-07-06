@@ -8,9 +8,12 @@ extends CharacterBody2D
 const MAX_HEALTH = 2
 const DEAD_ANIMATION = "dead"
 const HURT_ANIMATION = "hurt"
+const SKILL_ANIMATION = "skill"
 const HURT_KNOCKBACK_DISTANCE = 100.0
+const SKILL_DISTANCE = 300.0
+const SKILL_SPEED = 400.0
 
-enum {IDLE, RUN, HURT, DEAD}
+enum {IDLE, RUN, HURT, DEAD, SKILL}
 
 var state := -1
 var health := MAX_HEALTH
@@ -18,6 +21,9 @@ var is_hurting := false
 var start_x := 0.0
 var move_direction := 1.0
 var idle_time_left := 0.0
+var skill_distance_left := 0.0
+var skill_return_state := IDLE
+var skill_detect_offset_x := 0.0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -25,11 +31,14 @@ var idle_time_left := 0.0
 @onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
 @onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var hurt_box_collision_shape: CollisionShape2D = $HurtBox/CollisionShape2D
+@onready var skill_detect_collision_shape: CollisionShape2D = $SkillDetect/CollisionShape2D
+@onready var skill_cooldown_timer: Timer = $SkillDetect/Cooldown
 
 
 func _ready() -> void:
 	animation_tree.active = true
 	start_x = global_position.x
+	skill_detect_offset_x = abs(skill_detect_collision_shape.position.x)
 	change_state(IDLE)
 
 
@@ -42,13 +51,21 @@ func change_state(new_state: int) -> void:
 		IDLE:
 			idle_time_left = idle_duration
 			velocity.x = 0.0
+			hurt_box_collision_shape.set_deferred("disabled", false)
+			face_move_direction()
 			animation_state.travel("idle")
 		RUN:
+			hurt_box_collision_shape.set_deferred("disabled", false)
 			face_move_direction()
 			animation_state.travel("running")
 		HURT:
 			velocity.x = 0.0
+			hurt_box_collision_shape.set_deferred("disabled", false)
 			animation_state.travel(HURT_ANIMATION)
+		SKILL:
+			hurt_box_collision_shape.set_deferred("disabled", true)
+			face_move_direction()
+			animation_state.travel(SKILL_ANIMATION)
 		DEAD:
 			velocity = Vector2.ZERO
 			remove_from_group("enemies")
@@ -59,6 +76,7 @@ func change_state(new_state: int) -> void:
 
 func face_move_direction() -> void:
 	sprite.flip_h = move_direction < 0.0
+	skill_detect_collision_shape.position.x = skill_detect_offset_x * move_direction
 
 
 func update_idle(delta: float) -> void:
@@ -93,6 +111,25 @@ func update_run(delta: float) -> void:
 	velocity.x = move_direction * run_speed
 
 
+func start_skill() -> void:
+	skill_return_state = state
+	skill_distance_left = SKILL_DISTANCE
+	skill_cooldown_timer.start()
+	change_state(SKILL)
+
+
+func update_skill(delta: float) -> void:
+	var travel_distance = min(SKILL_SPEED * delta, skill_distance_left)
+	velocity.x = move_direction * travel_distance / delta
+	skill_distance_left -= travel_distance
+
+
+func finish_skill() -> void:
+	velocity.x = 0.0
+	start_x = global_position.x
+	change_state(skill_return_state)
+
+
 func _physics_process(delta: float) -> void:
 	if state == DEAD:
 		return
@@ -105,23 +142,37 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
+	var was_using_skill := state == SKILL
+
 	match state:
 		IDLE:
 			update_idle(delta)
 		RUN:
 			update_run(delta)
+		SKILL:
+			update_skill(delta)
 
 	move_and_slide()
 
+	if was_using_skill and state == SKILL and skill_distance_left <= 0.0:
+		finish_skill()
+
 
 func _on_hurt_box_area_entered(area: Area2D) -> void:
-	if state == DEAD:
+	if state == DEAD or state == SKILL:
 		return
 
 	if not area.is_in_group("weapons"):
 		return
 
 	hurt(global_position - area.global_position)
+
+
+func _on_skill_detect_body_entered(_body: Node2D) -> void:
+	if state == DEAD or state == SKILL or is_hurting or not skill_cooldown_timer.is_stopped():
+		return
+
+	start_skill()
 
 
 func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
