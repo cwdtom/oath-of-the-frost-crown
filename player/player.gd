@@ -1,6 +1,8 @@
 extends CharacterBody2D
 
 
+signal hurt_taken
+
 const SPEED = 300.0
 const JUMP_VELOCITY = -500.0
 const ATTACK_TO_IDLE = "parameters/conditions/attack_to_idle"
@@ -120,6 +122,7 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 		return
 
 	health -= 1
+	hurt_taken.emit()
 	if health <= 0:
 		change_state(DEAD)
 		return

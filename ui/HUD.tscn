@@ -1,8 +1,13 @@
 [gd_scene format=3 uid="uid://bi4cujqbvf3h0"]
 
+[ext_resource type="Script" path="res://ui/hud.gd" id="1_pnr6q"]
 [ext_resource type="Texture2D" uid="uid://dqxsua366mwn0" path="res://assets/ui/heart.png" id="1_1x8ju"]
 
-[node name="HUD" type="MarginContainer" unique_id=1501471726]
+[node name="HUD" type="CanvasLayer" unique_id=1501471726]
+layer = 10
+script = ExtResource("1_pnr6q")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1422814204]
 anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
@@ -11,25 +16,25 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 50
 theme_override_constants/margin_bottom = 20
 
-[node name="LifeCounter" type="HBoxContainer" parent="." unique_id=1372307757]
+[node name="LifeCounter" type="HBoxContainer" parent="MarginContainer" unique_id=1372307757]
 layout_mode = 2
 
-[node name="L1" type="TextureRect" parent="LifeCounter" unique_id=1037045511]
-layout_mode = 2
-texture = ExtResource("1_1x8ju")
-
-[node name="L2" type="TextureRect" parent="LifeCounter" unique_id=531495533]
+[node name="L1" type="TextureRect" parent="MarginContainer/LifeCounter" unique_id=1037045511]
 layout_mode = 2
 texture = ExtResource("1_1x8ju")
 
-[node name="L3" type="TextureRect" parent="LifeCounter" unique_id=136460470]
+[node name="L2" type="TextureRect" parent="MarginContainer/LifeCounter" unique_id=531495533]
 layout_mode = 2
 texture = ExtResource("1_1x8ju")
 
-[node name="L4" type="TextureRect" parent="LifeCounter" unique_id=1389876275]
+[node name="L3" type="TextureRect" parent="MarginContainer/LifeCounter" unique_id=136460470]
 layout_mode = 2
 texture = ExtResource("1_1x8ju")
 
-[node name="L5" type="TextureRect" parent="LifeCounter" unique_id=1291679889]
+[node name="L4" type="TextureRect" parent="MarginContainer/LifeCounter" unique_id=1389876275]
+layout_mode = 2
+texture = ExtResource("1_1x8ju")
+
+[node name="L5" type="TextureRect" parent="MarginContainer/LifeCounter" unique_id=1291679889]
 layout_mode = 2
 texture = ExtResource("1_1x8ju")
