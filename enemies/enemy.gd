@@ -5,12 +5,15 @@ extends CharacterBody2D
 @export var run_speed := 80.0
 @export var idle_duration := 1.0
 
+const MAX_HEALTH = 2
+const DEAD_ANIMATION = "dead"
 const HURT_ANIMATION = "hurt"
 const HURT_KNOCKBACK_DISTANCE = 100.0
 
-enum {IDLE, RUN, HURT}
+enum {IDLE, RUN, HURT, DEAD}
 
 var state := -1
+var health := MAX_HEALTH
 var is_hurting := false
 var start_x := 0.0
 var move_direction := 1.0
@@ -20,6 +23,8 @@ var idle_time_left := 0.0
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
+@onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var hurt_box_collision_shape: CollisionShape2D = $HurtBox/CollisionShape2D
 
 
 func _ready() -> void:
@@ -44,6 +49,12 @@ func change_state(new_state: int) -> void:
 		HURT:
 			velocity.x = 0.0
 			animation_state.travel(HURT_ANIMATION)
+		DEAD:
+			velocity = Vector2.ZERO
+			remove_from_group("enemies")
+			body_collision_shape.set_deferred("disabled", true)
+			hurt_box_collision_shape.set_deferred("disabled", true)
+			animation_state.travel(DEAD_ANIMATION)
 
 
 func face_move_direction() -> void:
@@ -83,6 +94,9 @@ func update_run(delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if state == DEAD:
+		return
+
 	if not is_on_floor():
 		velocity += get_gravity() * delta
 
@@ -101,6 +115,9 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_hurt_box_area_entered(area: Area2D) -> void:
+	if state == DEAD:
+		return
+
 	if not area.is_in_group("weapons"):
 		return
 
@@ -108,7 +125,12 @@ func _on_hurt_box_area_entered(area: Area2D) -> void:
 
 
 func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
-	if is_hurting:
+	if is_hurting or state == DEAD:
+		return
+
+	health -= 1
+	if health <= 0:
+		die()
 		return
 
 	var return_state := state
@@ -119,3 +141,9 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 	await get_tree().create_timer(animation_player.get_animation(HURT_ANIMATION).length).timeout
 	is_hurting = false
 	change_state(return_state)
+
+
+func die() -> void:
+	change_state(DEAD)
+	await get_tree().create_timer(animation_player.get_animation(DEAD_ANIMATION).length).timeout
+	queue_free()

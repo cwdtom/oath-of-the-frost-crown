@@ -159,7 +159,7 @@ tracks/2/keys = {
 
 [sub_resource type="Animation" id="Animation_3dxkp"]
 resource_name = "dead"
-length = 0.39999999999999997
+length = 2.0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true

@@ -6,11 +6,14 @@ const JUMP_VELOCITY = -400.0
 const ATTACK_TO_IDLE = "parameters/conditions/attack_to_idle"
 const ATTACK_TO_JUMP = "parameters/conditions/attack_to_jump"
 const ATTACK_TO_RUNNING = "parameters/conditions/attack_to_running"
+const MAX_HEALTH = 5
+const DEAD_ANIMATION = "dead"
 const HURT_ANIMATION = "hurt"
 const HURT_KNOCKBACK_DISTANCE = 100.0
 
 enum {IDLE, RUN, JUMP, HURT, DEAD, ATTACK}
 var state = -1
+var health := MAX_HEALTH
 var is_hurting := false
 
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -38,7 +41,8 @@ func change_state(new_state: int) -> void:
 		HURT:
 			animation_state.travel(HURT_ANIMATION)
 		DEAD:
-			hide()
+			velocity = Vector2.ZERO
+			animation_state.travel(DEAD_ANIMATION)
 
 
 func set_weapon_collision_enabled(enabled: bool) -> void:
@@ -61,6 +65,9 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if state == DEAD:
+		return
+
 	# Add the gravity.
 	if not is_on_floor():
 		velocity += get_gravity() * delta
@@ -109,7 +116,12 @@ func _physics_process(delta: float) -> void:
 
 
 func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
-	if is_hurting:
+	if is_hurting or state == DEAD:
+		return
+
+	health -= 1
+	if health <= 0:
+		change_state(DEAD)
 		return
 
 	is_hurting = true
