@@ -1,9 +1,8 @@
 [gd_scene format=3 uid="uid://c51ln2t7to2xu"]
 
 [ext_resource type="PackedScene" uid="uid://ci30p1cc0qye5" path="res://player/player.tscn" id="1_vmt1o"]
-[ext_resource type="PackedScene" uid="uid://cc3wkfmmrm0n7" path="res://enemies/enemy.tscn" id="2_da5si"]
 [ext_resource type="PackedScene" uid="uid://bi4cujqbvf3h0" path="res://ui/HUD.tscn" id="3_ep22m"]
-[ext_resource type="Script" path="res://levels/level_base.gd" id="4_6dq1w"]
+[ext_resource type="Script" uid="uid://ykvrgmtv6wdu" path="res://levels/level_base.gd" id="4_6dq1w"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ts4ud"]
 
@@ -23,9 +22,6 @@ shape = SubResource("RectangleShape2D_jd1fy")
 
 [node name="Player" parent="." unique_id=1483695229 instance=ExtResource("1_vmt1o")]
 position = Vector2(314, 329)
-
-[node name="Enemy" parent="." unique_id=2030230368 instance=ExtResource("2_da5si")]
-position = Vector2(870, 546)
 
 [node name="HUD" parent="." unique_id=1501471726 instance=ExtResource("3_ep22m")]
 
