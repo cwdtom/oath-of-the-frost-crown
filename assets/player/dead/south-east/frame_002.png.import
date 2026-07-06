@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dn40ys3h2hvig"
-path="res://.godot/imported/frame_007.png-d1244da9b75fc373f6fe720d8e33a1f7.ctex"
+uid="uid://btquqh6rp4si3"
+path="res://.godot/imported/frame_002.png-4178ac242ebead29b82f7dbd014d0d45.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/player/attack/east/frame_007.png"
-dest_files=["res://.godot/imported/frame_007.png-d1244da9b75fc373f6fe720d8e33a1f7.ctex"]
+source_file="res://assets/player/dead/south-east/frame_002.png"
+dest_files=["res://.godot/imported/frame_002.png-4178ac242ebead29b82f7dbd014d0d45.ctex"]
 
 [params]
 
