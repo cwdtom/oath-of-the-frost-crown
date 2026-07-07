@@ -32,8 +32,8 @@
 [ext_resource type="Texture2D" uid="uid://bbn6hbpf8r4i6" path="res://assets/enemies/wolf/hurt/east/frame_006.png" id="16_ceace"]
 [ext_resource type="Texture2D" uid="uid://b3am6ou5f7i2r" path="res://assets/enemies/wolf/skill/east/frame_002.png" id="31_0mknq"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ymuxt"]
-size = Vector2(100, 100)
+[sub_resource type="CircleShape2D" id="CircleShape2D_w7j2h"]
+radius = 45.0
 
 [sub_resource type="Animation" id="Animation_d8eyj"]
 length = 0.001
@@ -226,8 +226,11 @@ states/skill/position = Vector2(462.695, -64.94748)
 transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_hvri8"), "idle", "running", SubResource("AnimationNodeStateMachineTransition_s5kak"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_n0e8f"), "running", "hurt", SubResource("AnimationNodeStateMachineTransition_tobgu"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_byhdk"), "hurt", "running", SubResource("AnimationNodeStateMachineTransition_y886q"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_gq3ci"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_05db2"), "running", "idle", SubResource("AnimationNodeStateMachineTransition_6krve"), "idle", "skill", SubResource("AnimationNodeStateMachineTransition_wdeg7"), "running", "skill", SubResource("AnimationNodeStateMachineTransition_ceace"), "skill", "idle", SubResource("AnimationNodeStateMachineTransition_2rp1f")]
 graph_offset = Vector2(96.38999, -121.657486)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ymuxt"]
+size = Vector2(68, 77)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
-size = Vector2(300, 73)
+size = Vector2(400, 50.5)
 
 [node name="Enemy" type="CharacterBody2D" unique_id=2030230368 groups=["enemies"]]
 collision_layer = 4
@@ -235,12 +238,12 @@ collision_mask = 3
 script = ExtResource("1_8cidi")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=814845308]
-scale = Vector2(2, 2)
+scale = Vector2(1.5, 1.5)
 texture = ExtResource("1_fw1ev")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=665226154]
-position = Vector2(7, 11)
-shape = SubResource("RectangleShape2D_ymuxt")
+position = Vector2(-6, 2)
+shape = SubResource("CircleShape2D_w7j2h")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=158519573]
 libraries/ = SubResource("AnimationLibrary_0dc0p")
@@ -255,7 +258,7 @@ collision_layer = 4
 collision_mask = 3
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=1216210073]
-position = Vector2(7, 11)
+position = Vector2(-1, 7.5)
 shape = SubResource("RectangleShape2D_ymuxt")
 
 [node name="SkillDetect" type="Area2D" parent="." unique_id=12688605]
@@ -263,7 +266,7 @@ collision_layer = 4
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="SkillDetect" unique_id=467527254]
-position = Vector2(183, 0)
+position = Vector2(222, 5)
 shape = SubResource("RectangleShape2D_1n5kv")
 
 [node name="Cooldown" type="Timer" parent="SkillDetect" unique_id=445454829]

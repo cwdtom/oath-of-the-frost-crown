@@ -4,26 +4,13 @@
 [ext_resource type="PackedScene" uid="uid://bi4cujqbvf3h0" path="res://ui/HUD.tscn" id="3_ep22m"]
 [ext_resource type="Script" uid="uid://ykvrgmtv6wdu" path="res://levels/level_base.gd" id="4_6dq1w"]
 
-[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ts4ud"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_jd1fy"]
-size = Vector2(4000, 19)
-
 [node name="LevelBase" type="Node2D" unique_id=1993614508]
 script = ExtResource("4_6dq1w")
-
-[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1262466687]
-position = Vector2(372, 409)
-physics_material_override = SubResource("PhysicsMaterial_ts4ud")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1422362067]
-position = Vector2(1554, 207)
-shape = SubResource("RectangleShape2D_jd1fy")
 
 [node name="Player" parent="." unique_id=1483695229 instance=ExtResource("1_vmt1o")]
 position = Vector2(314, 329)
 
-[node name="HUD" parent="." unique_id=1501471726 instance=ExtResource("3_ep22m")]
-
 [node name="SpawnPoint" type="Marker2D" parent="." unique_id=1046513896]
 position = Vector2(114, 557)
+
+[node name="HUD" parent="." unique_id=1501471726 instance=ExtResource("3_ep22m")]
