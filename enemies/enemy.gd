@@ -95,6 +95,13 @@ func is_front_blocked() -> bool:
 	return false
 
 
+func apply_knockback(knockback_direction: Vector2) -> void:
+	if knockback_direction.is_zero_approx():
+		return
+
+	move_and_collide(knockback_direction.normalized() * HURT_KNOCKBACK_DISTANCE)
+
+
 func update_idle(delta: float) -> void:
 	velocity.x = 0.0
 	idle_time_left -= delta
@@ -208,8 +215,7 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 
 	var return_state := state
 	is_hurting = true
-	if not knockback_direction.is_zero_approx():
-		global_position += knockback_direction.normalized() * HURT_KNOCKBACK_DISTANCE
+	apply_knockback(knockback_direction)
 	change_state(HURT)
 	await get_tree().create_timer(animation_player.get_animation(HURT_ANIMATION).length).timeout
 	is_hurting = false

@@ -60,6 +60,13 @@ func set_attack_return_conditions(direction: float) -> void:
 	animation_tree.set(ATTACK_TO_IDLE, not should_jump and not should_run)
 
 
+func apply_knockback(knockback_direction: Vector2) -> void:
+	if knockback_direction.is_zero_approx():
+		return
+
+	move_and_collide(knockback_direction.normalized() * HURT_KNOCKBACK_DISTANCE)
+
+
 func _ready() -> void:
 	animation_tree.active = true
 	set_weapon_collision_enabled(false)
@@ -128,8 +135,7 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 		return
 
 	is_hurting = true
-	if not knockback_direction.is_zero_approx():
-		global_position += knockback_direction.normalized() * HURT_KNOCKBACK_DISTANCE
+	apply_knockback(knockback_direction)
 	change_state(HURT)
 	await get_tree().create_timer(animation_player.get_animation(HURT_ANIMATION).length).timeout
 	is_hurting = false
