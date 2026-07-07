@@ -12,6 +12,9 @@ const SKILL_ANIMATION = "skill"
 const HURT_KNOCKBACK_DISTANCE = 100.0
 const SKILL_DISTANCE = 300.0
 const SKILL_SPEED = 400.0
+const ENVIRONMENT_COLLISION_MASK = 1
+const WALL_CHECK_DISTANCE = 56.0
+const WALL_CHECK_Y_OFFSETS = [-24.0, 24.0]
 
 enum {IDLE, RUN, HURT, DEAD, SKILL}
 
@@ -79,6 +82,19 @@ func face_move_direction() -> void:
 	skill_detect_collision_shape.position.x = skill_detect_offset_x * move_direction
 
 
+func is_front_blocked() -> bool:
+	var space_state := get_world_2d().direct_space_state
+	for y_offset in WALL_CHECK_Y_OFFSETS:
+		var from := global_position + Vector2(0.0, y_offset)
+		var to := from + Vector2(move_direction * WALL_CHECK_DISTANCE, 0.0)
+		var query := PhysicsRayQueryParameters2D.create(from, to, ENVIRONMENT_COLLISION_MASK)
+		query.exclude = [get_rid()]
+		if not space_state.intersect_ray(query).is_empty():
+			return true
+
+	return false
+
+
 func update_idle(delta: float) -> void:
 	velocity.x = 0.0
 	idle_time_left -= delta
@@ -94,6 +110,12 @@ func update_run(delta: float) -> void:
 	var left_edge := start_x - patrol_range
 	var right_edge := start_x + patrol_range
 	var next_x := global_position.x + move_direction * run_speed * delta
+
+	if is_front_blocked():
+		move_direction *= -1.0
+		face_move_direction()
+		velocity.x = move_direction * run_speed
+		return
 
 	if move_direction > 0.0 and next_x >= right_edge:
 		global_position.x = right_edge
