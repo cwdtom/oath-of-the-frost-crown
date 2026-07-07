@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b5omfag6e17bm"
-path="res://.godot/imported/near_tree.png-89ee75173babb75c50d5574b981d9568.ctex"
+uid="uid://d4jnbxgs5lnxt"
+path="res://.godot/imported/trunk.png-597a215707b4e156faaeed6c02628841.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/near_tree.png"
-dest_files=["res://.godot/imported/near_tree.png-89ee75173babb75c50d5574b981d9568.ctex"]
+source_file="res://assets/objects/trunk.png"
+dest_files=["res://.godot/imported/trunk.png-597a215707b4e156faaeed6c02628841.ctex"]
 
 [params]
 
