@@ -17,6 +17,7 @@
 [ext_resource type="Texture2D" uid="uid://bj03xfm1o4fij" path="res://assets/enemies/wolf/dead/east/frame_005.png" id="8_s5kak"]
 [ext_resource type="Texture2D" uid="uid://dij15ueiqyqyf" path="res://assets/enemies/wolf/dead/east/frame_006.png" id="9_n0e8f"]
 [ext_resource type="Texture2D" uid="uid://dybsurtwrjopp" path="res://assets/enemies/wolf/running/east/frame_000.png" id="9_ofl0k"]
+[ext_resource type="AudioStream" uid="uid://y2w5g1ib8c7u" path="res://assets/enemies/wolf/sounds/dead.wav" id="10_c6w1u"]
 [ext_resource type="Texture2D" uid="uid://do3hqlni0dev4" path="res://assets/enemies/wolf/running/east/frame_001.png" id="10_n7mk6"]
 [ext_resource type="Texture2D" uid="uid://ds0si4oh6ens3" path="res://assets/enemies/wolf/hurt/east/frame_000.png" id="10_tobgu"]
 [ext_resource type="Texture2D" uid="uid://3oou7ep5txve" path="res://assets/enemies/wolf/hurt/east/frame_001.png" id="11_byhdk"]
@@ -30,6 +31,7 @@
 [ext_resource type="Texture2D" uid="uid://dmxpj85hnrnwf" path="res://assets/enemies/wolf/running/east/frame_006.png" id="15_o6wa6"]
 [ext_resource type="Texture2D" uid="uid://bkmgcrrf5mgcw" path="res://assets/enemies/wolf/hurt/east/frame_005.png" id="15_wdeg7"]
 [ext_resource type="Texture2D" uid="uid://bbn6hbpf8r4i6" path="res://assets/enemies/wolf/hurt/east/frame_006.png" id="16_ceace"]
+[ext_resource type="AudioStream" uid="uid://dtfba4smfkvcu" path="res://assets/enemies/wolf/sounds/hurt.wav" id="18_7ac7i"]
 [ext_resource type="Texture2D" uid="uid://b3am6ou5f7i2r" path="res://assets/enemies/wolf/skill/east/frame_002.png" id="31_0mknq"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_w7j2h"]
@@ -77,6 +79,21 @@ tracks/0/keys = {
 "update": 0,
 "values": [ExtResource("3_6krve"), ExtResource("4_0mknq"), ExtResource("5_0dc0p"), ExtResource("6_bsw4q"), ExtResource("7_hvri8"), ExtResource("8_s5kak"), ExtResource("9_n0e8f")]
 }
+tracks/1/type = "audio"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AudioStreamPlayer2D")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("10_c6w1u")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/1/use_blend = true
 
 [sub_resource type="Animation" id="Animation_nkd1c"]
 resource_name = "hurt"
@@ -105,6 +122,21 @@ tracks/1/keys = {
 "update": 1,
 "values": [true, false, true, false, true, false, true]
 }
+tracks/2/type = "audio"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AudioStreamPlayer2D")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("18_7ac7i")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/2/use_blend = true
 
 [sub_resource type="Animation" id="Animation_6krve"]
 resource_name = "idle"
@@ -244,6 +276,8 @@ texture = ExtResource("1_fw1ev")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=665226154]
 position = Vector2(-6, 2)
 shape = SubResource("CircleShape2D_w7j2h")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=645920161]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=158519573]
 libraries/ = SubResource("AnimationLibrary_0dc0p")
