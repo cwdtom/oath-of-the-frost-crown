@@ -12,7 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://d36yo33x0rb4k" path="res://assets/enemies/skills/thunder/particle.png" id="10_5hrn4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
-size = Vector2(26, 510)
+size = Vector2(64, 510)
 
 [sub_resource type="Animation" id="Animation_mntmb"]
 length = 0.001

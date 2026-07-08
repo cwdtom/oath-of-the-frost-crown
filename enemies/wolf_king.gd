@@ -11,11 +11,13 @@ const HURT_ANIMATION = "hurt"
 const IDLE_ANIMATION = "idle"
 const RUN_ANIMATION = "run"
 const THUNDER_CAST_ANIMATION = "cast"
-const THUNDER_CAST_RANGE = 200.0
+const THUNDER_CAST_MIN_DISTANCE = 400.0
+const THUNDER_CAST_MAX_DISTANCE = 750.0
 const THUNDER_GROUND_RAY_UP_DISTANCE = 800.0
 const THUNDER_GROUND_RAY_DOWN_DISTANCE = 1400.0
+const THUNDER_IMPACT_TIME = 1.0
 const SKILL_DISTANCE = 300.0
-const SKILL_SPEED = 400.0
+const SKILL_SPEED = 600.0
 const ENVIRONMENT_COLLISION_MASK = 1
 const WALL_CHECK_DISTANCE = 72.0
 const WALL_CHECK_Y_OFFSETS = [-24.0, 24.0]
@@ -32,6 +34,9 @@ var skill_distance_left := 0.0
 var skill_return_state := IDLE
 var skill_detect_offset_x := 0.0
 var rng := RandomNumberGenerator.new()
+var player: Node2D = null
+var thunder_cast_id := 0
+var thunder_damaged_bodies: Array[Node2D] = []
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -53,6 +58,7 @@ func _ready() -> void:
 	rng.randomize()
 	animation_tree.active = true
 	thunder.top_level = true
+	player = find_player()
 	start_x = global_position.x
 	skill_detect_offset_x = abs(skill_detect_collision_shape.position.x)
 	reset_thunder()
@@ -216,10 +222,23 @@ func _on_skill_detect_body_entered(_body: Node2D) -> void:
 
 
 func cast_thunder() -> void:
-	var thunder_x := global_position.x + get_random_thunder_x_offset()
+	var thunder_x := global_position.x + get_thunder_x_offset()
+	thunder_cast_id += 1
+	thunder_damaged_bodies.clear()
 	thunder.global_position = Vector2(thunder_x, get_thunder_ground_y(thunder_x))
 	thunder_animation_player.stop()
 	thunder_animation_player.play(THUNDER_CAST_ANIMATION)
+	damage_thunder_overlaps_at_impact(thunder_cast_id)
+
+
+func damage_thunder_overlaps_at_impact(cast_id: int) -> void:
+	await get_tree().create_timer(THUNDER_IMPACT_TIME).timeout
+	await get_tree().physics_frame
+	if state == DEAD or cast_id != thunder_cast_id:
+		return
+
+	for body in thunder.get_overlapping_bodies():
+		damage_thunder_body(body)
 
 
 func get_thunder_ground_y(thunder_x: float) -> float:
@@ -248,22 +267,26 @@ func get_thunder_bottom_offset() -> float:
 	return thunder_particles.position.y
 
 
-func get_random_thunder_x_offset() -> float:
-	var side := -1.0 if rng.randi_range(0, 1) == 0 else 1.0
-	var excluded_half_width := minf(get_body_half_width(), THUNDER_CAST_RANGE)
-	return rng.randf_range(excluded_half_width, THUNDER_CAST_RANGE) * side
+func get_thunder_x_offset() -> float:
+	return get_player_side() * rng.randf_range(THUNDER_CAST_MIN_DISTANCE, THUNDER_CAST_MAX_DISTANCE)
 
 
-func get_body_half_width() -> float:
-	var circle_shape := body_collision_shape.shape as CircleShape2D
-	if circle_shape != null:
-		return absf(body_collision_shape.position.x) + circle_shape.radius
+func get_player_side() -> float:
+	if player != null and is_instance_valid(player):
+		if player.global_position.x < global_position.x:
+			return -1.0
+		if player.global_position.x > global_position.x:
+			return 1.0
 
-	var rectangle_shape := body_collision_shape.shape as RectangleShape2D
-	if rectangle_shape != null:
-		return absf(body_collision_shape.position.x) + rectangle_shape.size.x * 0.5
+	return -1.0 if move_direction < 0.0 else 1.0
 
-	return 0.0
+
+func find_player() -> Node2D:
+	var current_scene := get_tree().current_scene
+	if current_scene == null:
+		return null
+
+	return current_scene.find_child("Player", true, false) as Node2D
 
 
 func reset_thunder() -> void:
@@ -274,9 +297,17 @@ func reset_thunder() -> void:
 
 
 func _on_thunder_body_entered(body: Node2D) -> void:
-	if state == DEAD or not body.has_method("hurt"):
+	damage_thunder_body(body)
+
+
+func damage_thunder_body(body: Node2D) -> void:
+	if state == DEAD or body == null or not is_instance_valid(body) or not body.has_method("hurt"):
 		return
 
+	if thunder_damaged_bodies.has(body):
+		return
+
+	thunder_damaged_bodies.append(body)
 	body.hurt(body.global_position - thunder.global_position)
 
 
