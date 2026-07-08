@@ -13,6 +13,7 @@ config_version=5
 config/name="Oath of the Frost-Crown"
 run/main_scene="uid://csbau0y38v3vv"
 config/features=PackedStringArray("4.7", "Forward Plus")
+run/max_fps=60
 config/icon="res://icon.svg"
 
 [display]

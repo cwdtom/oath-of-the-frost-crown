@@ -1910,7 +1910,7 @@ tile_set = SubResource("TileSet_1n5kv")
 position = Vector2(203, 380)
 
 [node name="SpawnPoint" parent="." index="4" unique_id=1046513896]
-position = Vector2(3621, 217)
+position = Vector2(258, 459)
 
 [node name="Enemies" type="Node2D" parent="." index="5" unique_id=67931990]
 
