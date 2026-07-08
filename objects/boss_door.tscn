@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://gu8r7mdii756"]
+
+[ext_resource type="Texture2D" uid="uid://r63qw27g4tm1" path="res://assets/objects/boss_door.png" id="1_5n0sr"]
+[ext_resource type="Script" uid="uid://bjqnxstcsoh0j" path="res://objects/boss_door.gd" id="1_qmfri"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qmfri"]
+size = Vector2(40, 270)
+
+[node name="BossDoor" type="Area2D" unique_id=65797194]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_qmfri")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=941545032]
+scale = Vector2(1, 6)
+texture = ExtResource("1_5n0sr")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=651392823]
+position = Vector2(0, 7)
+shape = SubResource("RectangleShape2D_qmfri")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1023267484]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=2079688586]
+position = Vector2(0, 7)
+shape = SubResource("RectangleShape2D_qmfri")
+disabled = true

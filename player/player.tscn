@@ -490,3 +490,5 @@ parameters/conditions/attack_to_running = false
 offset = Vector2(0, -150)
 limit_left = 0
 limit_top = 0
+position_smoothing_enabled = true
+rotation_smoothing_enabled = true
