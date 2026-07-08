@@ -1,0 +1,158 @@
+[gd_scene format=3 uid="uid://3w8f0wxerg73"]
+
+[ext_resource type="Texture2D" uid="uid://c80n0jlq8ggx1" path="res://assets/enemies/skills/thunder/thunder.png" id="1_net7j"]
+[ext_resource type="Texture2D" uid="uid://br8tafnlmrb4q" path="res://assets/enemies/skills/thunder/cast/cast_0001.png" id="2_ijmsb"]
+[ext_resource type="Texture2D" uid="uid://cpodcnltcfvgi" path="res://assets/enemies/skills/thunder/cast/cast_0002.png" id="3_5hrn4"]
+[ext_resource type="Texture2D" uid="uid://cg7ym0pcilko5" path="res://assets/enemies/skills/thunder/cast/cast_0003.png" id="4_7c52g"]
+[ext_resource type="Texture2D" uid="uid://dx1mvxpnnsjwl" path="res://assets/enemies/skills/thunder/cast/cast_0004.png" id="5_m4du4"]
+[ext_resource type="Texture2D" uid="uid://1vdfbyqh54vv" path="res://assets/enemies/skills/thunder/cast/cast_0005.png" id="6_8xo0m"]
+[ext_resource type="Texture2D" uid="uid://clr3dkc65f85n" path="res://assets/enemies/skills/thunder/cast/cast_0006.png" id="7_qmplf"]
+[ext_resource type="Texture2D" uid="uid://b8l62xcgcfkuo" path="res://assets/enemies/skills/thunder/cast/cast_0007.png" id="8_a3dlq"]
+[ext_resource type="Texture2D" uid="uid://bf0flak5t1q1h" path="res://assets/enemies/skills/thunder/cast/cast_0008.png" id="9_2jnhs"]
+[ext_resource type="Texture2D" uid="uid://d36yo33x0rb4k" path="res://assets/enemies/skills/thunder/particle.png" id="10_5hrn4"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
+size = Vector2(26, 510)
+
+[sub_resource type="Animation" id="Animation_mntmb"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_net7j")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CollisionShape2D:disabled")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("CPUParticles2D:emitting")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_bd7nw"]
+resource_name = "cast"
+length = 1.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("2_ijmsb"), ExtResource("3_5hrn4"), ExtResource("4_7c52g"), ExtResource("5_m4du4"), ExtResource("6_8xo0m"), ExtResource("7_qmplf"), ExtResource("8_a3dlq"), ExtResource("9_2jnhs")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1, 1.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [false, true, false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CollisionShape2D:disabled")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1, 1.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [true, false, true]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("CPUParticles2D:emitting")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 1.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [true, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_1e67l"]
+_data = {
+&"RESET": SubResource("Animation_mntmb"),
+&"cast": SubResource("Animation_bd7nw")
+}
+
+[node name="Thunder" type="Area2D" unique_id=1983643422]
+collision_layer = 4
+collision_mask = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=372926966]
+visible = false
+scale = Vector2(1, 8)
+texture = ExtResource("1_net7j")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1793584274]
+light_mask = 4
+visibility_layer = 2
+shape = SubResource("RectangleShape2D_1n5kv")
+disabled = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=399323103]
+libraries/ = SubResource("AnimationLibrary_1e67l")
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="." unique_id=1125491782]
+position = Vector2(0, 249)
+scale = Vector2(0.2, 0.5)
+emitting = false
+amount = 24
+texture = ExtResource("10_5hrn4")
+lifetime = 0.3
+explosiveness = 1.0
+direction = Vector2(0, -1)
+spread = 100.0
+gravity = Vector2(0, 120)
+initial_velocity_min = 180.0
+initial_velocity_max = 360.0
+damping_min = 40.0
+damping_max = 100.0

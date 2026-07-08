@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://dk5x2ut6obi2c" path="res://assets/enemies/wolf_king/run/west/frame_001.png" id="21_dmbor"]
 [ext_resource type="Texture2D" uid="uid://b387kd5q56ivm" path="res://assets/enemies/wolf_king/run/west/frame_002.png" id="22_rxur1"]
 [ext_resource type="Texture2D" uid="uid://bmj0s60fu5jdh" path="res://assets/enemies/wolf_king/run/west/frame_003.png" id="23_gxyk5"]
+[ext_resource type="PackedScene" uid="uid://3w8f0wxerg73" path="res://enemies/skills/thunder.tscn" id="25_hetx2"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1n5kv"]
 radius = 54.0
@@ -32,7 +33,7 @@ radius = 54.0
 size = Vector2(105, 84)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_c0741"]
-size = Vector2(400, 50.5)
+size = Vector2(400, 88)
 
 [sub_resource type="Animation" id="Animation_ayfnu"]
 length = 0.001
@@ -79,7 +80,7 @@ tracks/0/keys = {
 
 [sub_resource type="Animation" id="Animation_rilvr"]
 resource_name = "hurt"
-length = 0.39999999999999997
+length = 0.4
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -112,7 +113,7 @@ tracks/0/keys = {
 
 [sub_resource type="Animation" id="Animation_1wrh6"]
 resource_name = "run"
-length = 0.39999999999999997
+length = 0.4
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -208,7 +209,7 @@ collision_layer = 4
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="SkillDetect" unique_id=1903890129]
-position = Vector2(-241, 3)
+position = Vector2(-241, 7)
 shape = SubResource("RectangleShape2D_c0741")
 
 [node name="Cooldown" type="Timer" parent="SkillDetect" unique_id=2067042446]
@@ -223,5 +224,9 @@ autoplay = &"idle"
 tree_root = SubResource("AnimationNodeStateMachine_mljax")
 anim_player = NodePath("../AnimationPlayer")
 
+[node name="Thunder" parent="." unique_id=1983643422 instance=ExtResource("25_hetx2")]
+position = Vector2(-185, -157)
+
 [connection signal="area_entered" from="HurtBox" to="." method="_on_hurt_box_area_entered"]
 [connection signal="body_entered" from="SkillDetect" to="." method="_on_skill_detect_body_entered"]
+[connection signal="body_entered" from="Thunder" to="." method="_on_thunder_body_entered"]

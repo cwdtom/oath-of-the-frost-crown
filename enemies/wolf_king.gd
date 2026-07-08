@@ -10,6 +10,10 @@ const DEAD_ANIMATION = "dead"
 const HURT_ANIMATION = "hurt"
 const IDLE_ANIMATION = "idle"
 const RUN_ANIMATION = "run"
+const THUNDER_CAST_ANIMATION = "cast"
+const THUNDER_CAST_RANGE = 200.0
+const THUNDER_GROUND_RAY_UP_DISTANCE = 800.0
+const THUNDER_GROUND_RAY_DOWN_DISTANCE = 1400.0
 const SKILL_DISTANCE = 300.0
 const SKILL_SPEED = 400.0
 const ENVIRONMENT_COLLISION_MASK = 1
@@ -27,6 +31,7 @@ var idle_time_left := 0.0
 var skill_distance_left := 0.0
 var skill_return_state := IDLE
 var skill_detect_offset_x := 0.0
+var rng := RandomNumberGenerator.new()
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -36,12 +41,21 @@ var skill_detect_offset_x := 0.0
 @onready var hurt_box_collision_shape: CollisionShape2D = $HurtBox/CollisionShape2D
 @onready var skill_detect_collision_shape: CollisionShape2D = $SkillDetect/CollisionShape2D
 @onready var skill_cooldown_timer: Timer = $SkillDetect/Cooldown
+@onready var thunder: Area2D = $Thunder
+@onready var thunder_sprite: Sprite2D = $Thunder/Sprite2D
+@onready var thunder_collision_shape: CollisionShape2D = $Thunder/CollisionShape2D
+@onready var thunder_animation_player: AnimationPlayer = $Thunder/AnimationPlayer
+@onready var thunder_particles: CPUParticles2D = $Thunder/CPUParticles2D
+@onready var thunder_start_offset: Vector2 = thunder.position
 
 
 func _ready() -> void:
+	rng.randomize()
 	animation_tree.active = true
+	thunder.top_level = true
 	start_x = global_position.x
 	skill_detect_offset_x = abs(skill_detect_collision_shape.position.x)
+	reset_thunder()
 	change_state(IDLE)
 
 
@@ -75,6 +89,7 @@ func change_state(new_state: int) -> void:
 			body_collision_shape.set_deferred("disabled", true)
 			hurt_box_collision_shape.set_deferred("disabled", true)
 			skill_detect_collision_shape.set_deferred("disabled", true)
+			reset_thunder()
 			animation_state.travel(DEAD_ANIMATION)
 
 
@@ -140,6 +155,7 @@ func start_skill() -> void:
 	skill_distance_left = SKILL_DISTANCE
 	skill_cooldown_timer.start()
 	change_state(SKILL)
+	cast_thunder()
 
 
 func update_skill(delta: float) -> void:
@@ -193,10 +209,75 @@ func _on_hurt_box_area_entered(area: Area2D) -> void:
 
 
 func _on_skill_detect_body_entered(_body: Node2D) -> void:
-	if state == DEAD or state == SKILL or not skill_cooldown_timer.is_stopped():
+	if state == DEAD or state == SKILL or is_hurting or not skill_cooldown_timer.is_stopped():
 		return
 
 	start_skill()
+
+
+func cast_thunder() -> void:
+	var thunder_x := global_position.x + get_random_thunder_x_offset()
+	thunder.global_position = Vector2(thunder_x, get_thunder_ground_y(thunder_x))
+	thunder_animation_player.stop()
+	thunder_animation_player.play(THUNDER_CAST_ANIMATION)
+
+
+func get_thunder_ground_y(thunder_x: float) -> float:
+	var from := Vector2(thunder_x, global_position.y - THUNDER_GROUND_RAY_UP_DISTANCE)
+	var to := Vector2(thunder_x, global_position.y + THUNDER_GROUND_RAY_DOWN_DISTANCE)
+	var query := PhysicsRayQueryParameters2D.create(from, to, ENVIRONMENT_COLLISION_MASK)
+	query.exclude = [get_rid()]
+
+	var hit := get_world_2d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return global_position.y + thunder_start_offset.y
+
+	var hit_position: Vector2 = hit["position"]
+	return hit_position.y - get_thunder_bottom_offset()
+
+
+func get_thunder_bottom_offset() -> float:
+	var rectangle_shape := thunder_collision_shape.shape as RectangleShape2D
+	if rectangle_shape != null:
+		return thunder_collision_shape.position.y + rectangle_shape.size.y * 0.5
+
+	var circle_shape := thunder_collision_shape.shape as CircleShape2D
+	if circle_shape != null:
+		return thunder_collision_shape.position.y + circle_shape.radius
+
+	return thunder_particles.position.y
+
+
+func get_random_thunder_x_offset() -> float:
+	var side := -1.0 if rng.randi_range(0, 1) == 0 else 1.0
+	var excluded_half_width := minf(get_body_half_width(), THUNDER_CAST_RANGE)
+	return rng.randf_range(excluded_half_width, THUNDER_CAST_RANGE) * side
+
+
+func get_body_half_width() -> float:
+	var circle_shape := body_collision_shape.shape as CircleShape2D
+	if circle_shape != null:
+		return absf(body_collision_shape.position.x) + circle_shape.radius
+
+	var rectangle_shape := body_collision_shape.shape as RectangleShape2D
+	if rectangle_shape != null:
+		return absf(body_collision_shape.position.x) + rectangle_shape.size.x * 0.5
+
+	return 0.0
+
+
+func reset_thunder() -> void:
+	thunder_animation_player.stop()
+	thunder_sprite.visible = false
+	thunder_collision_shape.set_deferred("disabled", true)
+	thunder_particles.emitting = false
+
+
+func _on_thunder_body_entered(body: Node2D) -> void:
+	if state == DEAD or not body.has_method("hurt"):
+		return
+
+	body.hurt(body.global_position - thunder.global_position)
 
 
 func hurt() -> void:
