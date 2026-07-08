@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://c51ln2t7to2xu" path="res://levels/level_base.tscn" id="1_ty3hu"]
 [ext_resource type="Texture2D" uid="uid://bq5jy25kk44bj" path="res://assets/bg/sky.png" id="2_jy02f"]
-[ext_resource type="PackedScene" uid="uid://cc3wkfmmrm0n7" path="res://enemies/enemy.tscn" id="2_mckh2"]
+[ext_resource type="PackedScene" uid="uid://cc3wkfmmrm0n7" path="res://enemies/wolf.tscn" id="2_mckh2"]
 [ext_resource type="Texture2D" uid="uid://btkkgvjt7wjqe" path="res://assets/bg/far_tree.png" id="3_5dxk1"]
 [ext_resource type="Texture2D" uid="uid://dyws4j4r1kmeu" path="res://assets/tilesets/level01/grass.png" id="3_81a5f"]
 [ext_resource type="Texture2D" uid="uid://c32d4iliihe8b" path="res://assets/tilesets/level01/desert.png" id="3_j0sdw"]
@@ -26,6 +26,7 @@
 [ext_resource type="PackedScene" uid="uid://cyihsdwwlxkrm" path="res://objects/rock_2.tscn" id="14_q27ur"]
 [ext_resource type="PackedScene" uid="uid://cji0rrb52ymh5" path="res://objects/rock.tscn" id="15_685d6"]
 [ext_resource type="PackedScene" uid="uid://dlorrqeiumu3k" path="res://objects/mushroom.tscn" id="15_g2xra"]
+[ext_resource type="PackedScene" uid="uid://fwkdntiemw7" path="res://enemies/wolf_king.tscn" id="26_40vlm"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_bm28l"]
 
@@ -1908,19 +1909,23 @@ tile_set = SubResource("TileSet_1n5kv")
 position = Vector2(203, 380)
 
 [node name="SpawnPoint" parent="." index="4" unique_id=1046513896]
-position = Vector2(117, 458)
+position = Vector2(3888, 309)
 
 [node name="Enemies" type="Node2D" parent="." index="5" unique_id=67931990]
 
-[node name="Enemy" parent="Enemies" index="0" unique_id=2030230368 instance=ExtResource("2_mckh2")]
+[node name="WolfKing" parent="Enemies" index="0" unique_id=840433274 instance=ExtResource("26_40vlm")]
+position = Vector2(5760, 476)
+scale = Vector2(1.5, 1.5)
+
+[node name="Wolf" parent="Enemies" index="1" unique_id=2030230368 instance=ExtResource("2_mckh2")]
 position = Vector2(1024, 500)
 
-[node name="Enemy2" parent="Enemies" index="1" unique_id=123361074 instance=ExtResource("2_mckh2")]
+[node name="Wolf2" parent="Enemies" index="2" unique_id=123361074 instance=ExtResource("2_mckh2")]
 position = Vector2(2451, 459)
 
-[node name="Enemy3" parent="Enemies" index="2" unique_id=434099566 instance=ExtResource("2_mckh2")]
+[node name="Wolf3" parent="Enemies" index="3" unique_id=434099566 instance=ExtResource("2_mckh2")]
 position = Vector2(2228, 323)
 up_direction = Vector2(0, 1)
 
-[node name="Enemy4" parent="Enemies" index="3" unique_id=2088473449 instance=ExtResource("2_mckh2")]
+[node name="Wolf4" parent="Enemies" index="4" unique_id=2088473449 instance=ExtResource("2_mckh2")]
 position = Vector2(3288, 488)

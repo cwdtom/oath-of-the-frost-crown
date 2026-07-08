@@ -1,0 +1,227 @@
+[gd_scene format=3 uid="uid://fwkdntiemw7"]
+
+[ext_resource type="Script" uid="uid://0m816bmdal5k" path="res://enemies/wolf_king.gd" id="1_85v78"]
+[ext_resource type="Texture2D" uid="uid://nlqtlu660gbo" path="res://assets/enemies/wolf_king/west.png" id="1_d35f0"]
+[ext_resource type="Texture2D" uid="uid://dp373v0evprko" path="res://assets/enemies/wolf_king/dead/west/frame_000.png" id="2_1gtv1"]
+[ext_resource type="Texture2D" uid="uid://bxgnxyreu6ja3" path="res://assets/enemies/wolf_king/idle/west/frame_000.png" id="2_l5bkt"]
+[ext_resource type="Texture2D" uid="uid://bw115rfxtd6kk" path="res://assets/enemies/wolf_king/dead/west/frame_001.png" id="3_85v78"]
+[ext_resource type="Texture2D" uid="uid://bc5qsl8ujhx2a" path="res://assets/enemies/wolf_king/idle/west/frame_001.png" id="3_xys14"]
+[ext_resource type="Texture2D" uid="uid://c6p7rd5obshpo" path="res://assets/enemies/wolf_king/idle/west/frame_002.png" id="4_3i0l6"]
+[ext_resource type="Texture2D" uid="uid://dqr7yd40ujcj8" path="res://assets/enemies/wolf_king/dead/west/frame_002.png" id="4_pp2ht"]
+[ext_resource type="Texture2D" uid="uid://c6ipxx1g6vp7s" path="res://assets/enemies/wolf_king/dead/west/frame_003.png" id="5_1dnxh"]
+[ext_resource type="Texture2D" uid="uid://b7ltmk538wi5j" path="res://assets/enemies/wolf_king/idle/west/frame_003.png" id="5_nivh7"]
+[ext_resource type="Texture2D" uid="uid://c1hj6ktcrp6p8" path="res://assets/enemies/wolf_king/dead/west/frame_004.png" id="6_dt23s"]
+[ext_resource type="Texture2D" uid="uid://p5tm68epmhqv" path="res://assets/enemies/wolf_king/idle/west/frame_004.png" id="6_nqaia"]
+[ext_resource type="Texture2D" uid="uid://bsovewujmvar3" path="res://assets/enemies/wolf_king/idle/west/frame_005.png" id="7_chmq8"]
+[ext_resource type="Texture2D" uid="uid://dql6ld4h8f1h6" path="res://assets/enemies/wolf_king/dead/west/frame_005.png" id="7_vnefl"]
+[ext_resource type="Texture2D" uid="uid://b6yd5qm1wvdr8" path="res://assets/enemies/wolf_king/dead/west/frame_006.png" id="8_cp778"]
+[ext_resource type="Texture2D" uid="uid://brw6ogt35n60m" path="res://assets/enemies/wolf_king/idle/west/frame_006.png" id="8_otqmw"]
+[ext_resource type="Texture2D" uid="uid://by2acdet5j2lv" path="res://assets/enemies/wolf_king/dead/west/frame_007.png" id="9_acbrc"]
+[ext_resource type="Texture2D" uid="uid://1mb4qb1olkux" path="res://assets/enemies/wolf_king/idle/west/frame_007.png" id="9_r3hxy"]
+[ext_resource type="Texture2D" uid="uid://chjn583lmoql6" path="res://assets/enemies/wolf_king/idle/west/frame_008.png" id="10_pwvmj"]
+[ext_resource type="Texture2D" uid="uid://pqxa4pbbc00c" path="res://assets/enemies/wolf_king/dead/west/frame_008.png" id="10_sekp3"]
+[ext_resource type="Texture2D" uid="uid://b0bhsxuacci0h" path="res://assets/enemies/wolf_king/run/west/frame_000.png" id="20_54aiq"]
+[ext_resource type="Texture2D" uid="uid://dk5x2ut6obi2c" path="res://assets/enemies/wolf_king/run/west/frame_001.png" id="21_dmbor"]
+[ext_resource type="Texture2D" uid="uid://b387kd5q56ivm" path="res://assets/enemies/wolf_king/run/west/frame_002.png" id="22_rxur1"]
+[ext_resource type="Texture2D" uid="uid://bmj0s60fu5jdh" path="res://assets/enemies/wolf_king/run/west/frame_003.png" id="23_gxyk5"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1n5kv"]
+radius = 54.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_d35f0"]
+size = Vector2(105, 84)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_c0741"]
+size = Vector2(400, 50.5)
+
+[sub_resource type="Animation" id="Animation_ayfnu"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_d35f0")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_7b0qd"]
+resource_name = "dead"
+length = 2.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("2_1gtv1"), ExtResource("3_85v78"), ExtResource("4_pp2ht"), ExtResource("5_1dnxh"), ExtResource("6_dt23s"), ExtResource("7_vnefl"), ExtResource("8_cp778"), ExtResource("9_acbrc"), ExtResource("10_sekp3")]
+}
+
+[sub_resource type="Animation" id="Animation_rilvr"]
+resource_name = "hurt"
+length = 0.39999999999999997
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true]
+}
+
+[sub_resource type="Animation" id="Animation_16nvf"]
+resource_name = "idle"
+length = 1.5
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("2_l5bkt"), ExtResource("3_xys14"), ExtResource("4_3i0l6"), ExtResource("5_nivh7"), ExtResource("6_nqaia"), ExtResource("7_chmq8"), ExtResource("8_otqmw"), ExtResource("9_r3hxy"), ExtResource("10_pwvmj")]
+}
+
+[sub_resource type="Animation" id="Animation_1wrh6"]
+resource_name = "run"
+length = 0.39999999999999997
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [ExtResource("20_54aiq"), ExtResource("21_dmbor"), ExtResource("22_rxur1"), ExtResource("23_gxyk5")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_nf3d5"]
+_data = {
+&"RESET": SubResource("Animation_ayfnu"),
+&"dead": SubResource("Animation_7b0qd"),
+&"hurt": SubResource("Animation_rilvr"),
+&"idle": SubResource("Animation_16nvf"),
+&"run": SubResource("Animation_1wrh6")
+}
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_pp2ht"]
+animation = &"dead"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_hetx2"]
+animation = &"hurt"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_1dnxh"]
+animation = &"idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_dt23s"]
+animation = &"run"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_vnefl"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_cp778"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_sekp3"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_54aiq"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_tm16q"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_71l3b"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_1gtv1"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_85v78"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_pp2ht"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_mljax"]
+states/End/position = Vector2(350.55997, -209.84001)
+states/dead/node = SubResource("AnimationNodeAnimation_pp2ht")
+states/dead/position = Vector2(351.30997, -110.180016)
+states/hurt/node = SubResource("AnimationNodeAnimation_hetx2")
+states/hurt/position = Vector2(350.18497, -2.527542)
+states/idle/node = SubResource("AnimationNodeAnimation_1dnxh")
+states/idle/position = Vector2(349.80997, 98.909996)
+states/run/node = SubResource("AnimationNodeAnimation_dt23s")
+states/run/position = Vector2(537.30994, 99.455)
+transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_vnefl"), "idle", "run", SubResource("AnimationNodeStateMachineTransition_cp778"), "run", "idle", SubResource("AnimationNodeStateMachineTransition_sekp3"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_54aiq"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_tm16q"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_71l3b"), "run", "hurt", SubResource("AnimationNodeStateMachineTransition_1gtv1"), "hurt", "run", SubResource("AnimationNodeStateMachineTransition_85v78"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_pp2ht")]
+graph_offset = Vector2(55.07999, -185.52754)
+
+[node name="WolfKing" type="CharacterBody2D" unique_id=840433274 groups=["enemies"]]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_85v78")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1277239556]
+texture = ExtResource("1_d35f0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1968930571]
+position = Vector2(-1, 3)
+shape = SubResource("CircleShape2D_1n5kv")
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=1696193469]
+collision_layer = 4
+collision_mask = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=868837705]
+position = Vector2(0, 7)
+shape = SubResource("RectangleShape2D_d35f0")
+
+[node name="SkillDetect" type="Area2D" parent="." unique_id=1920373608]
+collision_layer = 4
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SkillDetect" unique_id=1903890129]
+position = Vector2(-241, 3)
+shape = SubResource("RectangleShape2D_c0741")
+
+[node name="Cooldown" type="Timer" parent="SkillDetect" unique_id=2067042446]
+wait_time = 3.0
+one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1723592962]
+libraries/ = SubResource("AnimationLibrary_nf3d5")
+autoplay = &"idle"
+
+[node name="AnimationTree" type="AnimationTree" parent="." unique_id=571913061]
+tree_root = SubResource("AnimationNodeStateMachine_mljax")
+anim_player = NodePath("../AnimationPlayer")
+
+[connection signal="area_entered" from="HurtBox" to="." method="_on_hurt_box_area_entered"]
+[connection signal="body_entered" from="SkillDetect" to="." method="_on_skill_detect_body_entered"]
