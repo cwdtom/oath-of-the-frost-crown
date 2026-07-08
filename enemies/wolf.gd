@@ -25,7 +25,7 @@ var start_x := 0.0
 var move_direction := 1.0
 var idle_time_left := 0.0
 var skill_distance_left := 0.0
-var skill_return_state := IDLE
+var skill_return_state: int = IDLE
 var skill_detect_offset_x := 0.0
 
 @onready var sprite: Sprite2D = $Sprite2D

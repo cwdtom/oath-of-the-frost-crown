@@ -31,7 +31,7 @@ var start_x := 0.0
 var move_direction := -1.0
 var idle_time_left := 0.0
 var skill_distance_left := 0.0
-var skill_return_state := IDLE
+var skill_return_state: int = IDLE
 var skill_detect_offset_x := 0.0
 var rng := RandomNumberGenerator.new()
 var player: Node2D = null
@@ -223,12 +223,20 @@ func _on_skill_detect_body_entered(_body: Node2D) -> void:
 
 func cast_thunder() -> void:
 	var thunder_x := global_position.x + get_thunder_x_offset()
+	var thunder_y := get_thunder_ground_y(thunder_x)
 	thunder_cast_id += 1
 	thunder_damaged_bodies.clear()
-	thunder.global_position = Vector2(thunder_x, get_thunder_ground_y(thunder_x))
+	call_deferred("play_thunder_cast", thunder_x, thunder_y, thunder_cast_id)
+
+
+func play_thunder_cast(thunder_x: float, thunder_y: float, cast_id: int) -> void:
+	if state == DEAD or cast_id != thunder_cast_id:
+		return
+
+	thunder.global_position = Vector2(thunder_x, thunder_y)
 	thunder_animation_player.stop()
 	thunder_animation_player.play(THUNDER_CAST_ANIMATION)
-	damage_thunder_overlaps_at_impact(thunder_cast_id)
+	damage_thunder_overlaps_at_impact(cast_id)
 
 
 func damage_thunder_overlaps_at_impact(cast_id: int) -> void:
@@ -290,6 +298,10 @@ func find_player() -> Node2D:
 
 
 func reset_thunder() -> void:
+	call_deferred("apply_thunder_reset")
+
+
+func apply_thunder_reset() -> void:
 	thunder_animation_player.stop()
 	thunder_sprite.visible = false
 	thunder_collision_shape.set_deferred("disabled", true)
