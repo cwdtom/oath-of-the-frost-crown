@@ -28,10 +28,20 @@ func connect_level_events() -> void:
 	wolf_king.connect("died", _on_wolf_king_died)
 
 
+func set_player_controls_enabled(enabled: bool) -> void:
+	if level == null:
+		return
+
+	var player := level.get_node_or_null("Player")
+	if player != null and player.has_method("set_controls_enabled"):
+		player.set_controls_enabled(enabled)
+
+
 func show_result(result_text: String) -> void:
 	if game_result_popup.visible:
 		return
 
+	set_player_controls_enabled(false)
 	result_label.text = result_text
 	game_result_popup.visible = true
 

@@ -18,6 +18,7 @@ enum {IDLE, RUN, JUMP, HURT, DEAD, ATTACK}
 var state = -1
 var health := MAX_HEALTH
 var is_hurting := false
+var controls_enabled := true
 
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var animation_tree: AnimationTree = $AnimationTree
@@ -52,6 +53,15 @@ func set_weapon_collision_enabled(enabled: bool) -> void:
 	weapon_collision_shape.set_deferred("disabled", not enabled)
 
 
+func set_controls_enabled(enabled: bool) -> void:
+	controls_enabled = enabled
+	if controls_enabled or state == DEAD:
+		return
+
+	velocity.x = 0.0
+	change_state(IDLE)
+
+
 func set_attack_return_conditions(direction: float) -> void:
 	var should_jump := not is_on_floor()
 	var should_run := not should_jump and not is_zero_approx(direction)
@@ -81,6 +91,10 @@ func _physics_process(delta: float) -> void:
 	# Add the gravity.
 	if not is_on_floor():
 		velocity += get_gravity() * delta
+
+	if not controls_enabled:
+		move_and_slide()
+		return
 
 	# Handle jump.
 	if Input.is_action_just_pressed("jump") and is_on_floor():
