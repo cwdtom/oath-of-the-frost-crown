@@ -1,0 +1,87 @@
+[gd_scene format=3 uid="uid://d4o7qsu2p7qg"]
+
+[ext_resource type="Texture2D" uid="uid://breo0avoh4rlh" path="res://assets/ui/window.png" id="1_ngauu"]
+[ext_resource type="FontFile" uid="uid://cbl6avwsx7b62" path="res://assets/ui/fonts/Cinzel-Black.ttf" id="2_oy4m7"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_1n5kv"]
+font = ExtResource("2_oy4m7")
+font_size = 46
+
+[node name="GameResultPopup" type="CanvasLayer" unique_id=1422562202]
+
+[node name="Control" type="Control" parent="." unique_id=419745906]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="Control" unique_id=357654248]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.25882354, 0.25882354, 0.25882354, 0.39215687)
+
+[node name="NinePatchRect" type="NinePatchRect" parent="Control" unique_id=2067454752]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -343.5
+offset_top = -207.0
+offset_right = 343.5
+offset_bottom = 207.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_ngauu")
+patch_margin_left = 64
+patch_margin_top = 90
+patch_margin_right = 64
+patch_margin_bottom = 90
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/NinePatchRect" unique_id=1863003027]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -95.0
+offset_right = 180.0
+offset_bottom = 95.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 48
+alignment = 1
+
+[node name="Label" type="Label" parent="Control/NinePatchRect/VBoxContainer" unique_id=2049365937]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+text = "Victory"
+label_settings = SubResource("LabelSettings_1n5kv")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Control/NinePatchRect/VBoxContainer" unique_id=183594368]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 80
+alignment = 1
+
+[node name="Retry" type="Button" parent="Control/NinePatchRect/VBoxContainer/HBoxContainer" unique_id=1661625176]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_oy4m7")
+theme_override_font_sizes/font_size = 36
+text = "Retry"
+
+[node name="Quit" type="Button" parent="Control/NinePatchRect/VBoxContainer/HBoxContainer" unique_id=1052138523]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_oy4m7")
+theme_override_font_sizes/font_size = 36
+text = "Quit"

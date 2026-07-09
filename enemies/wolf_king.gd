@@ -1,6 +1,8 @@
 extends CharacterBody2D
 
 
+signal died
+
 @export var patrol_range := 300.0
 @export var run_speed := 150.0
 @export var idle_duration := 1.0
@@ -356,5 +358,6 @@ func hurt() -> void:
 
 func die() -> void:
 	change_state(DEAD)
+	died.emit()
 	await get_tree().create_timer(animation_player.get_animation(DEAD_ANIMATION).length).timeout
 	queue_free()

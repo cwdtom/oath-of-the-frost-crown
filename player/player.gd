@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 
 signal hurt_taken
+signal died
 
 const SPEED = 300.0
 const JUMP_VELOCITY = -500.0
@@ -132,6 +133,7 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 	hurt_taken.emit()
 	if health <= 0:
 		change_state(DEAD)
+		died.emit()
 		return
 
 	is_hurting = true
