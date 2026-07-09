@@ -1,12 +1,13 @@
 [gd_scene format=3 uid="uid://csbau0y38v3vv"]
 
-[ext_resource type="PackedScene" uid="uid://upnpdq4gu8d7" path="res://levels/level_01.tscn" id="1_ig7tw"]
 [ext_resource type="PackedScene" uid="uid://d4o7qsu2p7qg" path="res://ui/game_result_popup.tscn" id="2_0xm2m"]
-[ext_resource type="Script" path="res://main.gd" id="3_l46ej"]
+[ext_resource type="PackedScene" uid="uid://bnqmlejlu8bua" path="res://ui/title.tscn" id="2_1bvp3"]
+[ext_resource type="Script" uid="uid://dldhtxpq1m8h0" path="res://main.gd" id="3_l46ej"]
 
 [node name="Main" type="Node2D" unique_id=1562279049]
 script = ExtResource("3_l46ej")
 
-[node name="Level01" parent="." unique_id=1993614508 instance=ExtResource("1_ig7tw")]
+[node name="Title" parent="." unique_id=1744554783 instance=ExtResource("2_1bvp3")]
 
 [node name="GameResultPopup" parent="." unique_id=1422562202 instance=ExtResource("2_0xm2m")]
+visible = false

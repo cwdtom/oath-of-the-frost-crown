@@ -1,0 +1,64 @@
+[gd_scene format=3 uid="uid://bnqmlejlu8bua"]
+
+[ext_resource type="PackedScene" uid="uid://cjuvjqlbkys25" path="res://levels/background.tscn" id="1_8abyn"]
+[ext_resource type="FontFile" uid="uid://cbl6avwsx7b62" path="res://assets/ui/fonts/Cinzel-Black.ttf" id="2_5w2xo"]
+[ext_resource type="Script" path="res://ui/title.gd" id="3_bbgjy"]
+
+[node name="Title" type="Control" unique_id=1744554783]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_bbgjy")
+
+[node name="Background" parent="." unique_id=226699892 instance=ExtResource("1_8abyn")]
+
+[node name="Label" type="Label" parent="." unique_id=1593478180]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_y = 10
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("2_5w2xo")
+theme_override_font_sizes/font_size = 64
+text = "Oath of the Frost-Crown"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1504734660]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -60.0
+offset_top = -250.0
+offset_right = 60.0
+offset_bottom = -100.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 28
+
+[node name="Start" type="Button" parent="VBoxContainer" unique_id=2075218886]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_5w2xo")
+theme_override_font_sizes/font_size = 36
+text = "Start"
+
+[node name="Quit" type="Button" parent="VBoxContainer" unique_id=160734283]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_5w2xo")
+theme_override_font_sizes/font_size = 36
+text = "Quit"
