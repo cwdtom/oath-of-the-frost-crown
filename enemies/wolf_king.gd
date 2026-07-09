@@ -46,6 +46,7 @@ var thunder_damaged_bodies: Array[Node2D] = []
 @onready var hurt_box_collision_shape: CollisionShape2D = $HurtBox/CollisionShape2D
 @onready var skill_detect_collision_shape: CollisionShape2D = $SkillDetect/CollisionShape2D
 @onready var skill_cooldown_timer: Timer = $SkillDetect/Cooldown
+@onready var health_bar: TextureProgressBar = $HealthBar/TextureProgressBar
 @onready var thunder: Area2D = $Thunder
 @onready var thunder_sprite: Sprite2D = $Thunder/Sprite2D
 @onready var thunder_collision_shape: CollisionShape2D = $Thunder/CollisionShape2D
@@ -61,6 +62,7 @@ func _ready() -> void:
 	player = find_player()
 	start_x = global_position.x
 	skill_detect_offset_x = abs(skill_detect_collision_shape.position.x)
+	init_health_bar()
 	reset_thunder()
 	change_state(IDLE)
 
@@ -221,6 +223,15 @@ func _on_skill_detect_body_entered(_body: Node2D) -> void:
 	start_skill()
 
 
+func init_health_bar() -> void:
+	health_bar.max_value = MAX_HEALTH
+	health_bar.value = health
+
+
+func update_health_bar() -> void:
+	health_bar.value = max(health, 0)
+
+
 func cast_thunder() -> void:
 	var thunder_x := global_position.x + get_thunder_x_offset()
 	var thunder_y := get_thunder_ground_y(thunder_x)
@@ -328,6 +339,7 @@ func hurt() -> void:
 		return
 
 	health -= 1
+	update_health_bar()
 	if health <= 0:
 		die()
 		return

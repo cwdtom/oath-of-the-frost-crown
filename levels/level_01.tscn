@@ -1885,7 +1885,6 @@ position = Vector2(2451, 459)
 
 [node name="Wolf3" parent="Enemies" index="3" unique_id=434099566 instance=ExtResource("2_mckh2")]
 position = Vector2(2224, 290)
-up_direction = Vector2(0, 1)
 
 [node name="Wolf4" parent="Enemies" index="4" unique_id=2088473449 instance=ExtResource("2_mckh2")]
 position = Vector2(3288, 488)

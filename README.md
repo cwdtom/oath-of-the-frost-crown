@@ -14,9 +14,10 @@ A Godot 4.7 2D action game prototype.
 
 ## Controls
 
-- Left / Right: move
-- Space: jump
-- A: attack
+- A / Left Arrow: move left
+- D / Right Arrow: move right
+- Space / W / Up Arrow: jump
+- Enter / Left Mouse Button: attack
 
 ## Project Structure
 

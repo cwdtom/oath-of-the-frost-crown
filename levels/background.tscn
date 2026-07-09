@@ -1,17 +1,18 @@
 [gd_scene format=3 uid="uid://cjuvjqlbkys25"]
 
-[ext_resource type="AudioStream" uid="uid://u2vabue2va87" path="res://assets/bg/sounds/level01.mp3" id="1_qjryw"]
+[ext_resource type="Script" path="res://levels/background.gd" id="1_t6oab"]
 [ext_resource type="Texture2D" uid="uid://bq5jy25kk44bj" path="res://assets/bg/sky.png" id="2_bahgx"]
+[ext_resource type="AudioStream" uid="uid://rqxphenbsctw" path="res://assets/bg/sounds/level01.ogg" id="2_s5n1h"]
 [ext_resource type="Texture2D" uid="uid://btkkgvjt7wjqe" path="res://assets/bg/far_tree.png" id="3_s5n1h"]
 [ext_resource type="Texture2D" uid="uid://htofiukax2xi" path="res://assets/bg/fog.png" id="4_ld6bb"]
 [ext_resource type="Texture2D" uid="uid://b5omfag6e17bm" path="res://assets/bg/near_tree.png" id="5_bgwl3"]
 
 [node name="Background" type="Node2D" unique_id=226699892]
+script = ExtResource("1_t6oab")
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=773777861]
-stream = ExtResource("1_qjryw")
+stream = ExtResource("2_s5n1h")
 volume_db = -8.0
-autoplay = true
 
 [node name="Sky" type="Parallax2D" parent="." unique_id=1183379537]
 scroll_scale = Vector2(0.05, 0)

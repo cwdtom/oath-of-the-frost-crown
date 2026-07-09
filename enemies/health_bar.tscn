@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://ct14ct4xg2b04"]
+
+[ext_resource type="Texture2D" uid="uid://cadxab1wsediq" path="res://assets/ui/progress_bar/under.png" id="1_olp7g"]
+[ext_resource type="Texture2D" uid="uid://bsf8vmu2s2y4f" path="res://assets/ui/progress_bar/over.png" id="2_q54p0"]
+[ext_resource type="Texture2D" uid="uid://bmjt74e4yhw62" path="res://assets/ui/progress_bar/progress.png" id="3_rnqj2"]
+
+[node name="HealthBar" type="Marker2D" unique_id=271847535]
+
+[node name="TextureProgressBar" type="TextureProgressBar" parent="." unique_id=981362031]
+offset_right = 40.0
+offset_bottom = 40.0
+fill_mode = 1
+texture_under = ExtResource("1_olp7g")
+texture_over = ExtResource("2_q54p0")
+texture_progress = ExtResource("3_rnqj2")
