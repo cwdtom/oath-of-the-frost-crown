@@ -332,13 +332,14 @@ func hurt() -> void:
 		die()
 		return
 
-	var return_state := state
+	move_direction = get_player_side()
+	face_move_direction()
 	is_hurting = true
 	change_state(HURT)
 	await get_tree().create_timer(animation_player.get_animation(HURT_ANIMATION).length).timeout
 	is_hurting = false
 	if state != DEAD:
-		change_state(return_state)
+		change_state(RUN)
 
 
 func die() -> void:

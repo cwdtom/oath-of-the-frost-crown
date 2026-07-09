@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://b8l62xcgcfkuo" path="res://assets/enemies/skills/thunder/cast/cast_0007.png" id="8_a3dlq"]
 [ext_resource type="Texture2D" uid="uid://bf0flak5t1q1h" path="res://assets/enemies/skills/thunder/cast/cast_0008.png" id="9_2jnhs"]
 [ext_resource type="Texture2D" uid="uid://d36yo33x0rb4k" path="res://assets/enemies/skills/thunder/particle.png" id="10_5hrn4"]
+[ext_resource type="AudioStream" uid="uid://i1rstwn1q8nt" path="res://assets/enemies/skills/thunder/sounds/thunder.wav" id="10_7c52g"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
 size = Vector2(64, 510)
@@ -67,7 +68,7 @@ tracks/3/keys = {
 
 [sub_resource type="Animation" id="Animation_bd7nw"]
 resource_name = "cast"
-length = 1.5
+length = 1.7
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -116,6 +117,21 @@ tracks/3/keys = {
 "update": 0,
 "values": [true, false]
 }
+tracks/4/type = "audio"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("AudioStreamPlayer2D")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("10_7c52g")
+}],
+"times": PackedFloat32Array(0.8)
+}
+tracks/4/use_blend = true
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_1e67l"]
 _data = {
@@ -137,6 +153,8 @@ light_mask = 4
 visibility_layer = 2
 shape = SubResource("RectangleShape2D_1n5kv")
 disabled = true
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=344570843]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=399323103]
 libraries/ = SubResource("AnimationLibrary_1e67l")

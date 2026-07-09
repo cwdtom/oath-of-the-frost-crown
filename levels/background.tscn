@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://cjuvjqlbkys25"]
+
+[ext_resource type="AudioStream" uid="uid://u2vabue2va87" path="res://assets/bg/sounds/level01.mp3" id="1_qjryw"]
+[ext_resource type="Texture2D" uid="uid://bq5jy25kk44bj" path="res://assets/bg/sky.png" id="2_bahgx"]
+[ext_resource type="Texture2D" uid="uid://btkkgvjt7wjqe" path="res://assets/bg/far_tree.png" id="3_s5n1h"]
+[ext_resource type="Texture2D" uid="uid://htofiukax2xi" path="res://assets/bg/fog.png" id="4_ld6bb"]
+[ext_resource type="Texture2D" uid="uid://b5omfag6e17bm" path="res://assets/bg/near_tree.png" id="5_bgwl3"]
+
+[node name="Background" type="Node2D" unique_id=226699892]
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=773777861]
+stream = ExtResource("1_qjryw")
+volume_db = -8.0
+autoplay = true
+
+[node name="Sky" type="Parallax2D" parent="." unique_id=1183379537]
+scroll_scale = Vector2(0.05, 0)
+repeat_size = Vector2(1672, 0)
+repeat_times = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="Sky" unique_id=715279217]
+texture = ExtResource("2_bahgx")
+centered = false
+
+[node name="FarTree" type="Parallax2D" parent="." unique_id=1936564647]
+scroll_scale = Vector2(0.15, 0)
+repeat_size = Vector2(1672, 0)
+repeat_times = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="FarTree" unique_id=1819963225]
+texture = ExtResource("3_s5n1h")
+centered = false
+
+[node name="Fog" type="Parallax2D" parent="." unique_id=1351191191]
+scroll_scale = Vector2(0.25, 0)
+repeat_size = Vector2(1672, 0)
+repeat_times = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="Fog" unique_id=360387575]
+position = Vector2(0, -300)
+texture = ExtResource("4_ld6bb")
+centered = false
+
+[node name="NearTree" type="Parallax2D" parent="." unique_id=1526299463]
+scroll_scale = Vector2(0.65, 0)
+repeat_size = Vector2(1672, 0)
+repeat_times = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="NearTree" unique_id=786926723]
+position = Vector2(0, -100)
+texture = ExtResource("5_bgwl3")
+centered = false
