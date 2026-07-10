@@ -1,11 +1,13 @@
 extends Node2D
 
 
+const LEVEL_00_SCENE := preload("res://levels/level_00.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const RESULT_DEAD := "DEAD"
 const RESULT_VICTORY := "VICTORY"
 
 var level: Node2D = null
+var suspended_level_01: Node2D = null
 
 @onready var title: Control = $Title
 @onready var game_result_popup: CanvasLayer = $GameResultPopup
@@ -46,7 +48,7 @@ func show_result(result_text: String) -> void:
 	game_result_popup.visible = true
 
 
-func restart_level() -> void:
+func start_level_01() -> void:
 	game_result_popup.visible = false
 
 	if level != null:
@@ -59,13 +61,41 @@ func restart_level() -> void:
 	level.name = "Level01"
 	add_child(level)
 	move_child(level, 0)
+	level.connect("intro_finished", _on_level_01_intro_finished)
 	connect_level_events()
+
+
+func play_level_00() -> void:
+	suspended_level_01 = level
+	remove_child(suspended_level_01)
+
+	level = LEVEL_00_SCENE.instantiate() as Node2D
+	level.name = "Level00"
+	var story := level.get_node("Story")
+	story.connect("story_finished", _on_level_00_story_finished)
+	add_child(level)
+	move_child(level, 0)
 
 
 func _on_title_start_requested() -> void:
 	title.visible = false
 	title.queue_free()
-	restart_level()
+	start_level_01()
+
+
+func _on_level_01_intro_finished() -> void:
+	play_level_00()
+
+
+func _on_level_00_story_finished() -> void:
+	var finished_level_00 := level
+	level = suspended_level_01
+	suspended_level_01 = null
+
+	remove_child(finished_level_00)
+	finished_level_00.queue_free()
+	add_child(level)
+	move_child(level, 0)
 
 
 func _on_player_died() -> void:
@@ -77,7 +107,7 @@ func _on_wolf_king_died() -> void:
 
 
 func _on_retry_pressed() -> void:
-	restart_level()
+	start_level_01()
 
 
 func _on_quit_pressed() -> void:

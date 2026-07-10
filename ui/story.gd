@@ -22,7 +22,7 @@ func _ready() -> void:
 		set_process_input(false)
 		return
 
-	show_next_node()
+	show_next_node.call_deferred()
 
 
 func _input(event: InputEvent) -> void:

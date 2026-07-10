@@ -38,6 +38,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Chat" type="NinePatchRect" parent="Control" unique_id=874713931]
+self_modulate = Color(1, 1, 1, 0.8)
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

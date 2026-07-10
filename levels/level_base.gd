@@ -1,6 +1,8 @@
 extends Node2D
 
 
+signal intro_finished
+
 @onready var player = $Player
 @onready var hud = $HUD
 @onready var spawn_point = $SpawnPoint
@@ -50,3 +52,4 @@ func _on_story_finished() -> void:
 	hud.visible = true
 	get_tree().paused = false
 	finished_story.queue_free()
+	intro_finished.emit()

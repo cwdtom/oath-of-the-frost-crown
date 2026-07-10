@@ -13,6 +13,7 @@ const HURT_KNOCKBACK_DISTANCE = 100.0
 const SKILL_DISTANCE = 300.0
 const SKILL_SPEED = 400.0
 const ENVIRONMENT_COLLISION_MASK = 1
+const PLAYER_COLLISION_LAYER = 1 << 1
 const WALL_CHECK_DISTANCE = 56.0
 const WALL_CHECK_Y_OFFSETS = [-24.0, 24.0]
 
@@ -159,6 +160,21 @@ func finish_skill() -> void:
 	change_state(skill_return_state)
 
 
+func damage_skill_collisions() -> void:
+	for collision_index in get_slide_collision_count():
+		var collision := get_slide_collision(collision_index)
+		var body := collision.get_collider() as CollisionObject2D
+		if (
+			body == null
+			or not is_instance_valid(body)
+			or (body.collision_layer & PLAYER_COLLISION_LAYER) == 0
+			or not body.has_method("hurt")
+		):
+			continue
+
+		body.hurt(-collision.get_normal())
+
+
 func _physics_process(delta: float) -> void:
 	if state == DEAD:
 		return
@@ -182,6 +198,9 @@ func _physics_process(delta: float) -> void:
 			update_skill(delta)
 
 	move_and_slide()
+
+	if was_using_skill and state == SKILL:
+		damage_skill_collisions()
 
 	if was_using_skill and state == SKILL and skill_distance_left <= 0.0:
 		finish_skill()
