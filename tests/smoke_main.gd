@@ -4,6 +4,7 @@ extends SceneTree
 const MAIN_SCENE := "res://main.tscn"
 const LEVEL_00_STORY := "res://levels/level_00_story.json"
 const LEVEL_01_STORY := "res://levels/level_01_story.json"
+const MUSIC_RESUME_POSITION := 5.0
 const RESULT_VICTORY := "VICTORY"
 
 var failures: Array[String] = []
@@ -38,7 +39,18 @@ func _run() -> void:
 
 	expect(level_01.name == "Level01", "Start enters Level01 before Level00")
 	var level_01_story := level_01.get_node_or_null("Story")
+	var level_01_music := level_01.get_node_or_null("Background/AudioStreamPlayer") as AudioStreamPlayer
 	expect(level_01_story != null, "Level01 contains Story")
+	expect(level_01_music != null, "Level01 contains background music")
+	if level_01_music != null:
+		expect(level_01_music.stream.get("loop") == true, "Level01 music loops")
+		expect(
+			level_01_music.process_mode == Node.PROCESS_MODE_ALWAYS,
+			"Level01 music keeps processing while its Story pauses the scene"
+		)
+		if DisplayServer.get_name() != "headless":
+			expect(level_01_music.playing, "Level01 music plays while its Story is active")
+			level_01_music.play(MUSIC_RESUME_POSITION)
 	if level_01_story == null:
 		finish()
 		return
@@ -53,8 +65,14 @@ func _run() -> void:
 		finish()
 		return
 
-	for _story_node in level_01_story_nodes:
+	for story_node_index in level_01_story_nodes.size():
 		level_01_story.call("show_next_node")
+		if (
+			level_01_music != null
+			and DisplayServer.get_name() != "headless"
+			and story_node_index < level_01_story_nodes.size() - 1
+		):
+			expect(level_01_music.playing, "Level01 Story does not interrupt its music")
 
 	await process_frame
 	var level := main.get("level") as Node2D
@@ -62,6 +80,9 @@ func _run() -> void:
 	expect(is_instance_valid(level_01), "Level01 remains alive while Level00 plays")
 	if is_instance_valid(level_01):
 		expect(not level_01.is_inside_tree(), "Level01 is suspended while Level00 plays")
+		if level_01_music != null:
+			expect(not level_01_music.playing, "Level01 music stops while Level00 plays")
+			expect(level_01_music.stream != null, "Level01 keeps its music stream for resuming")
 	if level == null:
 		finish()
 		return
@@ -105,6 +126,14 @@ func _run() -> void:
 		finish()
 		return
 	expect(level.get_node_or_null("Story") == null, "Level01 Story remains finished after returning")
+	if level_01_music != null:
+		expect(level_01_music.stream != null, "Level01 still has its music stream after Level00")
+		if DisplayServer.get_name() != "headless":
+			expect(level_01_music.playing, "Level01 music resumes after Level00")
+			expect(
+				level_01_music.get_playback_position() >= MUSIC_RESUME_POSITION,
+				"Level01 music resumes from its position before Level00"
+			)
 
 	var player := level.get_node_or_null("Player")
 	var wolf_king := level.get_node_or_null("Enemies/WolfKing")
@@ -138,12 +167,28 @@ func _run() -> void:
 	expect(restarted_level != null, "Retry creates a replacement level")
 	expect(restarted_level != level, "Retry replaces the old level instance")
 	expect(not popup.visible, "Retry hides the result popup")
+	expect(
+		restarted_level != null and restarted_level.get_node_or_null("Story") == null,
+		"Retry returns to Level01 after its stories"
+	)
+	expect(not paused, "Retry returns to an unpaused Level01")
 
 	var restarted_player := restarted_level.get_node_or_null("Player") if restarted_level != null else null
+	var restarted_hud := restarted_level.get_node_or_null("HUD") if restarted_level != null else null
+	var restarted_camera := (
+		restarted_level.get_node_or_null("Player/Camera2D") as Camera2D
+		if restarted_level != null
+		else null
+	)
 	if restarted_player != null:
 		expect(restarted_player.get("controls_enabled") == true, "Retry starts with controls enabled")
 	else:
 		failures.append("Retry level is missing Player")
+	expect(restarted_hud != null and restarted_hud.visible, "Retry shows the Level01 HUD")
+	expect(restarted_camera != null and restarted_camera.is_current(), "Retry restores the Player camera")
+
+	await process_frame
+	expect(main.get("level") == restarted_level, "Retry does not start Level00 again")
 
 	finish()
 

@@ -3,19 +3,31 @@ extends Node2D
 
 @onready var music: AudioStreamPlayer = $AudioStreamPlayer
 
+var playback_position := 0.0
+
+
+func _enter_tree() -> void:
+	if is_node_ready():
+		start_music.call_deferred()
+
 
 func _ready() -> void:
+	start_music()
+
+
+func start_music() -> void:
 	if DisplayServer.get_name() == "headless":
-		clear_music()
+		stop_music()
 		return
 
-	music.play()
+	music.play(playback_position)
 
 
 func _exit_tree() -> void:
-	clear_music()
+	stop_music()
 
 
-func clear_music() -> void:
+func stop_music() -> void:
+	if music.playing:
+		playback_position = music.get_playback_position()
 	music.stop()
-	music.stream = null

@@ -48,7 +48,7 @@ func show_result(result_text: String) -> void:
 	game_result_popup.visible = true
 
 
-func start_level_01() -> void:
+func start_level_01(play_intro: bool = true) -> void:
 	game_result_popup.visible = false
 
 	if level != null:
@@ -59,14 +59,23 @@ func start_level_01() -> void:
 
 	level = LEVEL_01_SCENE.instantiate() as Node2D
 	level.name = "Level01"
+	if not play_intro:
+		var story := level.get_node_or_null("Story")
+		if story != null:
+			level.remove_child(story)
+			story.queue_free()
+
 	add_child(level)
 	move_child(level, 0)
-	level.connect("intro_finished", _on_level_01_intro_finished)
+	if play_intro:
+		level.connect("intro_finished", _on_level_01_intro_finished)
 	connect_level_events()
 
 
 func play_level_00() -> void:
 	suspended_level_01 = level
+	var background := suspended_level_01.get_node("Background")
+	background.call("stop_music")
 	remove_child(suspended_level_01)
 
 	level = LEVEL_00_SCENE.instantiate() as Node2D
@@ -107,7 +116,7 @@ func _on_wolf_king_died() -> void:
 
 
 func _on_retry_pressed() -> void:
-	start_level_01()
+	start_level_01(false)
 
 
 func _on_quit_pressed() -> void:

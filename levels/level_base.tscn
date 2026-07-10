@@ -11,9 +11,6 @@ script = ExtResource("4_6dq1w")
 [node name="Player" parent="." unique_id=1483695229 instance=ExtResource("1_vmt1o")]
 position = Vector2(314, 329)
 
-[node name="SpawnPoint" type="Marker2D" parent="." unique_id=1046513896]
-position = Vector2(114, 557)
-
 [node name="BossDoor" parent="." unique_id=1824600193 instance=ExtResource("3_da5si")]
 visible = false
 

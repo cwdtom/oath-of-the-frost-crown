@@ -5,7 +5,6 @@ signal intro_finished
 
 @onready var player = $Player
 @onready var hud = $HUD
-@onready var spawn_point = $SpawnPoint
 @onready var story: CanvasLayer = get_node_or_null("Story") as CanvasLayer
 @onready var player_camera: Camera2D = $Player/Camera2D
 
@@ -13,7 +12,6 @@ var story_camera: Camera2D = null
 
 
 func _ready() -> void:
-	player.global_position = spawn_point.global_position
 	hud.set_health(player.health)
 	player.hurt_taken.connect(hud.decrease_health)
 

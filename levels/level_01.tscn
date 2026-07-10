@@ -1867,10 +1867,12 @@ tile_map_data = PackedByteArray("AAAAABMAAwAUAAIAAAABABMAAwAUAAIAAAACABMAAwAUAAI
 tile_set = SubResource("TileSet_1n5kv")
 
 [node name="Player" parent="." index="3" unique_id=1483695229]
-position = Vector2(203, 380)
+position = Vector2(198, 418)
 
-[node name="SpawnPoint" parent="." index="4" unique_id=1046513896]
-position = Vector2(258, 459)
+[node name="BossDoor" parent="." index="4" unique_id=1824600193]
+position = Vector2(3933, 354)
+collision_layer = 1
+collision_mask = 1
 
 [node name="Enemies" type="Node2D" parent="." index="5" unique_id=67931990]
 
@@ -1890,10 +1892,5 @@ position = Vector2(2224, 290)
 [node name="Wolf4" parent="Enemies" index="4" unique_id=2088473449 instance=ExtResource("2_mckh2")]
 position = Vector2(3288, 488)
 
-[node name="BossDoor" parent="." index="6" unique_id=1824600193]
-position = Vector2(3933, 354)
-collision_layer = 1
-collision_mask = 1
-
-[node name="Story" parent="." index="8" instance=ExtResource("27_story")]
+[node name="Story" parent="." index="7" unique_id=292316685 instance=ExtResource("27_story")]
 story_path = "res://levels/level_01_story.json"

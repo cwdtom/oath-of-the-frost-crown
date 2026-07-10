@@ -11,6 +11,7 @@
 script = ExtResource("1_t6oab")
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=773777861]
+process_mode = 3
 stream = ExtResource("2_s5n1h")
 volume_db = -8.0
 
