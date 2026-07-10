@@ -24,6 +24,7 @@
 [ext_resource type="PackedScene" uid="uid://cji0rrb52ymh5" path="res://objects/rock.tscn" id="15_685d6"]
 [ext_resource type="PackedScene" uid="uid://dlorrqeiumu3k" path="res://objects/mushroom.tscn" id="15_g2xra"]
 [ext_resource type="PackedScene" uid="uid://fwkdntiemw7" path="res://enemies/wolf_king.tscn" id="26_40vlm"]
+[ext_resource type="PackedScene" uid="uid://dl5eqe8erpo5s" path="res://ui/story.tscn" id="27_story"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_bm28l"]
 
@@ -1893,3 +1894,6 @@ position = Vector2(3288, 488)
 position = Vector2(3933, 354)
 collision_layer = 1
 collision_mask = 1
+
+[node name="Story" parent="." index="8" instance=ExtResource("27_story")]
+story_path = "res://levels/level_01_story.json"

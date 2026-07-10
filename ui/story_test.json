@@ -1,0 +1,26 @@
+[
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "",
+		"name": "艾拉",
+		"content": "测试测试测试测试测试测试测试测试测试测试测试"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "伊瓦尔",
+		"content": "测试测试测试测试测试测试测试测试测试测试测试"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "",
+		"name": "",
+		"content": "独白独白独白"
+	},
+	{
+		"left": "res://assets/ui/characters/leif.png",
+		"right": "",
+		"name": "莱夫",
+		"content": "又是这样的雪……二十年前，我也曾独自蜷缩在雪与灰烬之间。那时，是父王从燃烧的废墟中找到了我。"
+	}
+]

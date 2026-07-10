@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://dl5eqe8erpo5s"]
+
+[ext_resource type="Texture2D" uid="uid://cma8t03pe56cm" path="res://assets/ui/characters/aila.png" id="1_4m0pv"]
+[ext_resource type="Texture2D" uid="uid://breo0avoh4rlh" path="res://assets/ui/window.png" id="1_mq37v"]
+[ext_resource type="Script" uid="uid://dj31b11lrw12w" path="res://ui/story.gd" id="1_pl5n3"]
+[ext_resource type="Texture2D" uid="uid://cyru2mjok6bsy" path="res://assets/ui/characters/valdemar.png" id="2_pl5n3"]
+
+[node name="Story" type="CanvasLayer" unique_id=1214048430]
+script = ExtResource("1_pl5n3")
+
+[node name="Control" type="Control" parent="." unique_id=1062193437]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Left" type="TextureRect" parent="Control" unique_id=1343558531]
+layout_mode = 0
+offset_left = -25.0
+offset_top = 35.0
+offset_right = 475.0
+offset_bottom = 735.0
+texture = ExtResource("1_4m0pv")
+expand_mode = 1
+stretch_mode = 5
+flip_h = true
+
+[node name="Right" type="TextureRect" parent="Control" unique_id=224669147]
+layout_mode = 0
+offset_left = 619.0
+offset_top = 35.0
+offset_right = 1119.0
+offset_bottom = 735.0
+texture = ExtResource("2_pl5n3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Chat" type="NinePatchRect" parent="Control" unique_id=874713931]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -18.0
+offset_top = -392.0
+offset_right = 13.0
+offset_bottom = 35.0
+grow_horizontal = 2
+grow_vertical = 0
+texture = ExtResource("1_mq37v")
+patch_margin_left = 64
+patch_margin_top = 90
+patch_margin_right = 64
+patch_margin_bottom = 90
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Chat" unique_id=1085409756]
+layout_mode = 0
+offset_left = 66.0
+offset_top = 92.0
+offset_right = 1113.0
+offset_bottom = 336.0
+
+[node name="Name" type="Label" parent="Control/Chat/VBoxContainer" unique_id=843939362]
+layout_mode = 2
+theme_override_font_sizes/font_size = 39
+text = "艾拉"
+
+[node name="Content" type="Label" parent="Control/Chat/VBoxContainer" unique_id=142254129]
+custom_minimum_size = Vector2(1047, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "中文测试"
+autowrap_mode = 3
