@@ -1,11 +1,15 @@
 [gd_scene format=3 uid="uid://b5do0t7fxyoex"]
 
 [ext_resource type="PackedScene" uid="uid://dl5eqe8erpo5s" path="res://ui/story.tscn" id="1_gkh1h"]
+[ext_resource type="AudioStream" uid="uid://ll13ujs8dwuk" path="res://assets/bg/sounds/level00.wav" id="1_q2qjg"]
 [ext_resource type="Texture2D" uid="uid://cskni3why8ki2" path="res://assets/bg/level00_background.png" id="2_sj2j1"]
 
 [node name="Level00" type="Node2D" unique_id=710125556]
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=642532122]
+stream = ExtResource("1_q2qjg")
+volume_db = 5.0
+autoplay = true
 
 [node name="Story" parent="." unique_id=1214048430 instance=ExtResource("1_gkh1h")]
 story_path = "res://levels/level_00_story.json"
