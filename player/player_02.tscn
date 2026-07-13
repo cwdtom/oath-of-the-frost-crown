@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://bn6tiig2vnj2g"]
+
+[ext_resource type="PackedScene" uid="uid://ci30p1cc0qye5" path="res://player/player.tscn" id="1_lslex"]
+[ext_resource type="PackedScene" uid="uid://dfa06f02cvvse" path="res://weapons/player_thunder.tscn" id="2_t3ntl"]
+
+[node name="Player_02" unique_id=1483695229 instance=ExtResource("1_lslex")]
+
+[node name="Player_Thunder" parent="." index="1" unique_id=1983643422 instance=ExtResource("2_t3ntl")]
+position = Vector2(107, -193)

@@ -25,6 +25,7 @@ var controls_enabled := true
 @onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
 @onready var visual_root: Node2D = $VisualRoot
 @onready var weapon_collision_shape: CollisionShape2D = $VisualRoot/WeaponMount/Area2D/CollisionShape2D
+@onready var thunder_animation_player := get_node_or_null("Player_Thunder/AnimationPlayer") as AnimationPlayer
 
 
 func change_state(new_state: int) -> void:
@@ -42,6 +43,8 @@ func change_state(new_state: int) -> void:
 			animation_state.travel("jump")
 		ATTACK:
 			animation_state.travel("attack")
+			if thunder_animation_player:
+				thunder_animation_player.play("cast")
 		HURT:
 			animation_state.travel(HURT_ANIMATION)
 		DEAD:
