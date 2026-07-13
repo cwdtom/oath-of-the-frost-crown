@@ -11,6 +11,7 @@ const HURT_ANIMATION = "hurt"
 const IDLE_ANIMATION = "idle"
 const RUN_ANIMATION = "run"
 const SKILL_ANIMATION = "skill"
+const EARTHQUAKE_CAST_ANIMATION = "cast"
 const HURT_KNOCKBACK_DISTANCE = 100.0
 const ENVIRONMENT_COLLISION_MASK = 1
 const WALL_CHECK_DISTANCE = 56.0
@@ -31,6 +32,7 @@ var skill_detect_offset_x := 0.0
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
+@onready var earthquake_animation_player: AnimationPlayer = $Earthquake/AnimationPlayer
 @onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var hurt_box_collision_shape: CollisionShape2D = $HurtBox/CollisionShape2D
 @onready var skill_detect_collision_shape: CollisionShape2D = $SkillDetect/CollisionShape2D
@@ -69,6 +71,7 @@ func change_state(new_state: int) -> void:
 			hurt_box_collision_shape.set_deferred("disabled", false)
 			face_move_direction()
 			animation_state.travel(SKILL_ANIMATION)
+			earthquake_animation_player.play(EARTHQUAKE_CAST_ANIMATION)
 		DEAD:
 			velocity = Vector2.ZERO
 			remove_from_group("enemies")

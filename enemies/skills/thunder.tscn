@@ -148,7 +148,7 @@ visible = false
 scale = Vector2(1, 8)
 texture = ExtResource("1_net7j")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1793584274]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1793584274 groups=["enemies"]]
 light_mask = 4
 visibility_layer = 2
 shape = SubResource("RectangleShape2D_1n5kv")

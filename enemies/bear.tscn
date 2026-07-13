@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://drmru338qx60b" path="res://assets/enemies/bear/dead/west/frame_000.png" id="2_anmry"]
 [ext_resource type="Texture2D" uid="uid://36qgs644qowb" path="res://assets/enemies/bear/idle/west/frame_000.png" id="2_q6qnq"]
 [ext_resource type="Texture2D" uid="uid://csgtb2jtj1sy2" path="res://assets/enemies/bear/idle/west/frame_001.png" id="3_jqgfw"]
+[ext_resource type="PackedScene" uid="uid://lu67rono1q4s" path="res://enemies/skills/earthquake.tscn" id="3_m1geu"]
 [ext_resource type="Texture2D" uid="uid://fhesi36eiap" path="res://assets/enemies/bear/dead/west/frame_001.png" id="3_t55mx"]
 [ext_resource type="Texture2D" uid="uid://pdwwemj1syjt" path="res://assets/enemies/bear/dead/west/frame_002.png" id="4_m1geu"]
 [ext_resource type="Texture2D" uid="uid://ubtw6oevtemi" path="res://assets/enemies/bear/idle/west/frame_002.png" id="4_uat2j"]
@@ -70,7 +71,6 @@ tracks/1/keys = {
 
 [sub_resource type="Animation" id="Animation_hiy1x"]
 resource_name = "dead"
-length = 0.6
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -214,7 +214,6 @@ switch_mode = 2
 switch_mode = 2
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_2cu3g"]
-switch_mode = 2
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_8rwa6"]
 switch_mode = 2
@@ -249,6 +248,9 @@ texture = ExtResource("1_nxxi7")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=57675704]
 position = Vector2(-0.5, 8)
 shape = SubResource("RectangleShape2D_oyq2l")
+
+[node name="Earthquake" parent="." unique_id=61480513 instance=ExtResource("3_m1geu")]
+position = Vector2(-152, 48)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=241773762]
 libraries/ = SubResource("AnimationLibrary_ml1my")
