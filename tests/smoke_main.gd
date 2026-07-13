@@ -4,6 +4,7 @@ extends SceneTree
 const MAIN_SCENE := "res://main.tscn"
 const LEVEL_00_STORY := "res://levels/level_00_story.json"
 const LEVEL_01_STORY := "res://levels/level_01_story.json"
+const LEVEL_01_VICTORY_STORY := "res://levels/level_01_a_story.json"
 const MUSIC_RESUME_POSITION := 5.0
 const RESULT_VICTORY := "VICTORY"
 
@@ -15,6 +16,8 @@ func _init() -> void:
 
 
 func _run() -> void:
+	await verify_keyboard_guide_input()
+
 	var main := instantiate_main()
 	if main == null:
 		finish()
@@ -31,11 +34,30 @@ func _run() -> void:
 	title.emit_signal("start_requested")
 	await process_frame
 
+	var guide := main.get_node_or_null("Guide") as Control
+	expect(guide != null, "Start keeps the Guide node")
+	expect(guide != null and guide.visible, "Start shows the Guide")
+	expect(main.get("level") == null, "Level01 waits for Guide input")
+	if guide == null or main.get("level") != null:
+		finish()
+		return
+
+	var guide_input := InputEventMouseButton.new()
+	guide_input.button_index = MOUSE_BUTTON_LEFT
+	guide_input.pressed = true
+	Input.parse_input_event(guide_input)
+	await process_frame
+
+	expect(not guide.visible, "Guide input hides the Guide")
 	var level_01 := main.get("level") as Node2D
-	expect(level_01 != null, "Start creates Level01")
+	expect(level_01 != null, "Guide input creates Level01")
 	if level_01 == null:
 		finish()
 		return
+
+	Input.parse_input_event(guide_input)
+	await process_frame
+	expect(main.get("level") == level_01, "Guide input creates Level01 only once")
 
 	expect(level_01.name == "Level01", "Start enters Level01 before Level00")
 	var level_01_story := level_01.get_node_or_null("Story")
@@ -151,11 +173,44 @@ func _run() -> void:
 	expect(player_camera.is_current(), "Level01 Player camera is current after returning from Level00")
 	expect(player.get("controls_enabled") == true, "Player controls start enabled")
 
-	wolf_king.emit_signal("died")
-	await process_frame
-
 	var popup := main.get_node("GameResultPopup") as CanvasLayer
 	var result_label := main.get_node("GameResultPopup/Control/NinePatchRect/VBoxContainer/Label") as Label
+	player.emit_signal("died")
+	wolf_king.call("die")
+	await process_frame
+
+	var victory_story := level.get_node_or_null("VictoryStory") as CanvasLayer
+	expect(victory_story != null, "WolfKing death starts the victory Story")
+	expect(
+		wolf_king.process_mode == Node.PROCESS_MODE_ALWAYS,
+		"WolfKing death animation continues during the victory Story"
+	)
+	expect(not popup.visible, "Victory Story hides a competing defeat popup")
+	expect(paused, "Victory Story pauses gameplay")
+	expect(player.get("controls_enabled") == false, "Victory Story disables player controls")
+	if victory_story == null:
+		finish()
+		return
+
+	expect(
+		victory_story.get("story_path") == LEVEL_01_VICTORY_STORY,
+		"Victory Story uses its configured story JSON"
+	)
+	var victory_story_nodes: Array = victory_story.get("story_nodes")
+	expect(not victory_story_nodes.is_empty(), "Victory Story JSON is loaded")
+	if victory_story_nodes.is_empty():
+		finish()
+		return
+
+	player.emit_signal("died")
+	expect(not popup.visible, "Player death cannot interrupt the victory Story")
+
+	for _story_node in victory_story_nodes:
+		victory_story.call("show_next_node")
+
+	await process_frame
+	expect(not paused, "Victory Story completion resumes the scene tree")
+	expect(level.get_node_or_null("VictoryStory") == null, "Finished victory Story is removed")
 	expect(popup.visible, "Victory shows the result popup")
 	expect(result_label.text == RESULT_VICTORY, "Victory result text is shown")
 	expect(player.get("controls_enabled") == false, "Victory disables player controls")
@@ -191,6 +246,34 @@ func _run() -> void:
 	expect(main.get("level") == restarted_level, "Retry does not start Level00 again")
 
 	finish()
+
+
+func verify_keyboard_guide_input() -> void:
+	var main := instantiate_main()
+	if main == null:
+		return
+
+	await process_frame
+	var title := main.get_node_or_null("Title")
+	var guide := main.get_node_or_null("Guide") as Control
+	if title == null or guide == null:
+		failures.append("Keyboard Guide check is missing Title or Guide")
+	else:
+		title.emit_signal("start_requested")
+		await process_frame
+
+		var guide_input := InputEventKey.new()
+		guide_input.keycode = KEY_SPACE
+		guide_input.pressed = true
+		Input.parse_input_event(guide_input)
+		await process_frame
+
+		expect(not guide.visible, "Keyboard input hides the Guide")
+		expect(main.get("level") != null, "Keyboard input creates Level01")
+
+	current_scene = null
+	main.free()
+	await process_frame
 
 
 func instantiate_main() -> Node:

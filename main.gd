@@ -3,13 +3,17 @@ extends Node2D
 
 const LEVEL_00_SCENE := preload("res://levels/level_00.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
+const STORY_SCENE := preload("res://ui/story.tscn")
+const LEVEL_01_VICTORY_STORY := "res://levels/level_01_a_story.json"
 const RESULT_DEAD := "DEAD"
 const RESULT_VICTORY := "VICTORY"
 
 var level: Node2D = null
 var suspended_level_01: Node2D = null
+var victory_story_active := false
 
 @onready var title: Control = $Title
+@onready var guide: Control = $Guide
 @onready var game_result_popup: CanvasLayer = $GameResultPopup
 @onready var result_label: Label = $GameResultPopup/Control/NinePatchRect/VBoxContainer/Label
 @onready var retry_button: Button = $GameResultPopup/Control/NinePatchRect/VBoxContainer/HBoxContainer/Retry
@@ -21,6 +25,19 @@ func _ready() -> void:
 	title.connect("start_requested", _on_title_start_requested)
 	retry_button.pressed.connect(_on_retry_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
+
+
+func _input(event: InputEvent) -> void:
+	if not guide.visible:
+		return
+	if not (event is InputEventKey or event is InputEventMouseButton):
+		return
+	if not event.is_pressed() or event.is_echo():
+		return
+
+	get_viewport().set_input_as_handled()
+	guide.visible = false
+	start_level_01()
 
 
 func connect_level_events() -> void:
@@ -89,7 +106,7 @@ func play_level_00() -> void:
 func _on_title_start_requested() -> void:
 	title.visible = false
 	title.queue_free()
-	start_level_01()
+	guide.visible = true
 
 
 func _on_level_01_intro_finished() -> void:
@@ -108,11 +125,33 @@ func _on_level_00_story_finished() -> void:
 
 
 func _on_player_died() -> void:
+	if victory_story_active:
+		return
+
 	show_result(RESULT_DEAD)
 
 
 func _on_wolf_king_died() -> void:
+	if victory_story_active:
+		return
+
+	victory_story_active = true
+	game_result_popup.visible = false
+	set_player_controls_enabled(false)
+	var story := STORY_SCENE.instantiate() as CanvasLayer
+	story.name = "VictoryStory"
+	story.set("story_path", LEVEL_01_VICTORY_STORY)
+	story.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	story.connect("story_finished", _on_victory_story_finished.bind(story), CONNECT_ONE_SHOT)
+	level.add_child(story)
+	get_tree().paused = true
+
+
+func _on_victory_story_finished(story: CanvasLayer) -> void:
+	get_tree().paused = false
+	story.queue_free()
 	show_result(RESULT_VICTORY)
+	victory_story_active = false
 
 
 func _on_retry_pressed() -> void:

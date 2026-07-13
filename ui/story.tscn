@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://breo0avoh4rlh" path="res://assets/ui/window.png" id="1_mq37v"]
 [ext_resource type="Script" uid="uid://dj31b11lrw12w" path="res://ui/story.gd" id="1_pl5n3"]
 [ext_resource type="Texture2D" uid="uid://cyru2mjok6bsy" path="res://assets/ui/characters/valdemar.png" id="2_pl5n3"]
+[ext_resource type="FontFile" uid="uid://duuhvp4kpsqjy" path="res://assets/ui/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="5_4b24t"]
 
 [node name="Story" type="CanvasLayer" unique_id=1214048430]
 script = ExtResource("1_pl5n3")
@@ -65,12 +66,14 @@ offset_bottom = 336.0
 
 [node name="Name" type="Label" parent="Control/Chat/VBoxContainer" unique_id=843939362]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_4b24t")
 theme_override_font_sizes/font_size = 39
 text = "艾拉"
 
 [node name="Content" type="Label" parent="Control/Chat/VBoxContainer" unique_id=142254129]
 custom_minimum_size = Vector2(1047, 0)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_4b24t")
 theme_override_font_sizes/font_size = 32
 text = "中文测试"
 autowrap_mode = 3

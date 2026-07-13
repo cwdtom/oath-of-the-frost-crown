@@ -358,6 +358,7 @@ func hurt() -> void:
 
 func die() -> void:
 	change_state(DEAD)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	died.emit()
 	await get_tree().create_timer(animation_player.get_animation(DEAD_ANIMATION).length).timeout
 	queue_free()
