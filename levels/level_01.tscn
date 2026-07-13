@@ -15,7 +15,6 @@
 [ext_resource type="Texture2D" uid="uid://b811td0ecso5r" path="res://assets/tilesets/level01/water.png" id="7_qdeet"]
 [ext_resource type="PackedScene" uid="uid://i4dke2yr40d0" path="res://objects/grass_4.tscn" id="8_bm28l"]
 [ext_resource type="PackedScene" uid="uid://babasi3w3i51w" path="res://objects/grass.tscn" id="9_2qse1"]
-[ext_resource type="PackedScene" uid="uid://s7cjchfj5r7o" path="res://objects/rock_4.tscn" id="12_bkw67"]
 [ext_resource type="PackedScene" uid="uid://bt8a82ruxow0a" path="res://objects/mushroom_4.tscn" id="12_m68c3"]
 [ext_resource type="PackedScene" uid="uid://1l21cxc7o01t" path="res://objects/rock_3.tscn" id="13_40vlm"]
 [ext_resource type="PackedScene" uid="uid://dlqmhl8vvpi1c" path="res://objects/mushroom_3.tscn" id="13_p6fww"]
@@ -1785,43 +1784,34 @@ position = Vector2(403, 561)
 
 [node name="Rock" type="Node2D" parent="Objects" index="3" unique_id=384694510]
 
-[node name="Rock11" parent="Objects/Rock" index="0" unique_id=2111975005 instance=ExtResource("12_bkw67")]
-position = Vector2(1426, 368)
-
-[node name="Rock12" parent="Objects/Rock" index="1" unique_id=1066556623 instance=ExtResource("12_bkw67")]
-position = Vector2(2745, 496)
-
-[node name="Rock13" parent="Objects/Rock" index="2" unique_id=960478682 instance=ExtResource("12_bkw67")]
-position = Vector2(3553, 369)
-
-[node name="Rock6" parent="Objects/Rock" index="3" unique_id=1237929988 instance=ExtResource("13_40vlm")]
+[node name="Rock6" parent="Objects/Rock" index="0" unique_id=1237929988 instance=ExtResource("13_40vlm")]
 position = Vector2(795, 565)
 
-[node name="Rock7" parent="Objects/Rock" index="4" unique_id=178242234 instance=ExtResource("13_40vlm")]
+[node name="Rock7" parent="Objects/Rock" index="1" unique_id=178242234 instance=ExtResource("13_40vlm")]
 position = Vector2(2950, 514)
 
-[node name="Rock8" parent="Objects/Rock" index="5" unique_id=491336573 instance=ExtResource("13_40vlm")]
+[node name="Rock8" parent="Objects/Rock" index="2" unique_id=491336573 instance=ExtResource("13_40vlm")]
 position = Vector2(3555, 532)
 
-[node name="Rock9" parent="Objects/Rock" index="6" unique_id=1057258222 instance=ExtResource("13_40vlm")]
+[node name="Rock9" parent="Objects/Rock" index="3" unique_id=1057258222 instance=ExtResource("13_40vlm")]
 position = Vector2(3997, 548)
 
-[node name="Rock10" parent="Objects/Rock" index="7" unique_id=1207505989 instance=ExtResource("13_40vlm")]
+[node name="Rock10" parent="Objects/Rock" index="4" unique_id=1207505989 instance=ExtResource("13_40vlm")]
 position = Vector2(5695, 531)
 
-[node name="Rock4" parent="Objects/Rock" index="8" unique_id=637703493 instance=ExtResource("14_q27ur")]
+[node name="Rock4" parent="Objects/Rock" index="5" unique_id=637703493 instance=ExtResource("14_q27ur")]
 position = Vector2(522, 532)
 
-[node name="Rock5" parent="Objects/Rock" index="9" unique_id=1199609012 instance=ExtResource("14_q27ur")]
+[node name="Rock5" parent="Objects/Rock" index="6" unique_id=1199609012 instance=ExtResource("14_q27ur")]
 position = Vector2(3125, 537)
 
-[node name="Rock" parent="Objects/Rock" index="10" unique_id=1015425551 instance=ExtResource("15_685d6")]
+[node name="Rock" parent="Objects/Rock" index="7" unique_id=1015425551 instance=ExtResource("15_685d6")]
 position = Vector2(253, 591)
 
-[node name="Rock2" parent="Objects/Rock" index="11" unique_id=1576852105 instance=ExtResource("15_685d6")]
+[node name="Rock2" parent="Objects/Rock" index="8" unique_id=1576852105 instance=ExtResource("15_685d6")]
 position = Vector2(901, 561)
 
-[node name="Rock3" parent="Objects/Rock" index="12" unique_id=38184730 instance=ExtResource("15_685d6")]
+[node name="Rock3" parent="Objects/Rock" index="9" unique_id=38184730 instance=ExtResource("15_685d6")]
 position = Vector2(1805, 559)
 
 [node name="Mushroom" type="Node2D" parent="Objects" index="4" unique_id=262744535]

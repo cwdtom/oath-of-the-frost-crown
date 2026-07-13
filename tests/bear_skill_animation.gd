@@ -164,6 +164,80 @@ func _run() -> void:
 	await create_timer(0.15).timeout
 	expect(not is_instance_valid(dying_bear), "Bear is freed after the dead animation finishes")
 
+	var detecting_bear := BEAR_SCENE.instantiate() as CharacterBody2D
+	detecting_bear.position = Vector2(4000.0, 0.0)
+	world.add_child(detecting_bear)
+	await physics_frame
+	var detecting_return_state: int = detecting_bear.get("state")
+	var detecting_earthquake_collision_shape := detecting_bear.get_node(
+		"Earthquake/CollisionShape2D"
+	) as CollisionShape2D
+	detecting_earthquake_collision_shape.disabled = false
+	var detecting_body := CharacterBody2D.new()
+	detecting_body.collision_layer = 2
+	detecting_body.collision_mask = 0
+	var detecting_body_collision_shape := CollisionShape2D.new()
+	var detecting_body_shape := RectangleShape2D.new()
+	detecting_body_shape.size = Vector2(10.0, 10.0)
+	detecting_body_collision_shape.shape = detecting_body_shape
+	detecting_body.add_child(detecting_body_collision_shape)
+	detecting_body.global_position = detecting_bear.get_node(
+		"SkillDetect/CollisionShape2D"
+	).global_position
+	world.add_child(detecting_body)
+	for _frame in 3:
+		await physics_frame
+	await process_frame
+	expect(
+		detecting_bear.get("state") != detecting_return_state,
+		"SkillDetect starts Bear skill from its body signal"
+	)
+	expect(
+		(detecting_bear.get_node("Earthquake/AnimationPlayer") as AnimationPlayer).current_animation
+		== EARTHQUAKE_CAST_ANIMATION,
+		"SkillDetect starts earthquake cast after the physics query finishes"
+	)
+
+	var wall := TileMapLayer.new()
+	world.add_child(wall)
+	var wall_body_rid := PhysicsServer2D.body_create()
+	var wall_shape_rid := PhysicsServer2D.rectangle_shape_create()
+	PhysicsServer2D.shape_set_data(wall_shape_rid, Vector2(10.0, 10.0))
+	PhysicsServer2D.body_set_mode(wall_body_rid, PhysicsServer2D.BODY_MODE_STATIC)
+	PhysicsServer2D.body_set_collision_layer(wall_body_rid, 1)
+	PhysicsServer2D.body_attach_object_instance_id(wall_body_rid, wall.get_instance_id())
+	PhysicsServer2D.body_add_shape(wall_body_rid, wall_shape_rid)
+	PhysicsServer2D.body_set_space(wall_body_rid, world.get_world_2d().space)
+	PhysicsServer2D.body_set_state(
+		wall_body_rid,
+		PhysicsServer2D.BODY_STATE_TRANSFORM,
+		Transform2D(0.0, Vector2(2920.0, 0.0))
+	)
+	var turning_bear := BEAR_SCENE.instantiate() as CharacterBody2D
+	turning_bear.position = Vector2(3000.0, 0.0)
+	turning_bear.set("idle_duration", 0.0)
+	turning_bear.set("patrol_range", 1000.0)
+	world.add_child(turning_bear)
+	for _frame in 12:
+		await physics_frame
+	expect(
+		turning_bear.get("move_direction") > 0.0,
+		"Bear immediately turns around when its patrol direction is blocked"
+	)
+	expect(
+		(turning_bear.get_node("Sprite2D") as Sprite2D).flip_h,
+		"Bear faces its new direction after turning away from an obstacle"
+	)
+	var turned_x := turning_bear.global_position.x
+	for _frame in 6:
+		await physics_frame
+	expect(
+		turning_bear.global_position.x > turned_x,
+		"Bear keeps patrolling in the new direction after hitting an obstacle"
+	)
+
+	PhysicsServer2D.free_rid(wall_body_rid)
+	PhysicsServer2D.free_rid(wall_shape_rid)
 	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
 	world.queue_free()
 	await process_frame

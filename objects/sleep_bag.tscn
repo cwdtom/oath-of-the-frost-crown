@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://deeyt10xb2muo"]
+
+[ext_resource type="Texture2D" uid="uid://7b2e1dbyiiog" path="res://assets/objects/sleep_bag.png" id="1_jl1bt"]
+
+[node name="SleepBag" type="Node2D" unique_id=647241937]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2002534163]
+texture = ExtResource("1_jl1bt")

@@ -14,7 +14,7 @@ const SKILL_ANIMATION = "skill"
 const EARTHQUAKE_CAST_ANIMATION = "cast"
 const HURT_KNOCKBACK_DISTANCE = 100.0
 const ENVIRONMENT_COLLISION_MASK = 1
-const WALL_CHECK_DISTANCE = 56.0
+const WALL_CHECK_DISTANCE = 72.0
 const WALL_CHECK_Y_OFFSETS = [-24.0, 24.0]
 
 enum {IDLE, RUN, HURT, DEAD, SKILL}
@@ -70,8 +70,7 @@ func change_state(new_state: int) -> void:
 			velocity.x = 0.0
 			hurt_box_collision_shape.set_deferred("disabled", false)
 			face_move_direction()
-			animation_state.travel(SKILL_ANIMATION)
-			earthquake_animation_player.play(EARTHQUAKE_CAST_ANIMATION)
+			call_deferred("play_skill_animations")
 		DEAD:
 			velocity = Vector2.ZERO
 			remove_from_group("enemies")
@@ -83,6 +82,20 @@ func change_state(new_state: int) -> void:
 func face_move_direction() -> void:
 	sprite.flip_h = move_direction > 0.0
 	skill_detect_collision_shape.position.x = skill_detect_offset_x * move_direction
+
+
+func play_skill_animations() -> void:
+	if state != SKILL:
+		return
+
+	animation_state.travel(SKILL_ANIMATION)
+	earthquake_animation_player.play(EARTHQUAKE_CAST_ANIMATION)
+
+
+func turn_around() -> void:
+	move_direction *= -1.0
+	face_move_direction()
+	velocity.x = move_direction * run_speed
 
 
 func is_front_blocked() -> bool:
@@ -122,9 +135,7 @@ func update_run(delta: float) -> void:
 	var next_x := global_position.x + move_direction * run_speed * delta
 
 	if is_front_blocked():
-		move_direction *= -1.0
-		face_move_direction()
-		velocity.x = move_direction * run_speed
+		turn_around()
 		return
 
 	if move_direction > 0.0 and next_x >= right_edge:
@@ -141,6 +152,19 @@ func update_run(delta: float) -> void:
 
 	face_move_direction()
 	velocity.x = move_direction * run_speed
+
+
+func turn_around_from_environment_collision() -> void:
+	for collision_index in get_slide_collision_count():
+		var collision := get_slide_collision(collision_index)
+		if (
+			PhysicsServer2D.body_get_collision_layer(collision.get_collider_rid())
+			& ENVIRONMENT_COLLISION_MASK
+			!= 0
+			and collision.get_normal().x * move_direction < -0.5
+		):
+			turn_around()
+			return
 
 
 func start_skill() -> void:
@@ -175,6 +199,8 @@ func _physics_process(delta: float) -> void:
 			update_run(delta)
 
 	move_and_slide()
+	if state == RUN:
+		turn_around_from_environment_collision()
 
 
 func _on_hurt_box_area_entered(area: Area2D) -> void:
