@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://ca33vgjge8t7"]
+
+[ext_resource type="Texture2D" uid="uid://tom2eil735cf" path="res://assets/NPCs/leif/south-east.png" id="1_pcoy3"]
+[ext_resource type="Script" path="res://NPCs/leif.gd" id="2_script"]
+
+[node name="Leif" type="Node2D" unique_id=1488886398]
+script = ExtResource("2_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=500098340]
+texture = ExtResource("1_pcoy3")
+flip_h = true

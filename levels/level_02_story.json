@@ -1,0 +1,74 @@
+[
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "莱夫？你怎么会在这里？我不是命令你留在营地，负责接应后续的卫队吗？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "营地已经安排妥当。至于你的命令……我决定稍微晚一点再执行。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "这里已经是黑森林深处。继续前进只会遇到更危险的怪物，你不该擅自跟来。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "正因为这里危险，我才不能让你一个人进去。艾拉，你是骑士长，不代表你必须独自承担所有事情。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "这是父王亲自交给我的使命。我必须尽快找到污染的源头，不能让更多人死在黑冬里。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "我知道。所以我不是来阻止你的。我只是来确保你能够活着完成它。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "我没有受伤，也不需要保护。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "你每次右肩受伤，握剑时都会把重心压向左脚。刚才我已经看见三次了。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "……只是一点擦伤，不会影响战斗。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "虽然我战斗不如你，至少让我先给你侦查一下前面的情况。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "你还是和以前一样固执。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "能成为你的副官，大概正是因为这一点。我准备一下马上出发。"
+	}
+]
