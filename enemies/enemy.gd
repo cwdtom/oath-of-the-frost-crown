@@ -74,7 +74,10 @@ func change_state(new_state: int) -> void:
 			animation_state.travel(HURT_ANIMATION)
 		SKILL:
 			velocity.x = 0.0
-			hurt_box_collision_shape.set_deferred("disabled", false)
+			hurt_box_collision_shape.set_deferred(
+				"disabled",
+				_blocks_weapon_damage_during_skill()
+			)
 			face_move_direction()
 			call_deferred("_play_skill_presentations")
 		DEAD:
@@ -82,7 +85,7 @@ func change_state(new_state: int) -> void:
 			remove_from_group("enemies")
 			body_collision_shape.set_deferred("disabled", true)
 			hurt_box_collision_shape.set_deferred("disabled", true)
-			animation_state.travel(DEAD_ANIMATION)
+			animation_state.start(DEAD_ANIMATION)
 
 
 func face_move_direction() -> void:
@@ -154,6 +157,28 @@ func _play_species_skill_presentation() -> void:
 
 func _stop_species_skill_presentation() -> void:
 	pass
+
+
+func _start_species_skill() -> void:
+	await get_tree().create_timer(_get_animation_length(SKILL_ANIMATION)).timeout
+	if state == SKILL:
+		finish_skill()
+
+
+func _update_species_skill(_delta: float) -> void:
+	pass
+
+
+func _handle_species_skill_collisions() -> void:
+	pass
+
+
+func _is_species_skill_complete() -> bool:
+	return false
+
+
+func _blocks_weapon_damage_during_skill() -> bool:
+	return false
 
 
 func _prepare_hurt(_knockback_direction: Vector2) -> void:
@@ -249,9 +274,7 @@ func start_skill() -> void:
 	skill_return_state = state
 	skill_cooldown_timer.start()
 	change_state(SKILL)
-	await get_tree().create_timer(_get_animation_length(SKILL_ANIMATION)).timeout
-	if state == SKILL:
-		finish_skill()
+	_start_species_skill()
 
 
 func finish_skill() -> void:
@@ -270,19 +293,30 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
+	var was_using_skill := state == SKILL
 	match state:
 		IDLE:
 			update_idle(delta)
 		RUN:
 			update_run(delta)
+		SKILL:
+			_update_species_skill(delta)
 
 	move_and_slide()
 	if state == RUN:
 		turn_around_from_environment_collision()
+	if was_using_skill and state == SKILL:
+		_handle_species_skill_collisions()
+	if was_using_skill and state == SKILL and _is_species_skill_complete():
+		finish_skill()
 
 
 func _on_hurt_box_area_entered(area: Area2D) -> void:
-	if state == DEAD or not area.is_in_group("weapons"):
+	if (
+		state == DEAD
+		or (state == SKILL and _blocks_weapon_damage_during_skill())
+		or not area.is_in_group("weapons")
+	):
 		return
 
 	hurt(global_position - area.global_position)
