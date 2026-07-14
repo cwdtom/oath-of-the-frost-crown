@@ -31,6 +31,7 @@ func _run() -> void:
 	harness.cleanup()
 	await process_frame
 	await process_frame
+	await create_timer(0.1).timeout
 	finish()
 
 

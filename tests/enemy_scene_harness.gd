@@ -8,7 +8,6 @@ const PLAYER_SCENE := preload("res://player/player.tscn")
 
 var world := Node2D.new()
 var scene_tree: SceneTree
-var passive_players: Array[CharacterBody2D] = []
 
 
 func _init(test_scene_tree: SceneTree) -> void:
@@ -40,7 +39,6 @@ func instantiate_passive_player(position: Vector2, hurt_callback: Callable) -> C
 	var player := instantiate_actor(PLAYER_SCENE, position)
 	player.set_physics_process(false)
 	player.connect(&"hurt_taken", hurt_callback)
-	passive_players.append(player)
 	return player
 
 
@@ -128,12 +126,9 @@ func is_facing_right(enemy: CharacterBody2D) -> bool:
 
 func cleanup() -> void:
 	if is_instance_valid(world):
-		for player in passive_players:
-			if not is_instance_valid(player):
-				continue
-			player.process_mode = Node.PROCESS_MODE_DISABLED
-			for node in player.find_children("*", "AudioStreamPlayer2D", true, false):
-				(node as AudioStreamPlayer2D).stop()
+		world.process_mode = Node.PROCESS_MODE_DISABLED
+		for node in world.find_children("*", "AudioStreamPlayer2D", true, false):
+			(node as AudioStreamPlayer2D).stop()
 		world.queue_free()
 
 
