@@ -5,8 +5,8 @@ const MAIN_SCENE := "res://main.tscn"
 const LEVEL_00_STORY := "res://levels/level_00_story.json"
 const LEVEL_01_STORY := "res://levels/level_01_story.json"
 const LEVEL_01_VICTORY_STORY := "res://levels/level_01_a_story.json"
+const LEVEL_02_STORY := "res://levels/level_02_story.json"
 const MUSIC_RESUME_POSITION := 5.0
-const RESULT_VICTORY := "VICTORY"
 
 var failures: Array[String] = []
 
@@ -169,12 +169,49 @@ func _run() -> void:
 		finish()
 		return
 
+	var full_player_health: int = player.get("health")
 	expect(hud.visible, "Level01 HUD is visible after returning from Level00")
 	expect(player_camera.is_current(), "Level01 Player camera is current after returning from Level00")
 	expect(player.get("controls_enabled") == true, "Player controls start enabled")
 
 	var popup := main.get_node("GameResultPopup") as CanvasLayer
-	var result_label := main.get_node("GameResultPopup/Control/NinePatchRect/VBoxContainer/Label") as Label
+	var defeated_level := level
+	player.emit_signal("died")
+	expect(popup.visible, "Player death shows the result popup")
+	expect(player.get("controls_enabled") == false, "Player death disables controls")
+	main.call("_on_retry_pressed")
+	await process_frame
+
+	var restarted_level := main.get("level") as Node2D
+	expect(restarted_level != null, "Retry creates a replacement level")
+	expect(not is_instance_valid(defeated_level), "Retry frees the defeated level")
+	expect(not popup.visible, "Retry hides the result popup")
+	expect(
+		restarted_level != null and restarted_level.get_node_or_null("Story") == null,
+		"Retry returns to Level01 after its stories"
+	)
+	expect(not paused, "Retry returns to an unpaused Level01")
+	if restarted_level == null:
+		finish()
+		return
+
+	level = restarted_level
+	player = level.get_node_or_null("Player")
+	wolf_king = level.get_node_or_null("Enemies/WolfKing")
+	hud = level.get_node_or_null("HUD")
+	player_camera = level.get_node_or_null("Player/Camera2D") as Camera2D
+	expect(player != null and player.get("controls_enabled") == true, "Retry enables controls")
+	expect(
+		player != null and player.get("health") == full_player_health,
+		"Level01 Retry restores full player health"
+	)
+	expect(hud != null and hud.visible, "Retry shows the Level01 HUD")
+	expect(player_camera != null and player_camera.is_current(), "Retry restores the Player camera")
+	if player == null or wolf_king == null:
+		finish()
+		return
+
+	player.set("health", 1)
 	player.emit_signal("died")
 	wolf_king.call("die")
 	await process_frame
@@ -204,46 +241,88 @@ func _run() -> void:
 
 	player.emit_signal("died")
 	expect(not popup.visible, "Player death cannot interrupt the victory Story")
+	expect(main.get("level") == level, "Level01 remains current while its victory Story is active")
 
 	for _story_node in victory_story_nodes:
 		victory_story.call("show_next_node")
 
 	await process_frame
-	expect(not paused, "Victory Story completion resumes the scene tree")
-	expect(level.get_node_or_null("VictoryStory") == null, "Finished victory Story is removed")
-	expect(popup.visible, "Victory shows the result popup")
-	expect(result_label.text == RESULT_VICTORY, "Victory result text is shown")
-	expect(player.get("controls_enabled") == false, "Victory disables player controls")
+	var level_02 := main.get("level") as Node2D
+	expect(level_02 != null and level_02.name == "Level02", "Victory Story completion starts Level02")
+	expect(not is_instance_valid(level), "Level01 is freed after starting Level02")
+	expect(not popup.visible, "Level02 starts without a result popup")
+	expect(paused, "Level02 opening Story pauses gameplay")
+	if level_02 == null:
+		finish()
+		return
 
+	var level_02_player := level_02.get_node_or_null("Player")
+	expect(level_02_player != null, "Level02 contains Player")
+	expect(
+		level_02_player != null and level_02_player.get("health") == full_player_health,
+		"Entering Level02 restores full player health"
+	)
+	var level_02_story := level_02.get_node_or_null("Story") as CanvasLayer
+	expect(level_02_story != null, "Level02 starts with its opening Story")
+	if level_02_story == null:
+		finish()
+		return
+
+	expect(
+		level_02_story.get("story_path") == LEVEL_02_STORY,
+		"Level02 uses its configured story JSON"
+	)
+	var level_02_story_nodes: Array = level_02_story.get("story_nodes")
+	expect(not level_02_story_nodes.is_empty(), "Level02 opening Story JSON is loaded")
+	for _story_node in level_02_story_nodes:
+		level_02_story.call("show_next_node")
+
+	await process_frame
+	expect(not paused, "Level02 opening Story completion resumes gameplay")
+	expect(level_02.get_node_or_null("Story") == null, "Finished Level02 Story is removed")
+	if level_02_player == null:
+		finish()
+		return
+
+	level_02_player.set("health", 0)
+	level_02_player.emit_signal("died")
+	expect(popup.visible, "Level02 player death shows the result popup")
 	main.call("_on_retry_pressed")
 	await process_frame
 
-	var restarted_level := main.get("level") as Node2D
-	expect(restarted_level != null, "Retry creates a replacement level")
-	expect(restarted_level != level, "Retry replaces the old level instance")
-	expect(not popup.visible, "Retry hides the result popup")
+	var restarted_level_02 := main.get("level") as Node2D
 	expect(
-		restarted_level != null and restarted_level.get_node_or_null("Story") == null,
-		"Retry returns to Level01 after its stories"
+		restarted_level_02 != null and restarted_level_02.name == "Level02",
+		"Level02 Retry restarts Level02"
 	)
-	expect(not paused, "Retry returns to an unpaused Level01")
-
-	var restarted_player := restarted_level.get_node_or_null("Player") if restarted_level != null else null
-	var restarted_hud := restarted_level.get_node_or_null("HUD") if restarted_level != null else null
-	var restarted_camera := (
-		restarted_level.get_node_or_null("Player/Camera2D") as Camera2D
-		if restarted_level != null
-		else null
-	)
-	if restarted_player != null:
-		expect(restarted_player.get("controls_enabled") == true, "Retry starts with controls enabled")
-	else:
-		failures.append("Retry level is missing Player")
-	expect(restarted_hud != null and restarted_hud.visible, "Retry shows the Level01 HUD")
-	expect(restarted_camera != null and restarted_camera.is_current(), "Retry restores the Player camera")
-
-	await process_frame
-	expect(main.get("level") == restarted_level, "Retry does not start Level00 again")
+	expect(not is_instance_valid(level_02), "Level02 Retry frees the defeated level")
+	expect(not popup.visible, "Level02 Retry hides the result popup")
+	expect(not paused, "Level02 Retry skips the opening Story")
+	if restarted_level_02 != null:
+		expect(
+			restarted_level_02.get_node_or_null("Story") == null,
+			"Level02 Retry returns after its opening Story"
+		)
+		var restarted_level_02_player := restarted_level_02.get_node_or_null("Player")
+		var restarted_level_02_hud := restarted_level_02.get_node_or_null("HUD")
+		var restarted_level_02_camera := (
+			restarted_level_02.get_node_or_null("Player/Camera2D") as Camera2D
+		)
+		expect(
+			restarted_level_02_player != null
+			and restarted_level_02_player.get("health") == full_player_health,
+			"Level02 Retry restores full player health"
+		)
+		expect(
+			restarted_level_02_player != null
+			and restarted_level_02_player.get("controls_enabled") == true,
+			"Level02 Retry enables player controls"
+		)
+		expect(restarted_level_02_hud != null and restarted_level_02_hud.visible, "Level02 Retry shows HUD")
+		expect(
+			restarted_level_02_camera != null and restarted_level_02_camera.is_current(),
+			"Level02 Retry restores the Player camera"
+		)
 
 	finish()
 

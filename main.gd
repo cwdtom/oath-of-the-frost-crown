@@ -3,14 +3,15 @@ extends Node2D
 
 const LEVEL_00_SCENE := preload("res://levels/level_00.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
+const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
 const STORY_SCENE := preload("res://ui/story.tscn")
 const LEVEL_01_VICTORY_STORY := "res://levels/level_01_a_story.json"
 const RESULT_DEAD := "DEAD"
-const RESULT_VICTORY := "VICTORY"
 
 var level: Node2D = null
 var suspended_level_01: Node2D = null
 var victory_story_active := false
+var current_level_scene: PackedScene = null
 
 @onready var title: Control = $Title
 @onready var guide: Control = $Guide
@@ -42,9 +43,11 @@ func _input(event: InputEvent) -> void:
 
 func connect_level_events() -> void:
 	var player := level.get_node("Player")
-	var wolf_king := level.get_node("Enemies/WolfKing")
 	player.connect("died", _on_player_died)
-	wolf_king.connect("died", _on_wolf_king_died)
+
+	var wolf_king := level.get_node_or_null("Enemies/WolfKing")
+	if wolf_king != null:
+		wolf_king.connect("died", _on_wolf_king_died)
 
 
 func set_player_controls_enabled(enabled: bool) -> void:
@@ -65,7 +68,7 @@ func show_result(result_text: String) -> void:
 	game_result_popup.visible = true
 
 
-func start_level_01(play_intro: bool = true) -> void:
+func start_level(scene: PackedScene, play_intro: bool) -> void:
 	game_result_popup.visible = false
 
 	if level != null:
@@ -74,8 +77,10 @@ func start_level_01(play_intro: bool = true) -> void:
 		remove_child(old_level)
 		old_level.queue_free()
 
-	level = LEVEL_01_SCENE.instantiate() as Node2D
-	level.name = "Level01"
+	current_level_scene = scene
+	level = scene.instantiate() as Node2D
+	var player := level.get_node("Player")
+	player.restore_full_health()
 	if not play_intro:
 		var story := level.get_node_or_null("Story")
 		if story != null:
@@ -84,9 +89,17 @@ func start_level_01(play_intro: bool = true) -> void:
 
 	add_child(level)
 	move_child(level, 0)
+	connect_level_events()
+
+
+func start_level_01(play_intro: bool = true) -> void:
+	start_level(LEVEL_01_SCENE, play_intro)
 	if play_intro:
 		level.connect("intro_finished", _on_level_01_intro_finished)
-	connect_level_events()
+
+
+func start_level_02(play_intro: bool = true) -> void:
+	start_level(LEVEL_02_SCENE, play_intro)
 
 
 func play_level_00() -> void:
@@ -150,12 +163,15 @@ func _on_wolf_king_died() -> void:
 func _on_victory_story_finished(story: CanvasLayer) -> void:
 	get_tree().paused = false
 	story.queue_free()
-	show_result(RESULT_VICTORY)
 	victory_story_active = false
+	start_level_02()
 
 
 func _on_retry_pressed() -> void:
-	start_level_01(false)
+	if current_level_scene == null:
+		return
+
+	start_level(current_level_scene, false)
 
 
 func _on_quit_pressed() -> void:

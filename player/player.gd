@@ -65,6 +65,10 @@ func set_controls_enabled(enabled: bool) -> void:
 	change_state(IDLE)
 
 
+func restore_full_health() -> void:
+	health = MAX_HEALTH
+
+
 func set_attack_return_conditions(direction: float) -> void:
 	var should_jump := not is_on_floor()
 	var should_run := not should_jump and not is_zero_approx(direction)
