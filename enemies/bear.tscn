@@ -39,8 +39,9 @@
 [ext_resource type="Texture2D" uid="uid://ou1tanj1dn3e" path="res://assets/enemies/bear/skill/west/frame_005.png" id="35_6260d"]
 [ext_resource type="Texture2D" uid="uid://bhc8j15wr4e1c" path="res://assets/enemies/bear/skill/west/frame_006.png" id="36_61fx0"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_oyq2l"]
-size = Vector2(123, 94)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ddsyl"]
+radius = 46.0
+height = 121.0
 
 [sub_resource type="Animation" id="Animation_qnsdf"]
 length = 0.001
@@ -234,6 +235,9 @@ states/skill/position = Vector2(484.79504, 238.62761)
 transitions = ["idle", "run", SubResource("AnimationNodeStateMachineTransition_7vq02"), "run", "skill", SubResource("AnimationNodeStateMachineTransition_ik3b8"), "run", "hurt", SubResource("AnimationNodeStateMachineTransition_xmabl"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_x675e"), "run", "idle", SubResource("AnimationNodeStateMachineTransition_ryph6"), "skill", "run", SubResource("AnimationNodeStateMachineTransition_yskkj"), "skill", "idle", SubResource("AnimationNodeStateMachineTransition_n7opg"), "idle", "skill", SubResource("AnimationNodeStateMachineTransition_vb4h4"), "skill", "hurt", SubResource("AnimationNodeStateMachineTransition_skill_hurt"), "hurt", "run", SubResource("AnimationNodeStateMachineTransition_tcojq"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_mdpwa"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_2cu3g"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_8rwa6")]
 graph_offset = Vector2(137.70007, -102.35988)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_oyq2l"]
+size = Vector2(123, 94)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_nxxi7"]
 size = Vector2(144, 50.5)
 
@@ -246,8 +250,9 @@ script = ExtResource("1_t55mx")
 texture = ExtResource("1_nxxi7")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=57675704]
-position = Vector2(-0.5, 8)
-shape = SubResource("RectangleShape2D_oyq2l")
+position = Vector2(0, 9)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_ddsyl")
 
 [node name="Earthquake" parent="." unique_id=61480513 instance=ExtResource("3_m1geu")]
 position = Vector2(-152, 48)

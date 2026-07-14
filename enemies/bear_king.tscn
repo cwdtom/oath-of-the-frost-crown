@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://c8nsprf4gs8xm" path="res://assets/enemies/bear_king/dead/west/frame_007.png" id="10_sdx70"]
 [ext_resource type="Texture2D" uid="uid://b2w87ftw7mxj7" path="res://assets/enemies/bear_king/dead/west/frame_008.png" id="11_lktgv"]
 [ext_resource type="Texture2D" uid="uid://duc7q5qmkmhfq" path="res://assets/enemies/bear_king/idle/west/frame_000.png" id="12_vtdc8"]
+[ext_resource type="AudioStream" uid="uid://wj86ujsocyu6" path="res://assets/enemies/bear_king/sounds/howl.wav" id="13_0ppn4"]
 [ext_resource type="Texture2D" uid="uid://by2rj0yx3fjxr" path="res://assets/enemies/bear_king/idle/west/frame_001.png" id="13_ihdoq"]
 [ext_resource type="Texture2D" uid="uid://cnvu35lln6j0s" path="res://assets/enemies/bear_king/idle/west/frame_002.png" id="14_sqkgg"]
 [ext_resource type="Texture2D" uid="uid://43d1m0e2hesl" path="res://assets/enemies/bear_king/idle/west/frame_003.png" id="15_vgeb3"]
@@ -39,9 +40,11 @@
 [ext_resource type="Texture2D" uid="uid://bv22066wpuh3s" path="res://assets/enemies/bear_king/skill/west/frame_006.png" id="36_f6sg0"]
 [ext_resource type="Texture2D" uid="uid://c55o0wt2ulx7j" path="res://assets/enemies/bear_king/skill/west/frame_007.png" id="37_fgesi"]
 [ext_resource type="Texture2D" uid="uid://c37kaiopcpkyj" path="res://assets/enemies/bear_king/skill/west/frame_008.png" id="38_30qby"]
+[ext_resource type="PackedScene" uid="uid://ct14ct4xg2b04" path="res://enemies/health_bar.tscn" id="41_sdx70"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_oyq2l"]
-size = Vector2(123, 94)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_m1geu"]
+radius = 47.333336
+height = 117.333336
 
 [sub_resource type="Animation" id="Animation_qnsdf"]
 length = 0.001
@@ -84,10 +87,25 @@ tracks/0/keys = {
 "update": 0,
 "values": [ExtResource("3_71603"), ExtResource("4_7tck2"), ExtResource("5_qm3xf"), ExtResource("6_ncury"), ExtResource("7_i8v2a"), ExtResource("8_oeayu"), ExtResource("9_0ppn4"), ExtResource("10_sdx70"), ExtResource("11_lktgv")]
 }
+tracks/1/type = "audio"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AudioStreamPlayer2D")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("13_0ppn4")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/1/use_blend = true
 
 [sub_resource type="Animation" id="Animation_ho7iy"]
 resource_name = "hurt"
-length = 0.39999999999999997
+length = 0.4
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -103,7 +121,7 @@ tracks/0/keys = {
 
 [sub_resource type="Animation" id="Animation_rhk7a"]
 resource_name = "idle"
-length = 1.3499999999999999
+length = 1.35
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -223,6 +241,9 @@ states/skill/position = Vector2(484.79504, 238.62761)
 transitions = ["idle", "run", SubResource("AnimationNodeStateMachineTransition_7vq02"), "run", "skill", SubResource("AnimationNodeStateMachineTransition_ik3b8"), "run", "hurt", SubResource("AnimationNodeStateMachineTransition_xmabl"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_x675e"), "run", "idle", SubResource("AnimationNodeStateMachineTransition_ryph6"), "skill", "run", SubResource("AnimationNodeStateMachineTransition_yskkj"), "skill", "idle", SubResource("AnimationNodeStateMachineTransition_n7opg"), "idle", "skill", SubResource("AnimationNodeStateMachineTransition_vb4h4"), "skill", "hurt", SubResource("AnimationNodeStateMachineTransition_skill_hurt"), "hurt", "run", SubResource("AnimationNodeStateMachineTransition_tcojq"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_mdpwa"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_2cu3g"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_8rwa6")]
 graph_offset = Vector2(137.70007, -102.35988)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_oyq2l"]
+size = Vector2(123, 94)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_nxxi7"]
 size = Vector2(144, 50.5)
 
@@ -236,11 +257,15 @@ script = ExtResource("1_43ph8")
 texture = ExtResource("1_i8v2a")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=57675704]
-position = Vector2(-0.5, 8)
-shape = SubResource("RectangleShape2D_oyq2l")
+position = Vector2(4.1448327e-14, 8)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_m1geu")
 
 [node name="Earthquake" parent="." unique_id=61480513 instance=ExtResource("3_0ppn4")]
 position = Vector2(-152, 48)
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=1110983063]
+scale = Vector2(0.6666667, 0.6666667)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=241773762]
 libraries/ = SubResource("AnimationLibrary_ml1my")
@@ -249,6 +274,10 @@ autoplay = &"idle"
 [node name="AnimationTree" type="AnimationTree" parent="." unique_id=193572205]
 tree_root = SubResource("AnimationNodeStateMachine_1n5kv")
 anim_player = NodePath("../AnimationPlayer")
+
+[node name="HealthBar" parent="." unique_id=271847535 instance=ExtResource("41_sdx70")]
+position = Vector2(-58.66667, -104)
+scale = Vector2(0.1, 0.1)
 
 [node name="HurtBox" type="Area2D" parent="." unique_id=1990732095]
 collision_layer = 4

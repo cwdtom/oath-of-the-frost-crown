@@ -9,7 +9,7 @@
 [node name="TextureProgressBar" type="TextureProgressBar" parent="." unique_id=981362031]
 offset_right = 40.0
 offset_bottom = 40.0
-fill_mode = 1
+fill_mode = 0
 texture_under = ExtResource("1_olp7g")
 texture_over = ExtResource("2_q54p0")
 texture_progress = ExtResource("3_rnqj2")
