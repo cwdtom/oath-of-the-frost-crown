@@ -7,8 +7,6 @@ const SKILL_SPEED := 400.0
 const PLAYER_COLLISION_LAYER := 1 << 1
 const WOLF_WALL_CHECK_DISTANCE := 56.0
 
-var _skill_distance_left := 0.0
-
 
 func _get_initial_move_direction() -> float:
 	return 1.0
@@ -26,18 +24,16 @@ func _get_run_animation() -> StringName:
 	return &"running"
 
 
+func _get_moving_skill_distance() -> float:
+	return SKILL_DISTANCE
+
+
+func _get_moving_skill_speed() -> float:
+	return SKILL_SPEED
+
+
 func _get_wall_check_distance() -> float:
 	return WOLF_WALL_CHECK_DISTANCE
-
-
-func _start_species_skill() -> void:
-	_skill_distance_left = SKILL_DISTANCE
-
-
-func _update_species_skill(delta: float) -> void:
-	var travel_distance := minf(SKILL_SPEED * delta, _skill_distance_left)
-	velocity.x = move_direction * travel_distance / delta
-	_skill_distance_left -= travel_distance
 
 
 func _handle_species_skill_collisions() -> void:
@@ -55,15 +51,5 @@ func _handle_species_skill_collisions() -> void:
 		body.hurt(-collision.get_normal())
 
 
-func _is_species_skill_complete() -> bool:
-	return _skill_distance_left <= 0.0
-
-
 func _blocks_weapon_damage_during_skill() -> bool:
 	return true
-
-
-func finish_skill() -> void:
-	velocity.x = 0.0
-	start_x = global_position.x
-	super()

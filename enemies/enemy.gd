@@ -25,6 +25,7 @@ var move_direction := 0.0
 var idle_time_left := 0.0
 var skill_return_state: int = IDLE
 var skill_detect_offset_x := 0.0
+var _moving_skill_distance_left := 0.0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -113,6 +114,14 @@ func _get_skill_animation() -> StringName:
 	return SKILL_ANIMATION
 
 
+func _get_moving_skill_distance() -> float:
+	return 0.0
+
+
+func _get_moving_skill_speed() -> float:
+	return 0.0
+
+
 func _get_wall_check_distance() -> float:
 	return WALL_CHECK_DISTANCE
 
@@ -164,13 +173,26 @@ func _stop_species_skill_presentation() -> void:
 
 
 func _start_species_skill() -> void:
+	var moving_distance := _get_moving_skill_distance()
+	if moving_distance > 0.0:
+		_moving_skill_distance_left = moving_distance
+		return
+
 	await get_tree().create_timer(_get_animation_length(SKILL_ANIMATION)).timeout
 	if state == SKILL:
 		finish_skill()
 
 
-func _update_species_skill(_delta: float) -> void:
-	pass
+func _update_species_skill(delta: float) -> void:
+	if _moving_skill_distance_left <= 0.0:
+		return
+
+	var travel_distance := minf(
+		_get_moving_skill_speed() * delta,
+		_moving_skill_distance_left
+	)
+	velocity.x = move_direction * travel_distance / delta
+	_moving_skill_distance_left -= travel_distance
 
 
 func _handle_species_skill_collisions() -> void:
@@ -178,7 +200,7 @@ func _handle_species_skill_collisions() -> void:
 
 
 func _is_species_skill_complete() -> bool:
-	return false
+	return _get_moving_skill_distance() > 0.0 and _moving_skill_distance_left <= 0.0
 
 
 func _blocks_weapon_damage_during_skill() -> bool:
@@ -294,6 +316,9 @@ func start_skill() -> void:
 
 
 func finish_skill() -> void:
+	if _get_moving_skill_distance() > 0.0:
+		velocity.x = 0.0
+		start_x = global_position.x
 	change_state(skill_return_state)
 
 
