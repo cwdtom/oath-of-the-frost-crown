@@ -18,7 +18,7 @@ const WALL_CHECK_Y_OFFSETS := [-24.0, 24.0]
 enum {IDLE, RUN, HURT, DEAD, SKILL}
 
 var state := -1
-var health := 0
+var _health := 0
 var is_hurting := false
 var start_x := 0.0
 var move_direction := -1.0
@@ -49,7 +49,11 @@ func change_state(new_state: int) -> void:
 	if state == new_state:
 		return
 
+	var previous_state := state
 	state = new_state
+	if previous_state == SKILL and state != SKILL:
+		_stop_species_skill_presentation()
+
 	match state:
 		IDLE:
 			idle_time_left = idle_duration
@@ -79,16 +83,8 @@ func change_state(new_state: int) -> void:
 
 
 func face_move_direction() -> void:
-	sprite.flip_h = _should_flip_sprite()
+	sprite.flip_h = move_direction > 0.0
 	skill_detect_collision_shape.position.x = skill_detect_offset_x * move_direction
-
-
-func _should_flip_sprite() -> bool:
-	return _should_flip_for_direction(move_direction)
-
-
-func _should_flip_for_direction(direction: float) -> bool:
-	return direction > 0.0
 
 
 func _is_playing_animation(animation_name: StringName) -> bool:
@@ -103,12 +99,11 @@ func _get_animation_position(animation_name: StringName) -> float:
 
 
 func _get_animation_length(animation_name: StringName) -> float:
-	var animation := animation_player.get_animation(animation_name)
-	return animation.length if animation != null else 0.0
+	return animation_player.get_animation(animation_name).length
 
 
 func _is_facing_right() -> bool:
-	return sprite.flip_h == _should_flip_for_direction(1.0)
+	return sprite.flip_h
 
 
 func _play_skill_presentations() -> void:
@@ -120,6 +115,10 @@ func _play_skill_presentations() -> void:
 
 
 func _play_species_skill_presentation() -> void:
+	pass
+
+
+func _stop_species_skill_presentation() -> void:
 	pass
 
 
@@ -254,8 +253,8 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 	if is_hurting or state == DEAD:
 		return
 
-	health -= 1
-	if health <= 0:
+	_health -= 1
+	if _health <= 0:
 		die()
 		return
 

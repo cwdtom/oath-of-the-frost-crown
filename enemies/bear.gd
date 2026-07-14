@@ -3,16 +3,27 @@ extends "res://enemies/enemy.gd"
 
 const MAX_HEALTH := 4
 const EARTHQUAKE_CAST_ANIMATION := &"cast"
+const RESET_ANIMATION := &"RESET"
 
 @onready var earthquake_animation_player: AnimationPlayer = $Earthquake/AnimationPlayer
 
 
 func _init() -> void:
-	health = MAX_HEALTH
+	_health = MAX_HEALTH
 
 
 func _play_species_skill_presentation() -> void:
 	earthquake_animation_player.play(EARTHQUAKE_CAST_ANIMATION)
+
+
+func _stop_species_skill_presentation() -> void:
+	call_deferred("_reset_earthquake_presentation")
+
+
+func _reset_earthquake_presentation() -> void:
+	earthquake_animation_player.play(RESET_ANIMATION)
+	earthquake_animation_player.advance(0.0)
+	earthquake_animation_player.stop()
 
 
 func _is_playing_animation(animation_name: StringName) -> bool:

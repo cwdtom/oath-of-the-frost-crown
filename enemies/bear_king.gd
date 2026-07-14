@@ -9,13 +9,13 @@ const BEAR_KING_MAX_HEALTH := 15
 
 
 func _init() -> void:
-	health = BEAR_KING_MAX_HEALTH
+	_health = BEAR_KING_MAX_HEALTH
 
 
 func _ready() -> void:
 	super._ready()
 	health_bar.max_value = BEAR_KING_MAX_HEALTH
-	health_bar.value = health
+	health_bar.value = _health
 
 
 func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
@@ -27,7 +27,7 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 		face_move_direction()
 
 	super.hurt(knockback_direction)
-	health_bar.value = max(health, 0)
+	health_bar.value = max(_health, 0)
 
 
 func die() -> void:

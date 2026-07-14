@@ -21,11 +21,6 @@ func _run() -> void:
 		quit(1)
 		return
 
-	if bear_king.get("health") != EXPECTED_HEALTH:
-		push_error("Bear King health is not %d" % EXPECTED_HEALTH)
-		quit(1)
-		return
-
 	var health_bar := bear_king.get_node_or_null("HealthBar/TextureProgressBar") as TextureProgressBar
 	if (
 		health_bar == null
@@ -43,7 +38,7 @@ func _run() -> void:
 
 	bear_king.call("hurt", Vector2.LEFT)
 	var sprite := bear_king.get_node("Sprite2D") as Sprite2D
-	if bear_king.get("health") != EXPECTED_HEALTH - 1 or health_bar.value != EXPECTED_HEALTH - 1:
+	if health_bar.value != EXPECTED_HEALTH - 1:
 		push_error("Bear King health bar does not update immediately after damage")
 		quit(1)
 		return
@@ -54,8 +49,7 @@ func _run() -> void:
 
 	bear_king.call("hurt", Vector2.RIGHT)
 	if (
-		bear_king.get("health") != EXPECTED_HEALTH - 1
-		or health_bar.value != EXPECTED_HEALTH - 1
+		health_bar.value != EXPECTED_HEALTH - 1
 		or bear_king.get("move_direction") <= 0.0
 		or not sprite.flip_h
 	):

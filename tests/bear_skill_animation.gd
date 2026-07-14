@@ -90,13 +90,11 @@ func test_scaled_environment_wall_reversal() -> void:
 		{"scale": Vector2(1.5, 1.5), "idle_duration": 0.0, "patrol_range": 1000.0}
 	)
 
-	for _frame in 12:
-		await physics_frame
+	await physics_frames(12)
 	expect(bear.global_position.x > start_position.x, "Scaled Bear reverses away from an environment wall")
 	expect(is_facing_right(bear), "Scaled Bear faces away from the blocking wall")
 	var turned_x := bear.global_position.x
-	for _frame in 6:
-		await physics_frame
+	await physics_frames(6)
 	expect(bear.global_position.x > turned_x, "Bear keeps patrolling after its wall reversal")
 
 
@@ -115,8 +113,7 @@ func test_earthquake_activation_and_cooldown() -> void:
 	var hurt_events := [0]
 	player.hurt_taken.connect(func() -> void: hurt_events[0] += 1)
 
-	for _frame in 3:
-		await physics_frame
+	await physics_frames(3)
 	await create_timer(0.05).timeout
 	expect(is_playing(bear, SKILL_ANIMATION), "Gameplay detection starts Bear earthquake")
 	expect(is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Earthquake cast starts with Bear skill")
@@ -173,23 +170,25 @@ func test_earthquake_damage_interruption() -> void:
 		bear_position,
 		{"idle_duration": 10.0}
 	)
-	harness.add_body(bear_position + Vector2(-100.0, 30.0))
-	for _frame in 3:
-		await physics_frame
+	var player := harness.instantiate_actor(
+		PLAYER_SCENE,
+		bear_position + Vector2(-152.0, 42.5)
+	)
+	player.set_physics_process(false)
+	var hurt_events := [0]
+	player.hurt_taken.connect(func() -> void: hurt_events[0] += 1)
+	await physics_frames(3)
 	await create_timer(0.05).timeout
 	expect(is_playing(bear, SKILL_ANIMATION), "Bear starts earthquake for an entering gameplay body")
 
-	var weapon := harness.add_weapon(bear_position + Vector2(-20.0, 0.0))
-	for _frame in 3:
-		await physics_frame
+	var weapon := harness.add_weapon(bear_position)
+	await physics_frames(3)
 	await process_frame
 	expect(is_playing(bear, HURT_ANIMATION), "Accepted damage visibly interrupts earthquake")
-	expect(
-		is_equal_approx(bear.global_position.x, bear_position.x + 100.0),
-		"Accepted damage keeps Bear's knockback distance"
-	)
+	expect(not is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Hurt stops the earthquake cast")
 	harness.remove_actor(weapon)
-	await create_timer(0.4).timeout
+	await create_timer(0.65).timeout
+	expect(hurt_events[0] == 0, "Interrupted earthquake never reaches its damaging impact")
 	expect(not is_playing(bear, SKILL_ANIMATION), "Interrupted earthquake does not resume after hurt")
 
 
@@ -205,8 +204,12 @@ func test_hurt_immunity_and_death_cleanup() -> void:
 	expect(harness.enemy_has_body_collision(bear), "Living Bear has an active body collision")
 	expect(harness.enemy_has_hurt_collision(bear), "Living Bear has an active hurt collision")
 
-	await deliver_hit(bear)
+	await deliver_hit(bear, Vector2(-20.0, 0.0))
 	expect(is_playing(bear, HURT_ANIMATION), "Accepted damage starts Bear hurt presentation")
+	expect(
+		is_equal_approx(bear.global_position.x, bear_position.x + 100.0),
+		"Accepted damage keeps Bear's knockback distance"
+	)
 	await deliver_hit(bear)
 	await create_timer(0.4).timeout
 	await deliver_hit(bear)
@@ -215,43 +218,58 @@ func test_hurt_immunity_and_death_cleanup() -> void:
 	await create_timer(0.4).timeout
 	expect(bear.is_in_group("enemies"), "A hit during hurt immunity does not consume Bear health")
 
+	var death_skill_position := bear.global_position
+	var player := harness.instantiate_actor(
+		PLAYER_SCENE,
+		death_skill_position + Vector2(-152.0, 42.5)
+	)
+	player.set_physics_process(false)
+	var hurt_events := [0]
+	player.hurt_taken.connect(func() -> void: hurt_events[0] += 1)
+	await physics_frames(3)
+	await create_timer(0.05).timeout
+	expect(is_playing(bear, SKILL_ANIMATION), "Bear can enter earthquake before a lethal hit")
+
 	await deliver_hit(bear)
 	await process_frame
 	await physics_frame
 	expect(not bear.is_in_group("enemies"), "Death immediately removes Bear as an active Enemy")
 	expect(is_playing(bear, DEAD_ANIMATION), "Death immediately starts Bear death presentation")
+	expect(not is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Death stops the earthquake cast")
 	expect(not harness.enemy_has_body_collision(bear), "Death immediately disables Bear body collision")
 	expect(not harness.enemy_has_hurt_collision(bear), "Death immediately disables Bear hurt collision")
 
-	await create_timer(0.85).timeout
+	await create_timer(0.75).timeout
 	expect(is_instance_valid(bear), "Bear remains in the scene during its death presentation")
+	expect(hurt_events[0] == 0, "A dead Bear cannot produce a delayed earthquake impact")
 	expect(
-		animation_position(bear, DEAD_ANIMATION) >= 0.8,
+		animation_position(bear, DEAD_ANIMATION) >= 0.7,
 		"Bear death presentation reaches its final frames"
 	)
-	await create_timer(0.2).timeout
+	await create_timer(0.3).timeout
 	expect(not is_instance_valid(bear), "Bear leaves the scene after its death presentation")
 
 
-func deliver_hit(bear: CharacterBody2D) -> void:
-	var weapon := harness.add_weapon(bear.global_position)
-	for _frame in 3:
-		await physics_frame
+func deliver_hit(bear: CharacterBody2D, offset := Vector2.ZERO) -> void:
+	var weapon := harness.add_weapon(bear.global_position + offset)
+	await physics_frames(3)
 	await process_frame
 	harness.remove_actor(weapon)
-	await physics_frame
-	await physics_frame
+	await physics_frames(2)
 	await process_frame
 
 
 func reenter_skill_detection(actor: CharacterBody2D, detection_position: Vector2) -> void:
 	actor.position = detection_position + Vector2(400.0, 0.0)
-	await physics_frame
-	await physics_frame
+	await physics_frames(2)
 	actor.position = detection_position
-	await physics_frame
-	await physics_frame
+	await physics_frames(2)
 	await create_timer(0.05).timeout
+
+
+func physics_frames(count: int) -> void:
+	for _frame in count:
+		await physics_frame
 
 
 func is_playing(enemy: CharacterBody2D, animation_name: StringName) -> bool:
