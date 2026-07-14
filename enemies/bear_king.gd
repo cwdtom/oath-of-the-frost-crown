@@ -1,6 +1,8 @@
 extends "res://enemies/bear.gd"
 
 
+signal died
+
 const BEAR_KING_MAX_HEALTH := 15
 
 @onready var health_bar: TextureProgressBar = $HealthBar/TextureProgressBar
@@ -26,3 +28,11 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 
 	super.hurt(knockback_direction)
 	health_bar.value = max(health, 0)
+
+
+func die() -> void:
+	change_state(DEAD)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	died.emit()
+	await get_tree().create_timer(animation_player.get_animation(DEAD_ANIMATION).length).timeout
+	queue_free()

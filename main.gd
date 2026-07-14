@@ -6,6 +6,7 @@ const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
 const STORY_SCENE := preload("res://ui/story.tscn")
 const LEVEL_01_VICTORY_STORY := "res://levels/level_01_a_story.json"
+const LEVEL_02_VICTORY_STORY := "res://levels/level_02_a_story.json"
 const RESULT_DEAD := "DEAD"
 
 var level: Node2D = null
@@ -48,6 +49,10 @@ func connect_level_events() -> void:
 	var wolf_king := level.get_node_or_null("Enemies/WolfKing")
 	if wolf_king != null:
 		wolf_king.connect("died", _on_wolf_king_died)
+
+	var bear_king := level.get_node_or_null("Enemies/BearKing")
+	if bear_king != null:
+		bear_king.connect("died", _on_bear_king_died)
 
 
 func set_player_controls_enabled(enabled: bool) -> void:
@@ -145,6 +150,14 @@ func _on_player_died() -> void:
 
 
 func _on_wolf_king_died() -> void:
+	play_victory_story(LEVEL_01_VICTORY_STORY, _on_victory_story_finished)
+
+
+func _on_bear_king_died() -> void:
+	play_victory_story(LEVEL_02_VICTORY_STORY, _on_level_02_victory_story_finished)
+
+
+func play_victory_story(story_path: String, finished_callback: Callable) -> void:
 	if victory_story_active:
 		return
 
@@ -153,9 +166,9 @@ func _on_wolf_king_died() -> void:
 	set_player_controls_enabled(false)
 	var story := STORY_SCENE.instantiate() as CanvasLayer
 	story.name = "VictoryStory"
-	story.set("story_path", LEVEL_01_VICTORY_STORY)
+	story.set("story_path", story_path)
 	story.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
-	story.connect("story_finished", _on_victory_story_finished.bind(story), CONNECT_ONE_SHOT)
+	story.connect("story_finished", finished_callback.bind(story), CONNECT_ONE_SHOT)
 	level.add_child(story)
 	get_tree().paused = true
 
@@ -165,6 +178,13 @@ func _on_victory_story_finished(story: CanvasLayer) -> void:
 	story.queue_free()
 	victory_story_active = false
 	start_level_02()
+
+
+func _on_level_02_victory_story_finished(story: CanvasLayer) -> void:
+	get_tree().paused = false
+	story.queue_free()
+	victory_story_active = false
+	set_player_controls_enabled(true)
 
 
 func _on_retry_pressed() -> void:

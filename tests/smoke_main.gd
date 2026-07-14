@@ -6,6 +6,7 @@ const LEVEL_00_STORY := "res://levels/level_00_story.json"
 const LEVEL_01_STORY := "res://levels/level_01_story.json"
 const LEVEL_01_VICTORY_STORY := "res://levels/level_01_a_story.json"
 const LEVEL_02_STORY := "res://levels/level_02_story.json"
+const LEVEL_02_VICTORY_STORY := "res://levels/level_02_a_story.json"
 const MUSIC_RESUME_POSITION := 5.0
 
 var failures: Array[String] = []
@@ -283,6 +284,50 @@ func _run() -> void:
 	if level_02_player == null:
 		finish()
 		return
+
+	var bear_king := level_02.get_node_or_null("Enemies/BearKing")
+	expect(bear_king != null, "Level02 contains BearKing")
+	if bear_king == null:
+		finish()
+		return
+
+	bear_king.call("die")
+	await process_frame
+
+	var level_02_victory_story := level_02.get_node_or_null("VictoryStory") as CanvasLayer
+	expect(level_02_victory_story != null, "BearKing death starts the Level02 victory Story")
+	expect(
+		bear_king.process_mode == Node.PROCESS_MODE_ALWAYS,
+		"BearKing death animation continues during the Level02 victory Story"
+	)
+	expect(paused, "Level02 victory Story pauses gameplay")
+	expect(
+		level_02_player.get("controls_enabled") == false,
+		"Level02 victory Story disables player controls"
+	)
+	if level_02_victory_story == null:
+		finish()
+		return
+
+	expect(
+		level_02_victory_story.get("story_path") == LEVEL_02_VICTORY_STORY,
+		"Level02 victory Story uses its configured story JSON"
+	)
+	var level_02_victory_story_nodes: Array = level_02_victory_story.get("story_nodes")
+	expect(not level_02_victory_story_nodes.is_empty(), "Level02 victory Story JSON is loaded")
+	for _story_node in level_02_victory_story_nodes:
+		level_02_victory_story.call("show_next_node")
+
+	await process_frame
+	expect(not paused, "Level02 victory Story completion resumes gameplay")
+	expect(
+		level_02.get_node_or_null("VictoryStory") == null,
+		"Finished Level02 victory Story is removed"
+	)
+	expect(
+		level_02_player.get("controls_enabled") == true,
+		"Level02 victory Story completion restores player controls"
+	)
 
 	level_02_player.set("health", 0)
 	level_02_player.emit_signal("died")
