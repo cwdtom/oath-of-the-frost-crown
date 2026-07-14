@@ -22,6 +22,7 @@ func _run() -> void:
 
 	await test_earthquake_activation_and_cooldown()
 	await test_earthquake_damage_interruption()
+	await test_death_cancels_earthquake()
 
 	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
 	harness.cleanup()
@@ -91,6 +92,7 @@ func test_earthquake_activation_and_cooldown() -> void:
 	await create_timer(0.55).timeout
 	await harness.reenter_skill_detection(player, bear_position + Vector2(-152.0, 42.5))
 	expect(harness.is_playing(bear, SKILL_ANIMATION), "Bear can use earthquake after cooldown expires")
+	await create_timer(1.0).timeout
 
 
 func test_earthquake_damage_interruption() -> void:
@@ -118,6 +120,34 @@ func test_earthquake_damage_interruption() -> void:
 	await create_timer(0.65).timeout
 	expect(hurt_event_count[0] == 0, "Interrupted earthquake never reaches its damaging impact")
 	expect(not harness.is_playing(bear, SKILL_ANIMATION), "Interrupted earthquake does not resume after hurt")
+
+
+func test_death_cancels_earthquake() -> void:
+	var bear_position := Vector2(7000.0, 0.0)
+	var bear := harness.instantiate_enemy(
+		BEAR_SCENE,
+		bear_position,
+		{"idle_duration": 10.0}
+	)
+	for accepted_hit in 3:
+		await harness.deliver_hit(bear)
+		if accepted_hit < 2:
+			await create_timer(0.4).timeout
+
+	await create_timer(0.4).timeout
+	var hurt_event_count: Array[int] = [0]
+	harness.instantiate_passive_player(
+		bear.global_position + Vector2(-152.0, 42.5),
+		func() -> void: hurt_event_count[0] += 1
+	)
+	await harness.physics_frames(3)
+	await create_timer(0.05).timeout
+	expect(harness.is_playing(bear, SKILL_ANIMATION), "Bear starts earthquake before lethal damage")
+
+	await harness.deliver_hit(bear)
+	expect(not harness.is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Death stops the earthquake cast")
+	await create_timer(0.65).timeout
+	expect(hurt_event_count[0] == 0, "Death prevents the pending earthquake impact")
 
 
 func expect(condition: bool, message: String) -> void:

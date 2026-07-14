@@ -85,12 +85,13 @@ func enemy_has_hurt_collision(enemy: CharacterBody2D) -> bool:
 
 
 func enemy_sprite_is_flipped(enemy: CharacterBody2D) -> bool:
-	for child in enemy.get_children():
-		var sprite := child as Sprite2D
-		if sprite != null:
-			return sprite.flip_h
+	var sprite := _enemy_sprite(enemy)
+	return sprite != null and sprite.flip_h
 
-	return false
+
+func enemy_sprite_texture(enemy: CharacterBody2D) -> Texture2D:
+	var sprite := _enemy_sprite(enemy)
+	return sprite.texture if sprite != null else null
 
 
 func enemy_health_bar(enemy: CharacterBody2D) -> TextureProgressBar:
@@ -151,6 +152,15 @@ func _create_collision_shape(size: Vector2) -> CollisionShape2D:
 	shape.size = size
 	collision_shape.shape = shape
 	return collision_shape
+
+
+func _enemy_sprite(enemy: CharacterBody2D) -> Sprite2D:
+	for child in enemy.get_children():
+		var sprite := child as Sprite2D
+		if sprite != null:
+			return sprite
+
+	return null
 
 
 func _enemy_has_collision(

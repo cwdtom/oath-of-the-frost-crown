@@ -303,6 +303,7 @@ func test_hurt_immunity_death_notification_and_cleanup() -> void:
 			not harness.enemy_has_hurt_collision(enemy),
 			"%s death immediately disables hurt collision" % example.name
 		)
+		var death_start_texture := harness.enemy_sprite_texture(enemy)
 		if example.notifies_death:
 			expect(
 				death_outcome_count[0] == 1,
@@ -313,6 +314,10 @@ func test_hurt_immunity_death_notification_and_cleanup() -> void:
 		expect(
 			is_instance_valid(enemy),
 			"%s remains during its death presentation" % example.name
+		)
+		expect(
+			harness.enemy_sprite_texture(enemy) != death_start_texture,
+			"%s visibly advances its death presentation" % example.name
 		)
 		await create_timer(example.death_duration * 0.55).timeout
 		expect(
