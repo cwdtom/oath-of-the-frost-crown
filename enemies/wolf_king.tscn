@@ -233,4 +233,3 @@ anim_player = NodePath("../AnimationPlayer")
 
 [connection signal="area_entered" from="HurtBox" to="." method="_on_hurt_box_area_entered"]
 [connection signal="body_entered" from="SkillDetect" to="." method="_on_skill_detect_body_entered"]
-[connection signal="body_entered" from="Thunder" to="." method="_on_thunder_body_entered"]

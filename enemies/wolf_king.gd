@@ -17,7 +17,6 @@ const THUNDER_CAST_MIN_DISTANCE = 400.0
 const THUNDER_CAST_MAX_DISTANCE = 750.0
 const THUNDER_GROUND_RAY_UP_DISTANCE = 800.0
 const THUNDER_GROUND_RAY_DOWN_DISTANCE = 1400.0
-const THUNDER_IMPACT_TIME = 1.0
 const SKILL_DISTANCE = 300.0
 const SKILL_SPEED = 600.0
 const ENVIRONMENT_COLLISION_MASK = 1
@@ -37,8 +36,6 @@ var skill_return_state: int = IDLE
 var skill_detect_offset_x := 0.0
 var rng := RandomNumberGenerator.new()
 var player: Node2D = null
-var thunder_cast_id := 0
-var thunder_damaged_bodies: Array[Node2D] = []
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -237,29 +234,17 @@ func update_health_bar() -> void:
 func cast_thunder() -> void:
 	var thunder_x := global_position.x + get_thunder_x_offset()
 	var thunder_y := get_thunder_ground_y(thunder_x)
-	thunder_cast_id += 1
-	thunder_damaged_bodies.clear()
-	call_deferred("play_thunder_cast", thunder_x, thunder_y, thunder_cast_id)
+	call_deferred("play_thunder_cast", thunder_x, thunder_y)
 
 
-func play_thunder_cast(thunder_x: float, thunder_y: float, cast_id: int) -> void:
-	if state == DEAD or cast_id != thunder_cast_id:
+func play_thunder_cast(thunder_x: float, thunder_y: float) -> void:
+	if state == DEAD:
 		return
 
 	thunder.global_position = Vector2(thunder_x, thunder_y)
 	thunder_animation_player.stop()
 	thunder_animation_player.play(THUNDER_CAST_ANIMATION)
-	damage_thunder_overlaps_at_impact(cast_id)
-
-
-func damage_thunder_overlaps_at_impact(cast_id: int) -> void:
-	await get_tree().create_timer(THUNDER_IMPACT_TIME).timeout
-	await get_tree().physics_frame
-	if state == DEAD or cast_id != thunder_cast_id:
-		return
-
-	for body in thunder.get_overlapping_bodies():
-		damage_thunder_body(body)
+	thunder.start_cast()
 
 
 func get_thunder_ground_y(thunder_x: float) -> float:
@@ -315,25 +300,11 @@ func reset_thunder() -> void:
 
 
 func apply_thunder_reset() -> void:
+	thunder.cancel_cast()
 	thunder_animation_player.stop()
 	thunder_sprite.visible = false
 	thunder_collision_shape.set_deferred("disabled", true)
 	thunder_particles.emitting = false
-
-
-func _on_thunder_body_entered(body: Node2D) -> void:
-	damage_thunder_body(body)
-
-
-func damage_thunder_body(body: Node2D) -> void:
-	if state == DEAD or body == null or not is_instance_valid(body) or not body.has_method("hurt"):
-		return
-
-	if thunder_damaged_bodies.has(body):
-		return
-
-	thunder_damaged_bodies.append(body)
-	body.hurt(body.global_position - thunder.global_position)
 
 
 func hurt() -> void:
