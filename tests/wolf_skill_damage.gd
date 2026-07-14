@@ -133,7 +133,12 @@ func test_dash_distance_reentry_and_cooldown() -> void:
 	expect(wolf.global_position.x > start_position.x, "Gameplay detection starts Wolf dash")
 	expect(harness.is_playing(wolf, SKILL_ANIMATION), "Wolf dash starts its skill presentation")
 	player.position = start_position - Vector2(1000.0, 0.0)
-	await create_timer(0.15).timeout
+	var speed_sample_x := wolf.global_position.x
+	await harness.physics_frames(6)
+	expect(
+		absf(wolf.global_position.x - speed_sample_x - 40.0) <= 1.0,
+		"Wolf keeps its 400 pixel per second dash speed"
+	)
 	player.position = wolf.global_position + Vector2(350.0, 0.0)
 	await harness.physics_frames(2)
 	player.position = start_position - Vector2(1000.0, 0.0)
@@ -155,7 +160,7 @@ func test_dash_distance_reentry_and_cooldown() -> void:
 		is_equal_approx(wolf.global_position.x, dash_end_x),
 		"Wolf cannot restart its dash during cooldown"
 	)
-	await create_timer(3.55).timeout
+	await create_timer(3.4).timeout
 	await harness.reenter_skill_detection(player, wolf.global_position + Vector2(100.0, 0.0))
 	await create_timer(0.1).timeout
 	expect(
