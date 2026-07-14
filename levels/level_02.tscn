@@ -383,7 +383,7 @@ tile_map_data = PackedByteArray("AAAAABMAAQAUAAIAAAABABMAAQAUAAIAAAACABMAAQAUAAI
 tile_set = SubResource("TileSet_8yqd8")
 
 [node name="Player" parent="." index="5" unique_id=1483695229 instance=ExtResource("2_g685p")]
-position = Vector2(3271, 354)
+position = Vector2(128, 518)
 
 [node name="Enemies" type="Node2D" parent="." index="6" unique_id=1363234322]
 
@@ -404,4 +404,5 @@ position = Vector2(3061, 499)
 position = Vector2(4234, 534)
 
 [node name="Story" parent="." index="7" unique_id=1214048430 instance=ExtResource("14_pdr83")]
+visible = false
 story_path = "res://levels/level_02_story.json"

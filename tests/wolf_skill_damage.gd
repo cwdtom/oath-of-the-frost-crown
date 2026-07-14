@@ -1,10 +1,13 @@
 extends SceneTree
 
 
-const PLAYER_SCENE := preload("res://player/player.tscn")
 const WOLF_SCENE := preload("res://enemies/wolf.tscn")
+const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
+const DASH_DISTANCE := 300.0
+const SKILL_ANIMATION := &"skill"
 
 var failures: Array[String] = []
+var harness: EnemySceneHarness
 
 
 func _init() -> void:
@@ -14,65 +17,117 @@ func _init() -> void:
 func _run() -> void:
 	var original_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
+	harness = EnemyHarness.new(self)
 
-	var world := Node2D.new()
-	root.add_child(world)
-
-	var player := PLAYER_SCENE.instantiate() as CharacterBody2D
-	player.position = Vector2(100.0, 0.0)
-	world.add_child(player)
-	player.set_physics_process(false)
-
-	var wolf := WOLF_SCENE.instantiate() as CharacterBody2D
-	wolf.position = Vector2.ZERO
-	world.add_child(wolf)
-	wolf.get_node("SkillDetect").monitoring = false
-	wolf.call("start_skill")
-	var skill_state: int = wolf.get("state")
-
-	await physics_frame
-
-	var wolf_health_before: int = wolf.get("health")
-	var weapon_area := player.get_node("VisualRoot/WeaponMount/Area2D") as Area2D
-	wolf.call("_on_hurt_box_area_entered", weapon_area)
-	expect(wolf.get("health") == wolf_health_before, "Dashing wolf ignores sword damage")
-
-	var player_health_before: int = player.get("health")
-	var wolf_collided_with_player := false
-	for _frame in 60:
-		await physics_frame
-		for collision_index in wolf.get_slide_collision_count():
-			var collision := wolf.get_slide_collision(collision_index)
-			if collision.get_collider() == player:
-				wolf_collided_with_player = true
-		if wolf.get("state") != skill_state:
-			await physics_frame
-			break
-
-	expect(wolf_collided_with_player, "Dashing wolf physically collides with the player")
-	expect(wolf.get("state") != skill_state, "Wolf completes the dash before damage is checked")
-	expect(
-		player.get("health") == player_health_before - 1,
-		"Dashing wolf damages the player on collision"
-	)
-	expect(player.position.x > 100.0, "Dashing wolf knocks the player away from the collision")
+	await test_dash_distance_reentry_and_cooldown()
+	await test_dash_collision_and_weapon_immunity()
 
 	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
-	world.queue_free()
+	harness.cleanup()
 	await process_frame
+	await process_frame
+	await create_timer(0.1).timeout
 	finish()
 
 
-func expect(condition: bool, message: String) -> void:
-	if condition:
-		return
+func test_dash_distance_reentry_and_cooldown() -> void:
+	var start_position := Vector2(3500.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		start_position,
+		{"idle_duration": 10.0}
+	)
+	var player := harness.instantiate_passive_player(
+		start_position + Vector2(100.0, 0.0),
+		func() -> void: pass
+	)
 
-	failures.append(message)
+	await harness.physics_frames(3)
+	expect(wolf.global_position.x > start_position.x, "Gameplay detection starts Wolf dash")
+	expect(harness.is_playing(wolf, SKILL_ANIMATION), "Wolf dash starts its skill presentation")
+	player.position = start_position - Vector2(1000.0, 0.0)
+	var speed_sample_x := wolf.global_position.x
+	await harness.physics_frames(6)
+	expect(
+		absf(wolf.global_position.x - speed_sample_x - 40.0) <= 1.0,
+		"Wolf keeps its 400 pixel per second dash speed"
+	)
+	player.position = wolf.global_position + Vector2(350.0, 0.0)
+	await harness.physics_frames(2)
+	player.position = start_position - Vector2(1000.0, 0.0)
+	await create_timer(0.65).timeout
+	expect(
+		is_equal_approx(wolf.global_position.x, start_position.x + DASH_DISTANCE),
+		"Repeated detection cannot restart Wolf's configured 300 pixel dash"
+	)
+	var dash_end_x := wolf.global_position.x
+	await create_timer(0.15).timeout
+	expect(
+		is_equal_approx(wolf.global_position.x, dash_end_x),
+		"Wolf returns to its prior idle behavior after the dash"
+	)
+
+	await harness.reenter_skill_detection(player, wolf.global_position + Vector2(100.0, 0.0))
+	await create_timer(0.15).timeout
+	expect(
+		is_equal_approx(wolf.global_position.x, dash_end_x),
+		"Wolf cannot restart its dash during cooldown"
+	)
+	await create_timer(3.4).timeout
+	await harness.reenter_skill_detection(player, wolf.global_position + Vector2(100.0, 0.0))
+	await create_timer(0.1).timeout
+	expect(
+		is_equal_approx(wolf.global_position.x, dash_end_x),
+		"Wolf keeps the full five second dash cooldown"
+	)
+	await create_timer(0.4).timeout
+	await harness.reenter_skill_detection(player, wolf.global_position + Vector2(100.0, 0.0))
+	await harness.physics_frames(3)
+	expect(wolf.global_position.x > dash_end_x, "Wolf can dash again after cooldown expires")
+	player.position -= Vector2(1000.0, 0.0)
+
+
+func test_dash_collision_and_weapon_immunity() -> void:
+	var wolf_position := Vector2(5000.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		wolf_position,
+		{"idle_duration": 10.0}
+	)
+	var hurt_event_count: Array[int] = [0]
+	var player_start := wolf_position + Vector2(300.0, 0.0)
+	var player := harness.instantiate_passive_player(
+		player_start,
+		func() -> void: hurt_event_count[0] += 1
+	)
+	await harness.physics_frames(3)
+
+	var early_weapon := harness.add_weapon(wolf.global_position)
+	await harness.physics_frames(3)
+	harness.remove_actor(early_weapon)
+	await create_timer(0.5).timeout
+	var late_weapon := harness.add_weapon(wolf.global_position)
+	await harness.physics_frames(3)
+	harness.remove_actor(late_weapon)
+	await create_timer(0.25).timeout
+
+	expect(hurt_event_count[0] == 1, "One Wolf dash collision damages Player once")
+	expect(player.global_position.x > player_start.x, "Wolf dash knocks Player away from collision")
+	await harness.deliver_hit(wolf, Vector2(-20.0, 0.0))
+	expect(
+		wolf.is_in_group("enemies"),
+		"Wolf dash weapon immunity preserves both hits until damage is accepted afterward"
+	)
+
+
+func expect(condition: bool, message: String) -> void:
+	if not condition:
+		failures.append(message)
 
 
 func finish() -> void:
 	if failures.is_empty():
-		print("Wolf skill damage test passed")
+		print("Wolf dash test passed")
 		quit(0)
 		return
 

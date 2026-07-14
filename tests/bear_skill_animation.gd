@@ -2,11 +2,13 @@ extends SceneTree
 
 
 const BEAR_SCENE := preload("res://enemies/bear.tscn")
-const PLAYER_SCENE := preload("res://player/player.tscn")
+const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
+const HURT_ANIMATION := &"hurt"
 const SKILL_ANIMATION := &"skill"
 const EARTHQUAKE_CAST_ANIMATION := &"cast"
 
 var failures: Array[String] = []
+var harness: EnemySceneHarness
 
 
 func _init() -> void:
@@ -16,244 +18,146 @@ func _init() -> void:
 func _run() -> void:
 	var original_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
+	harness = EnemyHarness.new(self)
 
-	var world := Node2D.new()
-	root.add_child(world)
+	await test_earthquake_activation_and_cooldown()
+	await test_earthquake_damage_interruption()
+	await test_death_cancels_earthquake()
 
-	var bear := BEAR_SCENE.instantiate() as CharacterBody2D
-	world.add_child(bear)
-
-	var animation_player := bear.get_node("AnimationPlayer") as AnimationPlayer
-	var animation_tree := bear.get_node("AnimationTree") as AnimationTree
-	var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
-	var earthquake_animation_player := bear.get_node("Earthquake/AnimationPlayer") as AnimationPlayer
-	var skill_cooldown := bear.get_node("SkillDetect/Cooldown") as Timer
-	var start_x := bear.global_position.x
-	var return_state: int = bear.get("state")
-
-	bear.call("_on_skill_detect_body_entered", bear)
-	await create_timer(0.05).timeout
-	var skill_state: int = bear.get("state")
-	expect(skill_state != return_state, "Bear enters the skill state when a body is detected")
-	expect(
-		animation_state.get_current_node() == SKILL_ANIMATION,
-		"Bear plays the skill animation when a body is detected"
-	)
-	expect(
-		earthquake_animation_player.current_animation == EARTHQUAKE_CAST_ANIMATION,
-		"Bear skill starts the earthquake cast animation"
-	)
-	expect(
-		absf(
-			earthquake_animation_player.current_animation_position
-			- animation_state.get_current_play_position()
-		) < 0.1,
-		"Bear skill and earthquake cast animations start in sync"
-	)
-	expect(bear.velocity.x == 0.0, "Bear skill does not add dash velocity")
-
-	await create_timer(0.2).timeout
-	var play_position_before_repeat := animation_state.get_current_play_position()
-	var earthquake_position_before_repeat := -1.0
-	if earthquake_animation_player.current_animation == EARTHQUAKE_CAST_ANIMATION:
-		earthquake_position_before_repeat = earthquake_animation_player.current_animation_position
-	var cooldown_before_repeat := skill_cooldown.time_left
-	bear.call("_on_skill_detect_body_entered", bear)
-	await create_timer(0.05).timeout
-	expect(
-		animation_state.get_current_play_position() > play_position_before_repeat,
-		"Repeated detection does not restart the skill animation"
-	)
-	expect(
-		earthquake_animation_player.current_animation == EARTHQUAKE_CAST_ANIMATION
-		and earthquake_animation_player.current_animation_position > earthquake_position_before_repeat,
-		"Repeated detection does not restart the earthquake cast animation"
-	)
-	expect(
-		skill_cooldown.time_left < cooldown_before_repeat,
-		"Repeated detection does not restart the skill cooldown"
-	)
-
-	var skill_length := animation_player.get_animation(SKILL_ANIMATION).length
-	await create_timer(skill_length + 0.1).timeout
-	expect(bear.get("state") == return_state, "Bear returns to its previous state after one animation")
-	expect(bear.global_position.x == start_x, "Bear does not move horizontally while using its skill")
-
-	bear.call("_on_skill_detect_body_entered", bear)
-	await process_frame
-	expect(bear.get("state") != skill_state, "Bear cannot replay the skill during its cooldown")
-
-	var attackable_bear := BEAR_SCENE.instantiate() as CharacterBody2D
-	world.add_child(attackable_bear)
-	var attackable_animation_tree := attackable_bear.get_node("AnimationTree") as AnimationTree
-	var attackable_animation_state: AnimationNodeStateMachinePlayback = attackable_animation_tree.get(
-		"parameters/playback"
-	)
-	attackable_bear.call("_on_skill_detect_body_entered", attackable_bear)
-	await create_timer(0.05).timeout
-	var attackable_skill_state: int = attackable_bear.get("state")
-	var health_before_hit: int = attackable_bear.get("health")
-	var weapon := Area2D.new()
-	world.add_child(weapon)
-	weapon.add_to_group("weapons")
-	attackable_bear.call("_on_hurt_box_area_entered", weapon)
-	expect(
-		attackable_bear.get("health") == health_before_hit - 1,
-		"Bear remains vulnerable while playing its skill animation"
-	)
-	expect(
-		attackable_bear.get("state") != attackable_skill_state,
-		"Taking damage interrupts the Bear skill animation"
-	)
-	await create_timer(0.05).timeout
-	expect(
-		attackable_animation_state.get_current_node() == &"hurt",
-		"Taking damage visibly switches the Bear from skill to hurt"
-	)
-
-	var damaging_bear := BEAR_SCENE.instantiate() as CharacterBody2D
-	damaging_bear.position = Vector2(1000.0, 0.0)
-	world.add_child(damaging_bear)
-	var earthquake := damaging_bear.get_node("Earthquake") as Area2D
-	var earthquake_collision_shape := earthquake.get_node("CollisionShape2D") as CollisionShape2D
-	var player := PLAYER_SCENE.instantiate() as CharacterBody2D
-	world.add_child(player)
-	player.global_position = earthquake.global_position
-	player.set_physics_process(false)
-	var player_health_before: int = player.get("health")
-	damaging_bear.call("_on_skill_detect_body_entered", player)
-	await create_timer(0.75).timeout
-	await physics_frame
-	expect(not earthquake_collision_shape.disabled, "Earthquake activates its collision at impact")
-	expect(
-		earthquake.get_overlapping_bodies().has(player),
-		"Earthquake detects an overlapping player at impact"
-	)
-	expect(
-		player.get("health") == player_health_before - 1,
-		"Earthquake damages an overlapping player when its collision becomes active"
-	)
-	await create_timer(0.2).timeout
-	expect(
-		player.get("health") == player_health_before - 1,
-		"One earthquake cast damages the same player only once"
-	)
-
-	var dying_bear := BEAR_SCENE.instantiate() as CharacterBody2D
-	dying_bear.position = Vector2(2000.0, 0.0)
-	world.add_child(dying_bear)
-	var dying_animation_player := dying_bear.get_node("AnimationPlayer") as AnimationPlayer
-	var dying_animation_tree := dying_bear.get_node("AnimationTree") as AnimationTree
-	var dying_animation_state: AnimationNodeStateMachinePlayback = dying_animation_tree.get(
-		"parameters/playback"
-	)
-	var dead_animation_length := dying_animation_player.get_animation(&"dead").length
-	await create_timer(0.1).timeout
-	dying_bear.call("die")
-	await create_timer(0.05).timeout
-	expect(
-		dying_animation_state.get_current_node() == &"dead",
-		"Bear enters the dead animation immediately when it dies"
-	)
-	await create_timer(dead_animation_length - 0.1).timeout
-	expect(is_instance_valid(dying_bear), "Bear remains alive until the dead animation finishes")
-	expect(
-		dying_animation_state.get_current_play_position() >= dead_animation_length - 0.1,
-		"Bear plays the dead animation through its final frames before being freed"
-	)
-	await create_timer(0.15).timeout
-	expect(not is_instance_valid(dying_bear), "Bear is freed after the dead animation finishes")
-
-	var detecting_bear := BEAR_SCENE.instantiate() as CharacterBody2D
-	detecting_bear.position = Vector2(4000.0, 0.0)
-	world.add_child(detecting_bear)
-	await physics_frame
-	var detecting_return_state: int = detecting_bear.get("state")
-	var detecting_earthquake_collision_shape := detecting_bear.get_node(
-		"Earthquake/CollisionShape2D"
-	) as CollisionShape2D
-	detecting_earthquake_collision_shape.disabled = false
-	var detecting_body := CharacterBody2D.new()
-	detecting_body.collision_layer = 2
-	detecting_body.collision_mask = 0
-	var detecting_body_collision_shape := CollisionShape2D.new()
-	var detecting_body_shape := RectangleShape2D.new()
-	detecting_body_shape.size = Vector2(10.0, 10.0)
-	detecting_body_collision_shape.shape = detecting_body_shape
-	detecting_body.add_child(detecting_body_collision_shape)
-	detecting_body.global_position = detecting_bear.get_node(
-		"SkillDetect/CollisionShape2D"
-	).global_position
-	world.add_child(detecting_body)
-	for _frame in 3:
-		await physics_frame
-	await process_frame
-	expect(
-		detecting_bear.get("state") != detecting_return_state,
-		"SkillDetect starts Bear skill from its body signal"
-	)
-	expect(
-		(detecting_bear.get_node("Earthquake/AnimationPlayer") as AnimationPlayer).current_animation
-		== EARTHQUAKE_CAST_ANIMATION,
-		"SkillDetect starts earthquake cast after the physics query finishes"
-	)
-
-	var wall := TileMapLayer.new()
-	world.add_child(wall)
-	var wall_body_rid := PhysicsServer2D.body_create()
-	var wall_shape_rid := PhysicsServer2D.rectangle_shape_create()
-	PhysicsServer2D.shape_set_data(wall_shape_rid, Vector2(10.0, 10.0))
-	PhysicsServer2D.body_set_mode(wall_body_rid, PhysicsServer2D.BODY_MODE_STATIC)
-	PhysicsServer2D.body_set_collision_layer(wall_body_rid, 1)
-	PhysicsServer2D.body_attach_object_instance_id(wall_body_rid, wall.get_instance_id())
-	PhysicsServer2D.body_add_shape(wall_body_rid, wall_shape_rid)
-	PhysicsServer2D.body_set_space(wall_body_rid, world.get_world_2d().space)
-	PhysicsServer2D.body_set_state(
-		wall_body_rid,
-		PhysicsServer2D.BODY_STATE_TRANSFORM,
-		Transform2D(0.0, Vector2(2920.0, 0.0))
-	)
-	var turning_bear := BEAR_SCENE.instantiate() as CharacterBody2D
-	turning_bear.position = Vector2(3000.0, 0.0)
-	turning_bear.set("idle_duration", 0.0)
-	turning_bear.set("patrol_range", 1000.0)
-	world.add_child(turning_bear)
-	for _frame in 12:
-		await physics_frame
-	expect(
-		turning_bear.get("move_direction") > 0.0,
-		"Bear immediately turns around when its patrol direction is blocked"
-	)
-	expect(
-		(turning_bear.get_node("Sprite2D") as Sprite2D).flip_h,
-		"Bear faces its new direction after turning away from an obstacle"
-	)
-	var turned_x := turning_bear.global_position.x
-	for _frame in 6:
-		await physics_frame
-	expect(
-		turning_bear.global_position.x > turned_x,
-		"Bear keeps patrolling in the new direction after hitting an obstacle"
-	)
-
-	PhysicsServer2D.free_rid(wall_body_rid)
-	PhysicsServer2D.free_rid(wall_shape_rid)
 	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
-	world.queue_free()
+	harness.cleanup()
+	await process_frame
 	await process_frame
 	finish()
 
 
-func expect(condition: bool, message: String) -> void:
-	if condition:
-		return
+func test_earthquake_activation_and_cooldown() -> void:
+	var bear_position := Vector2(3000.0, 0.0)
+	var bear := harness.instantiate_enemy(
+		BEAR_SCENE,
+		bear_position,
+		{"idle_duration": 10.0}
+	)
+	var hurt_event_count: Array[int] = [0]
+	var player := harness.instantiate_passive_player(
+		bear_position + Vector2(-152.0, 42.5),
+		func() -> void: hurt_event_count[0] += 1
+	)
 
-	failures.append(message)
+	await harness.physics_frames(3)
+	await create_timer(0.05).timeout
+	expect(harness.is_playing(bear, SKILL_ANIMATION), "Gameplay detection starts Bear earthquake")
+	expect(harness.is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Earthquake cast starts with Bear skill")
+	expect(
+		absf(
+			harness.animation_position(bear, SKILL_ANIMATION)
+			- harness.animation_position(bear, EARTHQUAKE_CAST_ANIMATION)
+		) < 0.1,
+		"Bear and earthquake presentations begin in sync"
+	)
+	expect(is_equal_approx(bear.velocity.x, 0.0), "Bear remains stationary during earthquake")
+	var skill_start_x := bear.global_position.x
+
+	await create_timer(0.2).timeout
+	var skill_position_before_repeat := harness.animation_position(bear, SKILL_ANIMATION)
+	var cast_position_before_repeat := harness.animation_position(bear, EARTHQUAKE_CAST_ANIMATION)
+	player.position += Vector2(400.0, 0.0)
+	await physics_frame
+	await physics_frame
+	player.position -= Vector2(400.0, 0.0)
+	await physics_frame
+	await physics_frame
+	await create_timer(0.05).timeout
+	expect(
+		harness.animation_position(bear, SKILL_ANIMATION) > skill_position_before_repeat,
+		"Repeated detection does not restart Bear skill presentation"
+	)
+	expect(
+		harness.animation_position(bear, EARTHQUAKE_CAST_ANIMATION) > cast_position_before_repeat,
+		"Repeated detection does not restart earthquake presentation"
+	)
+
+	await create_timer(0.5).timeout
+	await physics_frame
+	expect(hurt_event_count[0] == 1, "One earthquake activation damages its target once")
+	await create_timer(0.25).timeout
+	expect(not harness.is_playing(bear, SKILL_ANIMATION), "Earthquake completes after one activation")
+	expect(is_equal_approx(bear.global_position.x, skill_start_x), "Bear does not move during earthquake")
+
+	await harness.reenter_skill_detection(player, bear_position + Vector2(-152.0, 42.5))
+	expect(not harness.is_playing(bear, SKILL_ANIMATION), "Bear cannot restart earthquake during cooldown")
+	await create_timer(3.2).timeout
+	await harness.reenter_skill_detection(player, bear_position + Vector2(-152.0, 42.5))
+	expect(not harness.is_playing(bear, SKILL_ANIMATION), "Bear keeps the full five second skill cooldown")
+	await create_timer(0.55).timeout
+	await harness.reenter_skill_detection(player, bear_position + Vector2(-152.0, 42.5))
+	expect(harness.is_playing(bear, SKILL_ANIMATION), "Bear can use earthquake after cooldown expires")
+	await create_timer(1.0).timeout
+
+
+func test_earthquake_damage_interruption() -> void:
+	var bear_position := Vector2(5000.0, 0.0)
+	var bear := harness.instantiate_enemy(
+		BEAR_SCENE,
+		bear_position,
+		{"idle_duration": 10.0}
+	)
+	var hurt_event_count: Array[int] = [0]
+	harness.instantiate_passive_player(
+		bear_position + Vector2(-152.0, 42.5),
+		func() -> void: hurt_event_count[0] += 1
+	)
+	await harness.physics_frames(3)
+	await create_timer(0.05).timeout
+	expect(harness.is_playing(bear, SKILL_ANIMATION), "Bear starts earthquake for an entering gameplay body")
+
+	var weapon := harness.add_weapon(bear_position)
+	await harness.physics_frames(3)
+	await process_frame
+	expect(harness.is_playing(bear, HURT_ANIMATION), "Accepted damage visibly interrupts earthquake")
+	expect(not harness.is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Hurt stops the earthquake cast")
+	harness.remove_actor(weapon)
+	await create_timer(0.65).timeout
+	expect(hurt_event_count[0] == 0, "Interrupted earthquake never reaches its damaging impact")
+	expect(not harness.is_playing(bear, SKILL_ANIMATION), "Interrupted earthquake does not resume after hurt")
+
+
+func test_death_cancels_earthquake() -> void:
+	var bear_position := Vector2(7000.0, 0.0)
+	var bear := harness.instantiate_enemy(
+		BEAR_SCENE,
+		bear_position,
+		{"idle_duration": 10.0}
+	)
+	for accepted_hit in 3:
+		await harness.deliver_hit(bear)
+		if accepted_hit < 2:
+			await create_timer(0.4).timeout
+
+	await create_timer(0.4).timeout
+	var hurt_event_count: Array[int] = [0]
+	harness.instantiate_passive_player(
+		bear.global_position + Vector2(-152.0, 42.5),
+		func() -> void: hurt_event_count[0] += 1
+	)
+	await harness.physics_frames(3)
+	await create_timer(0.05).timeout
+	expect(harness.is_playing(bear, SKILL_ANIMATION), "Bear starts earthquake before lethal damage")
+
+	await harness.deliver_hit(bear)
+	expect(not harness.is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Death stops the earthquake cast")
+	await create_timer(0.65).timeout
+	expect(hurt_event_count[0] == 0, "Death prevents the pending earthquake impact")
+
+
+func expect(condition: bool, message: String) -> void:
+	if not condition:
+		failures.append(message)
 
 
 func finish() -> void:
 	if failures.is_empty():
-		print("Bear skill animation test passed")
+		print("Bear earthquake test passed")
 		quit(0)
 		return
 

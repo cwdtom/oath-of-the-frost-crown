@@ -188,6 +188,8 @@ graph_offset = Vector2(55.07999, -185.52754)
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("1_85v78")
+patrol_range = 300.0
+run_speed = 150.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1277239556]
 texture = ExtResource("1_d35f0")
