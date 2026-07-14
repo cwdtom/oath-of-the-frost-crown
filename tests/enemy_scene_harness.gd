@@ -4,11 +4,15 @@ extends RefCounted
 
 const ENEMY_COLLISION_LAYER := 1 << 2
 const PLAYER_COLLISION_LAYER := 1 << 1
+const PLAYER_SCENE := preload("res://player/player.tscn")
 
 var world := Node2D.new()
+var scene_tree: SceneTree
+var passive_players: Array[CharacterBody2D] = []
 
 
 func _init(test_scene_tree: SceneTree) -> void:
+	scene_tree = test_scene_tree
 	test_scene_tree.root.add_child(world)
 
 
@@ -30,6 +34,14 @@ func instantiate_actor(scene: PackedScene, position: Vector2) -> CharacterBody2D
 	actor.position = position
 	world.add_child(actor)
 	return actor
+
+
+func instantiate_passive_player(position: Vector2, hurt_callback: Callable) -> CharacterBody2D:
+	var player := instantiate_actor(PLAYER_SCENE, position)
+	player.set_physics_process(false)
+	player.connect(&"hurt_taken", hurt_callback)
+	passive_players.append(player)
+	return player
 
 
 func add_body(position: Vector2, size := Vector2(20.0, 20.0)) -> CharacterBody2D:
@@ -76,8 +88,52 @@ func remove_actor(actor: Node) -> void:
 		actor.queue_free()
 
 
+func deliver_hit(enemy: CharacterBody2D, offset := Vector2.ZERO) -> void:
+	var weapon := add_weapon(enemy.global_position + offset)
+	await physics_frames(3)
+	await scene_tree.process_frame
+	remove_actor(weapon)
+	await physics_frames(2)
+	await scene_tree.process_frame
+
+
+func reenter_skill_detection(actor: CharacterBody2D, detection_position: Vector2) -> void:
+	actor.position = detection_position + Vector2(400.0, 0.0)
+	await physics_frames(2)
+	actor.position = detection_position
+	await physics_frames(2)
+	await scene_tree.create_timer(0.05).timeout
+
+
+func physics_frames(count: int) -> void:
+	for _frame in count:
+		await scene_tree.physics_frame
+
+
+func is_playing(enemy: CharacterBody2D, animation_name: StringName) -> bool:
+	return bool(enemy.call("_is_playing_animation", animation_name))
+
+
+func animation_position(enemy: CharacterBody2D, animation_name: StringName) -> float:
+	return float(enemy.call("_get_animation_position", animation_name))
+
+
+func animation_length(enemy: CharacterBody2D, animation_name: StringName) -> float:
+	return float(enemy.call("_get_animation_length", animation_name))
+
+
+func is_facing_right(enemy: CharacterBody2D) -> bool:
+	return bool(enemy.call("_is_facing_right"))
+
+
 func cleanup() -> void:
 	if is_instance_valid(world):
+		for player in passive_players:
+			if not is_instance_valid(player):
+				continue
+			player.process_mode = Node.PROCESS_MODE_DISABLED
+			for node in player.find_children("*", "AudioStreamPlayer2D", true, false):
+				(node as AudioStreamPlayer2D).stop()
 		world.queue_free()
 
 
