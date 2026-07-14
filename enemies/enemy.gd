@@ -109,6 +109,10 @@ func _get_run_animation() -> StringName:
 	return RUN_ANIMATION
 
 
+func _get_skill_animation() -> StringName:
+	return SKILL_ANIMATION
+
+
 func _get_wall_check_distance() -> float:
 	return WALL_CHECK_DISTANCE
 
@@ -147,7 +151,7 @@ func _play_skill_presentations() -> void:
 	if state != SKILL:
 		return
 
-	animation_state.travel(SKILL_ANIMATION)
+	animation_state.travel(_get_skill_animation())
 	_play_species_skill_presentation()
 
 
@@ -179,6 +183,14 @@ func _is_species_skill_complete() -> bool:
 
 func _blocks_weapon_damage_during_skill() -> bool:
 	return false
+
+
+func _get_hurt_knockback_distance() -> float:
+	return HURT_KNOCKBACK_DISTANCE
+
+
+func _get_hurt_return_state() -> int:
+	return skill_return_state if state == SKILL else state
 
 
 func _prepare_hurt(_knockback_direction: Vector2) -> void:
@@ -218,7 +230,11 @@ func apply_knockback(knockback_direction: Vector2) -> void:
 	if knockback_direction.is_zero_approx():
 		return
 
-	move_and_collide(knockback_direction.normalized() * HURT_KNOCKBACK_DISTANCE)
+	var knockback_distance := _get_hurt_knockback_distance()
+	if is_zero_approx(knockback_distance):
+		return
+
+	move_and_collide(knockback_direction.normalized() * knockback_distance)
 
 
 func update_idle(delta: float) -> void:
@@ -340,7 +356,7 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 		die()
 		return
 
-	var return_state := skill_return_state if state == SKILL else state
+	var return_state := _get_hurt_return_state()
 	is_hurting = true
 	apply_knockback(knockback_direction)
 	change_state(HURT)

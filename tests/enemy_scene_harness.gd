@@ -8,11 +8,14 @@ const PLAYER_SCENE := preload("res://player/player.tscn")
 
 var world := Node2D.new()
 var scene_tree: SceneTree
+var previous_current_scene: Node
 
 
 func _init(test_scene_tree: SceneTree) -> void:
 	scene_tree = test_scene_tree
+	previous_current_scene = test_scene_tree.current_scene
 	test_scene_tree.root.add_child(world)
+	test_scene_tree.current_scene = world
 
 
 func instantiate_enemy(
@@ -130,6 +133,8 @@ func cleanup() -> void:
 		for node in world.find_children("*", "AudioStreamPlayer2D", true, false):
 			(node as AudioStreamPlayer2D).stop()
 		world.queue_free()
+	if scene_tree.current_scene == world:
+		scene_tree.current_scene = previous_current_scene
 
 
 func _create_collision_shape(size: Vector2) -> CollisionShape2D:
