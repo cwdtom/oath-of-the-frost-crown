@@ -1,7 +1,9 @@
-extends Node2D
+extends "res://levels/campaign_level.gd"
 
 
 signal intro_finished
+
+@export_node_path("Node") var _campaign_completion_source_path: NodePath
 
 @onready var player = $Player
 @onready var hud = $HUD
@@ -11,9 +13,42 @@ signal intro_finished
 var story_camera: Camera2D = null
 
 
+func prepare_for_campaign(play_opening_story: bool) -> void:
+	var level_player := get_node("Player")
+	level_player.restore_full_health()
+	if play_opening_story:
+		return
+
+	var opening_story := get_node_or_null("Story")
+	if opening_story != null:
+		remove_child(opening_story)
+		opening_story.queue_free()
+
+
+func set_campaign_controls_enabled(enabled: bool) -> void:
+	player.set_controls_enabled(enabled)
+
+
+func suspend_from_campaign() -> void:
+	var background := get_node_or_null("Background")
+	if background != null:
+		background.call("stop_music")
+
+
+func restore_to_campaign() -> void:
+	var background := get_node_or_null("Background")
+	if background != null:
+		background.call("start_music")
+
+
 func _ready() -> void:
 	hud.set_health(player.health)
 	player.hurt_taken.connect(hud.decrease_health)
+	player.connect("died", _on_campaign_defeated)
+
+	var completion_source := get_node_or_null(_campaign_completion_source_path)
+	if completion_source != null:
+		completion_source.connect("died", _on_campaign_completed)
 
 	if story != null:
 		story_camera = Camera2D.new()
@@ -51,3 +86,12 @@ func _on_story_finished() -> void:
 	get_tree().paused = false
 	finished_story.queue_free()
 	intro_finished.emit()
+	campaign_story_phase_finished.emit()
+
+
+func _on_campaign_defeated() -> void:
+	campaign_outcome_reached.emit(OUTCOME_DEFEAT)
+
+
+func _on_campaign_completed() -> void:
+	campaign_outcome_reached.emit(OUTCOME_COMPLETION)

@@ -10,6 +10,7 @@ const LEVEL_02_VICTORY_STORY := "res://levels/level_02_a_story.json"
 const MUSIC_RESUME_POSITION := 5.0
 
 var failures: Array[String] = []
+var observed_campaign_outcomes: Dictionary[StringName, Array] = {}
 
 
 func _init() -> void:
@@ -177,9 +178,14 @@ func _run() -> void:
 
 	var popup := main.get_node("GameResultPopup") as CanvasLayer
 	var defeated_level := level
+	observe_campaign_outcomes(level as CampaignLevel, &"defeated_level_01")
 	player.emit_signal("died")
 	expect(popup.visible, "Player death shows the result popup")
 	expect(player.get("controls_enabled") == false, "Player death disables controls")
+	expect(
+		has_campaign_outcome(&"defeated_level_01", &"defeat"),
+		"Level01 publishes player death as campaign defeat"
+	)
 	main.call("_on_retry_pressed")
 	await process_frame
 
@@ -212,10 +218,16 @@ func _run() -> void:
 		finish()
 		return
 
+	observe_campaign_outcomes(level as CampaignLevel, &"level_01")
 	player.set("health", 1)
 	player.emit_signal("died")
 	wolf_king.call("die")
 	await process_frame
+	expect(has_campaign_outcome(&"level_01", &"defeat"), "Level01 publishes campaign defeat")
+	expect(
+		has_campaign_outcome(&"level_01", &"completion"),
+		"Level01 publishes campaign completion"
+	)
 
 	var victory_story := level.get_node_or_null("VictoryStory") as CanvasLayer
 	expect(victory_story != null, "WolfKing death starts the victory Story")
@@ -291,8 +303,13 @@ func _run() -> void:
 		finish()
 		return
 
+	observe_campaign_outcomes(level_02 as CampaignLevel, &"level_02")
 	bear_king.call("die")
 	await process_frame
+	expect(
+		has_campaign_outcome(&"level_02", &"completion"),
+		"Level02 publishes campaign completion"
+	)
 
 	var level_02_victory_story := level_02.get_node_or_null("VictoryStory") as CanvasLayer
 	expect(level_02_victory_story != null, "BearKing death starts the Level02 victory Story")
@@ -331,6 +348,7 @@ func _run() -> void:
 
 	level_02_player.set("health", 0)
 	level_02_player.emit_signal("died")
+	expect(has_campaign_outcome(&"level_02", &"defeat"), "Level02 publishes campaign defeat")
 	expect(popup.visible, "Level02 player death shows the result popup")
 	main.call("_on_retry_pressed")
 	await process_frame
@@ -410,6 +428,21 @@ func instantiate_main() -> Node:
 	root.add_child(main)
 	current_scene = main
 	return main
+
+
+func observe_campaign_outcomes(level: CampaignLevel, observation_id: StringName) -> void:
+	observed_campaign_outcomes[observation_id] = []
+	level.campaign_outcome_reached.connect(
+		_on_campaign_outcome_reached.bind(observation_id)
+	)
+
+
+func _on_campaign_outcome_reached(outcome: StringName, observation_id: StringName) -> void:
+	observed_campaign_outcomes[observation_id].append(outcome)
+
+
+func has_campaign_outcome(observation_id: StringName, outcome: StringName) -> bool:
+	return observed_campaign_outcomes.get(observation_id, []).has(outcome)
 
 
 func expect(condition: bool, message: String) -> void:
