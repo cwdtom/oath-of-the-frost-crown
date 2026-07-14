@@ -21,7 +21,7 @@ var state := -1
 var _health := 0
 var is_hurting := false
 var start_x := 0.0
-var move_direction := -1.0
+var move_direction := 0.0
 var idle_time_left := 0.0
 var skill_return_state: int = IDLE
 var skill_detect_offset_x := 0.0
@@ -41,6 +41,7 @@ var skill_detect_offset_x := 0.0
 func _ready() -> void:
 	animation_tree.active = true
 	start_x = global_position.x
+	move_direction = _get_initial_move_direction()
 	skill_detect_offset_x = absf(skill_detect_collision_shape.position.x)
 	change_state(IDLE)
 
@@ -64,7 +65,7 @@ func change_state(new_state: int) -> void:
 		RUN:
 			hurt_box_collision_shape.set_deferred("disabled", false)
 			face_move_direction()
-			animation_state.travel(RUN_ANIMATION)
+			animation_state.travel(_get_run_animation())
 		HURT:
 			velocity.x = 0.0
 			hurt_box_collision_shape.set_deferred("disabled", false)
@@ -83,19 +84,46 @@ func change_state(new_state: int) -> void:
 
 
 func face_move_direction() -> void:
-	sprite.flip_h = move_direction > 0.0
+	sprite.flip_h = _get_sprite_flip(move_direction)
 	skill_detect_collision_shape.position.x = skill_detect_offset_x * move_direction
 
 
+func _get_initial_move_direction() -> float:
+	return -1.0
+
+
+func _get_sprite_flip(direction: float) -> bool:
+	return direction > 0.0
+
+
+func _get_run_animation() -> StringName:
+	return RUN_ANIMATION
+
+
+func _get_wall_check_distance() -> float:
+	return WALL_CHECK_DISTANCE
+
+
 func _is_playing_animation(animation_name: StringName) -> bool:
-	return animation_state.get_current_node() == animation_name
+	return (
+		_get_species_animation_position(animation_name) >= 0.0
+		or animation_state.get_current_node() == animation_name
+	)
 
 
 func _get_animation_position(animation_name: StringName) -> float:
-	if not _is_playing_animation(animation_name):
+	var species_position := _get_species_animation_position(animation_name)
+	if species_position >= 0.0:
+		return species_position
+
+	if animation_state.get_current_node() != animation_name:
 		return -1.0
 
 	return animation_state.get_current_play_position()
+
+
+func _get_species_animation_position(_animation_name: StringName) -> float:
+	return -1.0
 
 
 func _get_animation_length(animation_name: StringName) -> float:
@@ -103,7 +131,7 @@ func _get_animation_length(animation_name: StringName) -> float:
 
 
 func _is_facing_right() -> bool:
-	return sprite.flip_h
+	return sprite.flip_h == _get_sprite_flip(1.0)
 
 
 func _play_skill_presentations() -> void:
@@ -131,7 +159,7 @@ func turn_around() -> void:
 func is_front_blocked() -> bool:
 	var space_state := get_world_2d().direct_space_state
 	var world_scale := global_transform.get_scale()
-	var check_distance: float = WALL_CHECK_DISTANCE * absf(world_scale.x)
+	var check_distance: float = _get_wall_check_distance() * absf(world_scale.x)
 	for y_offset in WALL_CHECK_Y_OFFSETS:
 		var from := global_position + Vector2(0.0, y_offset * absf(world_scale.y))
 		var to := from + Vector2(move_direction * check_distance, 0.0)

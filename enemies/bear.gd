@@ -26,21 +26,11 @@ func _reset_earthquake_presentation() -> void:
 	earthquake_animation_player.stop()
 
 
-func _is_playing_animation(animation_name: StringName) -> bool:
-	if animation_name == EARTHQUAKE_CAST_ANIMATION:
-		return (
-			earthquake_animation_player.is_playing()
-			and earthquake_animation_player.current_animation == animation_name
-		)
+func _get_species_animation_position(animation_name: StringName) -> float:
+	if (
+		animation_name != EARTHQUAKE_CAST_ANIMATION
+		or not earthquake_animation_player.is_playing()
+	):
+		return -1.0
 
-	return super._is_playing_animation(animation_name)
-
-
-func _get_animation_position(animation_name: StringName) -> float:
-	if animation_name == EARTHQUAKE_CAST_ANIMATION:
-		if not _is_playing_animation(animation_name):
-			return -1.0
-
-		return earthquake_animation_player.current_animation_position
-
-	return super._get_animation_position(animation_name)
+	return earthquake_animation_player.current_animation_position

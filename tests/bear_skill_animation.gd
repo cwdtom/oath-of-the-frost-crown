@@ -105,13 +105,11 @@ func test_earthquake_activation_and_cooldown() -> void:
 		bear_position,
 		{"idle_duration": 10.0}
 	)
-	var player := harness.instantiate_actor(
-		PLAYER_SCENE,
-		bear_position + Vector2(-152.0, 42.5)
+	var hurt_events: Array[int] = [0]
+	var player := instantiate_passive_player(
+		bear_position + Vector2(-152.0, 42.5),
+		hurt_events
 	)
-	player.set_physics_process(false)
-	var hurt_events := [0]
-	player.hurt_taken.connect(func() -> void: hurt_events[0] += 1)
 
 	await physics_frames(3)
 	await create_timer(0.05).timeout
@@ -170,13 +168,8 @@ func test_earthquake_damage_interruption() -> void:
 		bear_position,
 		{"idle_duration": 10.0}
 	)
-	var player := harness.instantiate_actor(
-		PLAYER_SCENE,
-		bear_position + Vector2(-152.0, 42.5)
-	)
-	player.set_physics_process(false)
-	var hurt_events := [0]
-	player.hurt_taken.connect(func() -> void: hurt_events[0] += 1)
+	var hurt_events: Array[int] = [0]
+	instantiate_passive_player(bear_position + Vector2(-152.0, 42.5), hurt_events)
 	await physics_frames(3)
 	await create_timer(0.05).timeout
 	expect(is_playing(bear, SKILL_ANIMATION), "Bear starts earthquake for an entering gameplay body")
@@ -219,13 +212,11 @@ func test_hurt_immunity_and_death_cleanup() -> void:
 	expect(bear.is_in_group("enemies"), "A hit during hurt immunity does not consume Bear health")
 
 	var death_skill_position := bear.global_position
-	var player := harness.instantiate_actor(
-		PLAYER_SCENE,
-		death_skill_position + Vector2(-152.0, 42.5)
+	var hurt_events: Array[int] = [0]
+	instantiate_passive_player(
+		death_skill_position + Vector2(-152.0, 42.5),
+		hurt_events
 	)
-	player.set_physics_process(false)
-	var hurt_events := [0]
-	player.hurt_taken.connect(func() -> void: hurt_events[0] += 1)
 	await physics_frames(3)
 	await create_timer(0.05).timeout
 	expect(is_playing(bear, SKILL_ANIMATION), "Bear can enter earthquake before a lethal hit")
@@ -270,6 +261,13 @@ func reenter_skill_detection(actor: CharacterBody2D, detection_position: Vector2
 func physics_frames(count: int) -> void:
 	for _frame in count:
 		await physics_frame
+
+
+func instantiate_passive_player(position: Vector2, hurt_events: Array[int]) -> CharacterBody2D:
+	var player := harness.instantiate_actor(PLAYER_SCENE, position)
+	player.set_physics_process(false)
+	player.hurt_taken.connect(func() -> void: hurt_events[0] += 1)
+	return player
 
 
 func is_playing(enemy: CharacterBody2D, animation_name: StringName) -> bool:
