@@ -8,9 +8,12 @@ const STORY_SCENE := preload("res://ui/story.tscn")
 const LEVEL_01_VICTORY_STORY := "res://levels/level_01_a_story.json"
 const LEVEL_02_VICTORY_STORY := "res://levels/level_02_a_story.json"
 const RESULT_DEAD := "DEAD"
+const CAMPAIGN_PHASE_TITLE := &"title"
+const CAMPAIGN_PHASE_GUIDE := &"guide"
+const CAMPAIGN_PHASE_LEVEL := &"level"
 
-var level: Node2D = null
-var suspended_level_01: Node2D = null
+var level: CampaignLevel = null
+var suspended_level_01: CampaignLevel = null
 var victory_story_active := false
 var current_level_scene: PackedScene = null
 
@@ -40,6 +43,20 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 	guide.visible = false
 	start_level_01()
+
+
+func get_campaign_phase() -> StringName:
+	if level != null:
+		return CAMPAIGN_PHASE_LEVEL
+	if is_instance_valid(title) and title.visible:
+		return CAMPAIGN_PHASE_TITLE
+	if guide.visible:
+		return CAMPAIGN_PHASE_GUIDE
+	return CAMPAIGN_PHASE_TITLE
+
+
+func get_active_campaign_level() -> CampaignLevel:
+	return level
 
 
 func connect_level_events() -> void:
@@ -74,6 +91,19 @@ func show_result(result_text: String) -> void:
 
 
 func start_level(scene: PackedScene, play_intro: bool) -> void:
+	var next_level := scene.instantiate() as CampaignLevel
+	var player := next_level.get_node("Player")
+	player.restore_full_health()
+	if not play_intro:
+		var story := next_level.get_node_or_null("Story")
+		if story != null:
+			next_level.remove_child(story)
+			story.queue_free()
+
+	replace_level(scene, next_level)
+
+
+func replace_level(scene: PackedScene, next_level: CampaignLevel) -> void:
 	game_result_popup.visible = false
 
 	if level != null:
@@ -83,14 +113,7 @@ func start_level(scene: PackedScene, play_intro: bool) -> void:
 		old_level.queue_free()
 
 	current_level_scene = scene
-	level = scene.instantiate() as Node2D
-	var player := level.get_node("Player")
-	player.restore_full_health()
-	if not play_intro:
-		var story := level.get_node_or_null("Story")
-		if story != null:
-			level.remove_child(story)
-			story.queue_free()
+	level = next_level
 
 	add_child(level)
 	move_child(level, 0)
@@ -98,9 +121,14 @@ func start_level(scene: PackedScene, play_intro: bool) -> void:
 
 
 func start_level_01(play_intro: bool = true) -> void:
-	start_level(LEVEL_01_SCENE, play_intro)
-	if play_intro:
-		level.connect("intro_finished", _on_level_01_intro_finished)
+	if not play_intro:
+		start_level(LEVEL_01_SCENE, false)
+		return
+
+	var level_01 := LEVEL_01_SCENE.instantiate() as CampaignLevel
+	level_01.prepare_for_campaign(true)
+	replace_level(LEVEL_01_SCENE, level_01)
+	level.campaign_story_phase_finished.connect(_on_level_01_story_phase_finished)
 
 
 func start_level_02(play_intro: bool = true) -> void:
@@ -113,7 +141,7 @@ func play_level_00() -> void:
 	background.call("stop_music")
 	remove_child(suspended_level_01)
 
-	level = LEVEL_00_SCENE.instantiate() as Node2D
+	level = LEVEL_00_SCENE.instantiate() as CampaignLevel
 	level.name = "Level00"
 	var story := level.get_node("Story")
 	story.connect("story_finished", _on_level_00_story_finished)
@@ -127,7 +155,7 @@ func _on_title_start_requested() -> void:
 	guide.visible = true
 
 
-func _on_level_01_intro_finished() -> void:
+func _on_level_01_story_phase_finished() -> void:
 	play_level_00()
 
 

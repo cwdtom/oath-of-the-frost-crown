@@ -25,6 +25,26 @@ func prepare_for_campaign(play_opening_story: bool) -> void:
 		opening_story.queue_free()
 
 
+func is_campaign_story_phase_active() -> bool:
+	return story != null
+
+
+func is_campaign_control_available() -> bool:
+	return is_inside_tree() and not get_tree().paused and player.controls_enabled
+
+
+func is_campaign_hud_visible() -> bool:
+	return is_inside_tree() and hud.visible
+
+
+func get_campaign_camera_role() -> StringName:
+	if story_camera != null and story_camera.is_current():
+		return CAMERA_OPENING_STORY
+	if player_camera.is_current():
+		return CAMERA_PLAYER
+	return CAMERA_NONE
+
+
 func set_campaign_controls_enabled(enabled: bool) -> void:
 	player.set_controls_enabled(enabled)
 
