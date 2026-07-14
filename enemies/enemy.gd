@@ -152,10 +152,6 @@ func _get_animation_length(animation_name: StringName) -> float:
 	return animation_player.get_animation(animation_name).length
 
 
-func _is_facing_right() -> bool:
-	return sprite.flip_h == _get_sprite_flip(1.0)
-
-
 func _play_skill_presentations() -> void:
 	if state != SKILL:
 		return

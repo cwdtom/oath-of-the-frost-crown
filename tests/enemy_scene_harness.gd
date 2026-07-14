@@ -84,6 +84,22 @@ func enemy_has_hurt_collision(enemy: CharacterBody2D) -> bool:
 	return _enemy_has_collision(enemy, true, false)
 
 
+func enemy_sprite_is_flipped(enemy: CharacterBody2D) -> bool:
+	for child in enemy.get_children():
+		var sprite := child as Sprite2D
+		if sprite != null:
+			return sprite.flip_h
+
+	return false
+
+
+func enemy_health_bar(enemy: CharacterBody2D) -> TextureProgressBar:
+	for node in enemy.find_children("*", "TextureProgressBar", true, false):
+		return node as TextureProgressBar
+
+	return null
+
+
 func remove_actor(actor: Node) -> void:
 	if is_instance_valid(actor):
 		actor.queue_free()
@@ -117,14 +133,6 @@ func is_playing(enemy: CharacterBody2D, animation_name: StringName) -> bool:
 
 func animation_position(enemy: CharacterBody2D, animation_name: StringName) -> float:
 	return float(enemy.call("_get_animation_position", animation_name))
-
-
-func animation_length(enemy: CharacterBody2D, animation_name: StringName) -> float:
-	return float(enemy.call("_get_animation_length", animation_name))
-
-
-func is_facing_right(enemy: CharacterBody2D) -> bool:
-	return bool(enemy.call("_is_facing_right"))
 
 
 func cleanup() -> void:

@@ -3,10 +3,7 @@ extends SceneTree
 
 const BEAR_SCENE := preload("res://enemies/bear.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
-const DEAD_ANIMATION := &"dead"
 const HURT_ANIMATION := &"hurt"
-const IDLE_ANIMATION := &"idle"
-const RUN_ANIMATION := &"run"
 const SKILL_ANIMATION := &"skill"
 const EARTHQUAKE_CAST_ANIMATION := &"cast"
 
@@ -23,78 +20,14 @@ func _run() -> void:
 	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
 	harness = EnemyHarness.new(self)
 
-	await test_initialization_and_patrol_limits()
-	await test_scaled_environment_wall_reversal()
 	await test_earthquake_activation_and_cooldown()
 	await test_earthquake_damage_interruption()
-	await test_hurt_immunity_and_death_cleanup()
 
 	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
 	harness.cleanup()
 	await process_frame
 	await process_frame
 	finish()
-
-
-func test_initialization_and_patrol_limits() -> void:
-	var bear := harness.instantiate_enemy(
-		BEAR_SCENE,
-		Vector2.ZERO,
-		{"idle_duration": 0.08, "patrol_range": 20.0, "run_speed": 80.0}
-	)
-	var start_x := bear.global_position.x
-	await create_timer(0.04).timeout
-	expect(harness.is_playing(bear, IDLE_ANIMATION), "Bear initializes in its idle presentation")
-	expect(is_equal_approx(bear.global_position.x, start_x), "Bear stays still for its idle duration")
-
-	await create_timer(0.12).timeout
-	expect(harness.is_playing(bear, RUN_ANIMATION), "Bear enters its run presentation after idling")
-	expect(bear.global_position.x < start_x, "Bear begins patrolling after idling")
-	expect(not harness.is_facing_right(bear), "Bear faces its initial leftward patrol direction")
-
-	await create_timer(0.25).timeout
-	expect(
-		bear.global_position.x >= start_x - 20.01,
-		"Bear does not move beyond its configured patrol limit"
-	)
-	var left_limit_x := bear.global_position.x
-	await create_timer(0.12).timeout
-	expect(bear.global_position.x > left_limit_x, "Bear reverses and continues from its patrol limit")
-	expect(harness.is_facing_right(bear), "Bear presentation faces the reversed patrol direction")
-
-	var default_bear := harness.instantiate_enemy(BEAR_SCENE, Vector2(500.0, 0.0))
-	expect(default_bear.patrol_range == 160.0, "Bear keeps its 160 pixel patrol range")
-	expect(default_bear.run_speed == 80.0, "Bear keeps its 80 pixel run speed")
-	expect(default_bear.idle_duration == 1.0, "Bear keeps its one second idle duration")
-	expect(
-		is_equal_approx(harness.animation_length(default_bear, HURT_ANIMATION), 0.35),
-		"Bear keeps its hurt animation timing"
-	)
-	expect(
-		is_equal_approx(harness.animation_length(default_bear, SKILL_ANIMATION), 0.9),
-		"Bear keeps its skill animation timing"
-	)
-	expect(
-		is_equal_approx(harness.animation_length(default_bear, DEAD_ANIMATION), 1.0),
-		"Bear keeps its death presentation timing"
-	)
-
-
-func test_scaled_environment_wall_reversal() -> void:
-	var start_position := Vector2(1500.0, 0.0)
-	harness.add_environment_wall(start_position + Vector2(-100.0, 36.0), Vector2(10.0, 8.0))
-	var bear := harness.instantiate_enemy(
-		BEAR_SCENE,
-		start_position,
-		{"scale": Vector2(1.5, 1.5), "idle_duration": 0.0, "patrol_range": 1000.0}
-	)
-
-	await harness.physics_frames(12)
-	expect(bear.global_position.x > start_position.x, "Scaled Bear reverses away from an environment wall")
-	expect(harness.is_facing_right(bear), "Scaled Bear faces away from the blocking wall")
-	var turned_x := bear.global_position.x
-	await harness.physics_frames(6)
-	expect(bear.global_position.x > turned_x, "Bear keeps patrolling after its wall reversal")
 
 
 func test_earthquake_activation_and_cooldown() -> void:
@@ -187,62 +120,6 @@ func test_earthquake_damage_interruption() -> void:
 	expect(not harness.is_playing(bear, SKILL_ANIMATION), "Interrupted earthquake does not resume after hurt")
 
 
-func test_hurt_immunity_and_death_cleanup() -> void:
-	var bear_position := Vector2(7000.0, 0.0)
-	var bear := harness.instantiate_enemy(
-		BEAR_SCENE,
-		bear_position,
-		{"idle_duration": 10.0}
-	)
-	await physics_frame
-	await physics_frame
-	expect(harness.enemy_has_body_collision(bear), "Living Bear has an active body collision")
-	expect(harness.enemy_has_hurt_collision(bear), "Living Bear has an active hurt collision")
-
-	await harness.deliver_hit(bear, Vector2(-20.0, 0.0))
-	expect(harness.is_playing(bear, HURT_ANIMATION), "Accepted damage starts Bear hurt presentation")
-	expect(
-		is_equal_approx(bear.global_position.x, bear_position.x + 100.0),
-		"Accepted damage keeps Bear's knockback distance"
-	)
-	await harness.deliver_hit(bear)
-	await create_timer(0.4).timeout
-	await harness.deliver_hit(bear)
-	await create_timer(0.4).timeout
-	await harness.deliver_hit(bear)
-	await create_timer(0.4).timeout
-	expect(bear.is_in_group("enemies"), "A hit during hurt immunity does not consume Bear health")
-
-	var death_skill_position := bear.global_position
-	var hurt_event_count: Array[int] = [0]
-	harness.instantiate_passive_player(
-		death_skill_position + Vector2(-152.0, 42.5),
-		func() -> void: hurt_event_count[0] += 1
-	)
-	await harness.physics_frames(3)
-	await create_timer(0.05).timeout
-	expect(harness.is_playing(bear, SKILL_ANIMATION), "Bear can enter earthquake before a lethal hit")
-
-	await harness.deliver_hit(bear)
-	await process_frame
-	await physics_frame
-	expect(not bear.is_in_group("enemies"), "Death immediately removes Bear as an active Enemy")
-	expect(harness.is_playing(bear, DEAD_ANIMATION), "Death immediately starts Bear death presentation")
-	expect(not harness.is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Death stops the earthquake cast")
-	expect(not harness.enemy_has_body_collision(bear), "Death immediately disables Bear body collision")
-	expect(not harness.enemy_has_hurt_collision(bear), "Death immediately disables Bear hurt collision")
-
-	await create_timer(0.75).timeout
-	expect(is_instance_valid(bear), "Bear remains in the scene during its death presentation")
-	expect(hurt_event_count[0] == 0, "A dead Bear cannot produce a delayed earthquake impact")
-	expect(
-		harness.animation_position(bear, DEAD_ANIMATION) >= 0.7,
-		"Bear death presentation reaches its final frames"
-	)
-	await create_timer(0.3).timeout
-	expect(not is_instance_valid(bear), "Bear leaves the scene after its death presentation")
-
-
 func expect(condition: bool, message: String) -> void:
 	if not condition:
 		failures.append(message)
@@ -250,7 +127,7 @@ func expect(condition: bool, message: String) -> void:
 
 func finish() -> void:
 	if failures.is_empty():
-		print("Bear Enemy lifecycle test passed")
+		print("Bear earthquake test passed")
 		quit(0)
 		return
 
