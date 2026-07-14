@@ -39,11 +39,13 @@ var skill_detect_offset_x := 0.0
 
 
 func _ready() -> void:
+	_health = _get_max_health()
 	animation_tree.active = true
 	start_x = global_position.x
 	move_direction = _get_initial_move_direction()
 	skill_detect_offset_x = absf(skill_detect_collision_shape.position.x)
 	change_state(IDLE)
+	_update_health_presentation()
 
 
 func change_state(new_state: int) -> void:
@@ -90,6 +92,10 @@ func face_move_direction() -> void:
 
 func _get_initial_move_direction() -> float:
 	return -1.0
+
+
+func _get_max_health() -> int:
+	return 0
 
 
 func _get_sprite_flip(direction: float) -> bool:
@@ -147,6 +153,18 @@ func _play_species_skill_presentation() -> void:
 
 
 func _stop_species_skill_presentation() -> void:
+	pass
+
+
+func _prepare_hurt(_knockback_direction: Vector2) -> void:
+	pass
+
+
+func _update_health_presentation() -> void:
+	pass
+
+
+func _prepare_death_presentation() -> void:
 	pass
 
 
@@ -281,7 +299,9 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 	if is_hurting or state == DEAD:
 		return
 
+	_prepare_hurt(knockback_direction)
 	_health -= 1
+	_update_health_presentation()
 	if _health <= 0:
 		die()
 		return
@@ -296,6 +316,10 @@ func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
 
 
 func die() -> void:
+	if state == DEAD:
+		return
+
 	change_state(DEAD)
+	_prepare_death_presentation()
 	await get_tree().create_timer(_get_animation_length(DEAD_ANIMATION)).timeout
 	queue_free()

@@ -8,8 +8,8 @@ const RESET_ANIMATION := &"RESET"
 @onready var earthquake_animation_player: AnimationPlayer = $Earthquake/AnimationPlayer
 
 
-func _init() -> void:
-	_health = MAX_HEALTH
+func _get_max_health() -> int:
+	return MAX_HEALTH
 
 
 func _play_species_skill_presentation() -> void:
