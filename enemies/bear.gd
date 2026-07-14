@@ -100,9 +100,11 @@ func turn_around() -> void:
 
 func is_front_blocked() -> bool:
 	var space_state := get_world_2d().direct_space_state
+	var global_scale := global_transform.get_scale()
+	var check_distance: float = WALL_CHECK_DISTANCE * absf(global_scale.x)
 	for y_offset in WALL_CHECK_Y_OFFSETS:
-		var from := global_position + Vector2(0.0, y_offset)
-		var to := from + Vector2(move_direction * WALL_CHECK_DISTANCE, 0.0)
+		var from := global_position + Vector2(0.0, y_offset * absf(global_scale.y))
+		var to := from + Vector2(move_direction * check_distance, 0.0)
 		var query := PhysicsRayQueryParameters2D.create(from, to, ENVIRONMENT_COLLISION_MASK)
 		query.exclude = [get_rid()]
 		if not space_state.intersect_ray(query).is_empty():
