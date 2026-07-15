@@ -33,6 +33,16 @@ func is_hurt_immune() -> bool:
 	return _is_hurt_immune
 
 
+func apply_debug_health_override(health: int) -> bool:
+	if not OS.is_debug_build() or health <= 0:
+		return false
+
+	_current_health = health
+	_is_depleted = false
+	health_changed.emit(_current_health, _maximum_health)
+	return true
+
+
 func accept_damage(amount: int) -> bool:
 	if amount <= 0 or _is_depleted or _is_hurt_immune:
 		return false

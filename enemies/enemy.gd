@@ -73,6 +73,10 @@ func is_health_depleted() -> bool:
 	return _health.is_depleted()
 
 
+func apply_debug_health_override(health: int) -> bool:
+	return _health.apply_debug_health_override(health)
+
+
 func restore_full_health() -> void:
 	_health.restore_full_health()
 

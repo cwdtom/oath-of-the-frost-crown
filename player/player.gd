@@ -50,6 +50,10 @@ func is_health_depleted() -> bool:
 	return _health.is_depleted()
 
 
+func apply_debug_health_override(health: int) -> bool:
+	return _health.apply_debug_health_override(health)
+
+
 func change_state(new_state: int) -> void:
 	if state == new_state:
 		return
