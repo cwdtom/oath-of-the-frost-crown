@@ -39,6 +39,14 @@ func get_campaign_camera_role() -> StringName:
 	return CAMERA_NONE
 
 
+func is_campaign_music_playing() -> bool:
+	return false
+
+
+func get_campaign_music_playback_position() -> float:
+	return 0.0
+
+
 func prepare_for_campaign(_play_opening_story: bool) -> void:
 	pass
 

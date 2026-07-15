@@ -6,6 +6,7 @@ const PHASE_TITLE := &"title"
 const PHASE_GUIDE := &"guide"
 const PHASE_LEVEL := &"level"
 const CAMERA_OPENING_STORY := &"opening_story"
+const CAMERA_PLAYER := &"player"
 const MAX_STORY_ADVANCE_INPUTS := 64
 
 var failures: Array[String] = []
@@ -63,6 +64,8 @@ func _run() -> void:
 		level_01.get_campaign_camera_role() == CAMERA_OPENING_STORY,
 		"Level01 opening Story uses the Story Camera"
 	)
+	if DisplayServer.get_name() != "headless":
+		expect(level_01.is_campaign_music_playing(), "Level01 music plays before suspension")
 
 	Input.parse_input_event(guide_input)
 	await process_frame
@@ -92,6 +95,59 @@ func _run() -> void:
 	expect(
 		prologue != null and prologue.get_campaign_id() == &"level_00",
 		"Main handles Level01 Story completion through the Level seam"
+	)
+	if prologue == null:
+		await cleanup(main, level_01)
+		finish()
+		return
+	expect(is_instance_valid(level_01), "Level01 remains alive during the prologue")
+	expect(not level_01.is_inside_tree(), "Level01 is outside the active scene tree")
+	expect(not level_01.is_campaign_music_playing(), "Level01 music stops during the prologue")
+	var music_position_at_suspension := level_01.get_campaign_music_playback_position()
+
+	level_01.campaign_story_phase_finished.emit()
+	await process_frame
+	expect(
+		main.call("get_active_campaign_level") == prologue,
+		"Duplicate Level01 Story completion cannot start another prologue"
+	)
+
+	prologue.campaign_story_phase_finished.emit()
+	expect(
+		main.call("get_active_campaign_level") == level_01,
+		"Level00 Story completion restores the retained Level01"
+	)
+	expect(level_01.is_inside_tree(), "Restored Level01 returns to the active scene tree")
+	expect(
+		not level_01.is_campaign_story_phase_active(),
+		"Restored Level01 keeps its opening Story completed"
+	)
+	expect(not paused, "Restored Level01 gameplay is unpaused")
+	expect(level_01.is_campaign_control_available(), "Restored Level01 enables controls")
+	expect(level_01.is_campaign_hud_visible(), "Restored Level01 shows the HUD")
+	expect(
+		level_01.get_campaign_camera_role() == CAMERA_PLAYER,
+		"Restored Level01 uses the Player Camera"
+	)
+	expect(
+		level_01.get_campaign_music_playback_position() >= music_position_at_suspension,
+		"Level01 music resumes from its retained position"
+	)
+	if DisplayServer.get_name() != "headless":
+		expect(level_01.is_campaign_music_playing(), "Restored Level01 music is playing")
+
+	prologue.campaign_story_phase_finished.emit()
+	await process_frame
+	expect(
+		main.call("get_active_campaign_level") == level_01,
+		"Duplicate Level00 Story completion cannot restore another Level"
+	)
+
+	level_01.campaign_story_phase_finished.emit()
+	await process_frame
+	expect(
+		main.call("get_active_campaign_level") == level_01,
+		"Late duplicate Level01 Story completion cannot restart the prologue"
 	)
 
 	await cleanup(main, level_01)

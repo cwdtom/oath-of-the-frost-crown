@@ -45,6 +45,18 @@ func get_campaign_camera_role() -> StringName:
 	return CAMERA_NONE
 
 
+func is_campaign_music_playing() -> bool:
+	var background := get_node_or_null("Background")
+	return background != null and bool(background.call("is_music_playing"))
+
+
+func get_campaign_music_playback_position() -> float:
+	var background := get_node_or_null("Background")
+	if background == null:
+		return 0.0
+	return float(background.call("get_music_playback_position"))
+
+
 func set_campaign_controls_enabled(enabled: bool) -> void:
 	player.set_controls_enabled(enabled)
 

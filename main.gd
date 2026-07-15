@@ -128,7 +128,10 @@ func start_level_01(play_intro: bool = true) -> void:
 	var level_01 := LEVEL_01_SCENE.instantiate() as CampaignLevel
 	level_01.prepare_for_campaign(true)
 	replace_level(LEVEL_01_SCENE, level_01)
-	level.campaign_story_phase_finished.connect(_on_level_01_story_phase_finished)
+	level.campaign_story_phase_finished.connect(
+		_on_level_01_story_phase_finished,
+		CONNECT_ONE_SHOT
+	)
 
 
 func start_level_02(play_intro: bool = true) -> void:
@@ -136,15 +139,22 @@ func start_level_02(play_intro: bool = true) -> void:
 
 
 func play_level_00() -> void:
+	if level == null or level.get_campaign_id() != &"level_01":
+		return
+	if suspended_level_01 != null:
+		return
+
 	suspended_level_01 = level
-	var background := suspended_level_01.get_node("Background")
-	background.call("stop_music")
+	suspended_level_01.suspend_from_campaign()
 	remove_child(suspended_level_01)
 
 	level = LEVEL_00_SCENE.instantiate() as CampaignLevel
 	level.name = "Level00"
-	var story := level.get_node("Story")
-	story.connect("story_finished", _on_level_00_story_finished)
+	level.prepare_for_campaign(true)
+	level.campaign_story_phase_finished.connect(
+		_on_level_00_story_finished,
+		CONNECT_ONE_SHOT
+	)
 	add_child(level)
 	move_child(level, 0)
 
@@ -160,6 +170,11 @@ func _on_level_01_story_phase_finished() -> void:
 
 
 func _on_level_00_story_finished() -> void:
+	if level == null or level.get_campaign_id() != &"level_00":
+		return
+	if suspended_level_01 == null:
+		return
+
 	var finished_level_00 := level
 	level = suspended_level_01
 	suspended_level_01 = null
@@ -168,6 +183,7 @@ func _on_level_00_story_finished() -> void:
 	finished_level_00.queue_free()
 	add_child(level)
 	move_child(level, 0)
+	level.restore_to_campaign()
 
 
 func _on_player_died() -> void:
