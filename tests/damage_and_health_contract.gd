@@ -74,12 +74,179 @@ func _run() -> void:
 	fixture = HeadlessGameplayFixture.new(self)
 	fixture.set_project_setting("physics/2d/default_gravity", 0.0)
 
+	if not OS.is_debug_build():
+		await verify_release_build_rejects_debug_health_overrides()
+		fixture.complete(false)
+		await fixture.process_frames(3)
+		fixture.complete()
+		return
+
+	await verify_player_rejects_invalid_debug_health_overrides()
+	await verify_player_debug_health_override()
+	await verify_enemy_rejects_invalid_debug_health_overrides()
+	await verify_enemy_debug_health_override()
 	for spec in ACTOR_SPECS:
 		await verify_actor_contract(spec)
 
 	fixture.complete(false)
 	await fixture.process_frames(3)
 	fixture.complete()
+
+
+func verify_release_build_rejects_debug_health_overrides() -> void:
+	var player_fixture := await instantiate_fixture(ACTOR_SPECS[0])
+	var player := player_fixture["actor"] as DamageableActor
+	if player == null:
+		fixture.expect(false, "Release Player loads through its debug-health actor seam")
+	else:
+		fixture.expect(
+			not bool(player.call("apply_debug_health_override", 999)),
+			"Release Player refuses a positive debug health override"
+		)
+		player.take_damage(5, Vector2.ZERO)
+		fixture.expect(
+			player.is_health_depleted(),
+			"Release Player keeps the normal five-health threshold"
+		)
+	await cleanup_fixture(player_fixture)
+
+	var enemy_fixture := await instantiate_fixture(ACTOR_SPECS[1])
+	var enemy := enemy_fixture["actor"] as DamageableActor
+	if enemy == null:
+		fixture.expect(false, "Release Enemy loads through its debug-health actor seam")
+	else:
+		fixture.expect(
+			not bool(enemy.call("apply_debug_health_override", 1)),
+			"Release Enemy refuses a positive debug health override"
+		)
+		enemy.take_damage(1, Vector2.ZERO)
+		fixture.expect(
+			not enemy.is_health_depleted() and enemy.is_in_group("enemies"),
+			"Release Enemy keeps its normal species health"
+		)
+		await fixture.wait_seconds(float(ACTOR_SPECS[1]["hurt_recovery"]))
+	await cleanup_fixture(enemy_fixture)
+
+
+func verify_player_rejects_invalid_debug_health_overrides() -> void:
+	var actor_fixture := await instantiate_fixture(ACTOR_SPECS[0])
+	var player := actor_fixture["actor"] as DamageableActor
+	if player == null:
+		fixture.expect(false, "Player loads for invalid debug-health checks")
+		await cleanup_fixture(actor_fixture)
+		return
+
+	fixture.expect(
+		not bool(player.call("apply_debug_health_override", 0)),
+		"Debug Player rejects a zero health override"
+	)
+	fixture.expect(
+		not bool(player.call("apply_debug_health_override", -1)),
+		"Debug Player rejects a negative health override"
+	)
+	player.take_damage(5, Vector2.ZERO)
+	fixture.expect(
+		player.is_health_depleted(),
+		"Rejected Player overrides preserve the normal five-health threshold"
+	)
+	await cleanup_fixture(actor_fixture)
+
+
+func verify_player_debug_health_override() -> void:
+	var actor_fixture := await instantiate_fixture(ACTOR_SPECS[0])
+	var player := actor_fixture["actor"] as DamageableActor
+	if player == null:
+		fixture.expect(false, "Player loads through its debug-health actor seam")
+		await cleanup_fixture(actor_fixture)
+		return
+
+	var death_notifications := [0]
+	player.connect(&"died", func() -> void: death_notifications[0] += 1)
+	fixture.expect(
+		bool(player.call("apply_debug_health_override", 999)),
+		"Debug Player accepts a positive health override"
+	)
+	fixture.expect(
+		player.call("get_current_health") == 999
+		and player.call("get_maximum_health") == int(ACTOR_SPECS[0]["maximum_health"]),
+		"Debug Player reports 999 health without changing its normal maximum"
+	)
+	player.take_damage(5, Vector2.ZERO)
+	fixture.expect(
+		death_notifications[0] == 0 and not player.is_health_depleted(),
+		"Debug Player survives damage at the normal five-health threshold"
+	)
+	await cleanup_fixture(actor_fixture)
+
+
+func verify_enemy_rejects_invalid_debug_health_overrides() -> void:
+	for spec in ACTOR_SPECS.slice(1):
+		var actor_fixture := await instantiate_fixture(spec)
+		var enemy := actor_fixture["actor"] as DamageableActor
+		var name := str(spec["name"])
+		if enemy == null:
+			fixture.expect(false, "%s loads for invalid debug-health checks" % name)
+			await cleanup_fixture(actor_fixture)
+			continue
+
+		if not enemy.has_method("apply_debug_health_override"):
+			fixture.expect(false, "%s exposes a Debug Build health override" % name)
+			await cleanup_fixture(actor_fixture)
+			continue
+		fixture.expect(
+			not bool(enemy.call("apply_debug_health_override", 0)),
+			"Debug %s rejects a zero health override" % name
+		)
+		fixture.expect(
+			not bool(enemy.call("apply_debug_health_override", -1)),
+			"Debug %s rejects a negative health override" % name
+		)
+		enemy.take_damage(1, Vector2.ZERO)
+		fixture.expect(
+			not enemy.is_health_depleted() and enemy.is_in_group("enemies"),
+			"Rejected %s overrides preserve normal species health" % name
+		)
+		await fixture.wait_seconds(float(spec["hurt_recovery"]))
+		await cleanup_fixture(actor_fixture)
+
+
+func verify_enemy_debug_health_override() -> void:
+	for spec in ACTOR_SPECS.slice(1):
+		var actor_fixture := await instantiate_fixture(spec)
+		var enemy := actor_fixture["actor"] as DamageableActor
+		var name := str(spec["name"])
+		if enemy == null:
+			fixture.expect(false, "%s loads through its debug-health actor seam" % name)
+			await cleanup_fixture(actor_fixture)
+			continue
+
+		fixture.expect(
+			enemy.has_method("apply_debug_health_override"),
+			"%s exposes a Debug Build health override" % name
+		)
+		if not enemy.has_method("apply_debug_health_override"):
+			await cleanup_fixture(actor_fixture)
+			continue
+
+		var death_notifications := [0]
+		var death_signal := spec["death_signal"] as StringName
+		if not death_signal.is_empty():
+			enemy.connect(death_signal, func() -> void: death_notifications[0] += 1)
+		fixture.expect(
+			bool(enemy.call("apply_debug_health_override", 1)),
+			"Debug %s accepts a positive health override" % name
+		)
+		enemy.take_damage(1, Vector2.ZERO)
+		fixture.expect(
+			enemy.is_health_depleted() and not enemy.is_in_group("enemies"),
+			"Debug %s enters its normal death flow after one accepted hit" % name
+		)
+		if not death_signal.is_empty():
+			fixture.expect(
+				death_notifications[0] == 1,
+				"Debug %s publishes its normal boss death notification" % name
+			)
+		await cleanup_fixture(actor_fixture)
 
 
 func verify_actor_contract(spec: Dictionary) -> void:

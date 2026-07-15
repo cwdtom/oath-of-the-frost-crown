@@ -54,6 +54,10 @@ func get_active_campaign_level() -> CampaignLevel:
 	return _active_level
 
 
+func is_campaign_result_visible() -> bool:
+	return _game_result_popup.is_result_visible()
+
+
 func connect_level_events() -> void:
 	_active_level.campaign_outcome_reached.connect(
 		_on_campaign_outcome_reached.bind(_active_level)
@@ -76,9 +80,29 @@ func show_result(result_text: String) -> void:
 
 
 func start_level(scene: PackedScene, play_intro: bool) -> void:
+	replace_campaign_session(scene, play_intro)
+
+
+func replace_campaign_session(scene: PackedScene, play_opening_story: bool) -> void:
+	get_tree().paused = false
+	if is_instance_valid(_title):
+		_title.visible = false
+	_guide.visible = false
+	_victory_story_active = false
+
+	if _suspended_level != null:
+		var old_suspended_level := _suspended_level
+		_suspended_level = null
+		old_suspended_level.queue_free()
+
 	var next_level := scene.instantiate() as CampaignLevel
-	next_level.prepare_for_campaign(play_intro)
+	next_level.prepare_for_campaign(play_opening_story)
 	replace_level(scene, next_level)
+	if scene == LEVEL_01_SCENE and play_opening_story:
+		_active_level.campaign_story_phase_finished.connect(
+			_on_level_01_story_phase_finished.bind(_active_level),
+			CONNECT_ONE_SHOT
+		)
 
 
 func replace_level(scene: PackedScene, next_level: CampaignLevel) -> void:
@@ -100,17 +124,7 @@ func replace_level(scene: PackedScene, next_level: CampaignLevel) -> void:
 
 
 func start_level_01(play_intro: bool = true) -> void:
-	if not play_intro:
-		start_level(LEVEL_01_SCENE, false)
-		return
-
-	var level_01 := LEVEL_01_SCENE.instantiate() as CampaignLevel
-	level_01.prepare_for_campaign(true)
-	replace_level(LEVEL_01_SCENE, level_01)
-	_active_level.campaign_story_phase_finished.connect(
-		_on_level_01_story_phase_finished,
-		CONNECT_ONE_SHOT
-	)
+	replace_campaign_session(LEVEL_01_SCENE, play_intro)
 
 
 func start_level_02(play_intro: bool = true) -> void:
@@ -131,7 +145,7 @@ func play_level_00() -> void:
 	_active_level.name = "Level00"
 	_active_level.prepare_for_campaign(true)
 	_active_level.campaign_story_phase_finished.connect(
-		_on_level_00_story_finished,
+		_on_level_00_story_finished.bind(_active_level),
 		CONNECT_ONE_SHOT
 	)
 	add_child(_active_level)
@@ -144,12 +158,14 @@ func _on_title_start_requested() -> void:
 	_guide.visible = true
 
 
-func _on_level_01_story_phase_finished() -> void:
+func _on_level_01_story_phase_finished(source: CampaignLevel) -> void:
+	if source != _active_level:
+		return
 	play_level_00()
 
 
-func _on_level_00_story_finished() -> void:
-	if _active_level == null or _active_level.get_campaign_id() != &"level_00":
+func _on_level_00_story_finished(source: CampaignLevel) -> void:
+	if source != _active_level:
 		return
 	if _suspended_level == null:
 		return
@@ -193,9 +209,9 @@ func play_level_victory_story(source: CampaignLevel) -> void:
 
 
 func _on_level_victory_story_finished(source: CampaignLevel) -> void:
-	_victory_story_active = false
 	if source != _active_level:
 		return
+	_victory_story_active = false
 
 	match source.get_campaign_id():
 		&"level_01":
@@ -204,12 +220,16 @@ func _on_level_victory_story_finished(source: CampaignLevel) -> void:
 			set_level_controls_enabled(true)
 
 
-func _on_retry_pressed() -> void:
+func retry_campaign() -> void:
 	if _active_level_scene == null:
 		return
 
 	get_tree().paused = false
 	start_level(_active_level_scene, false)
+
+
+func _on_retry_pressed() -> void:
+	retry_campaign()
 
 
 func _on_quit_pressed() -> void:
