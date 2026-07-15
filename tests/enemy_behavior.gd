@@ -116,7 +116,7 @@ func test_initialization_patrol_limits_and_facing() -> void:
 			"%s exposes authoritative terminal health" % example.name
 		)
 		expect(
-			configured_enemy.has_method("take_damage"),
+			configured_enemy is DamageableActor,
 			"%s exposes the actor damage seam" % example.name
 		)
 		expect(

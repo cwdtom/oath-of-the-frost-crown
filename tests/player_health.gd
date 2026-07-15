@@ -24,7 +24,7 @@ func _run() -> void:
 	expect(player.has_method("get_maximum_health"), "Player exposes authoritative maximum health")
 	expect(player.has_method("is_hurt_immune"), "Player exposes authoritative hurt immunity")
 	expect(player.has_method("is_health_depleted"), "Player exposes authoritative terminal health")
-	expect(player.has_method("take_damage"), "Player exposes the actor damage seam")
+	expect(player is DamageableActor, "Player exposes the actor damage seam")
 	expect(not player.has_method("hurt"), "Player removes the legacy damage entry point")
 	expect(player.has_signal("health_changed"), "Player publishes authoritative health outcomes")
 	expect(hud.has_method("present_health"), "HUD consumes authoritative health outcomes")

@@ -1,4 +1,4 @@
-extends CharacterBody2D
+extends "res://combat/damageable_actor.gd"
 
 
 signal hurt_taken
@@ -164,7 +164,7 @@ func _physics_process(delta: float) -> void:
 
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
-		if collision.get_collider().is_in_group("enemies"):
+		if collision.get_collider() is DamageableActor:
 			take_damage(1, collision.get_normal())
 
 

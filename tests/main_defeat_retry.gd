@@ -146,7 +146,7 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 func find_player_event_source(level: CampaignLevel) -> Node:
 	for node in level.find_children("*", "", true, false):
 		if (
-			node.has_method("take_damage")
+			node is DamageableActor
 			and node.has_signal("health_changed")
 			and node.has_signal("died")
 		):

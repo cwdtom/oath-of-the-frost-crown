@@ -2,7 +2,8 @@ extends Area2D
 
 
 func _on_body_entered(body: Node2D) -> void:
-	if body == null or not is_instance_valid(body):
+	var actor := body as DamageableActor
+	if actor == null or not is_instance_valid(actor):
 		return
 
-	body.take_damage(1, body.global_position - global_position)
+	actor.take_damage(1, actor.global_position - global_position)

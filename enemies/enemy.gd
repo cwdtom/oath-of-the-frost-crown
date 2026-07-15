@@ -1,4 +1,4 @@
-extends CharacterBody2D
+extends "res://combat/damageable_actor.gd"
 
 
 signal health_changed(current_health: int, maximum_health: int)

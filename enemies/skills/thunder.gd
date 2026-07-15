@@ -4,13 +4,13 @@ extends Area2D
 const IMPACT_TIME := 1.0
 
 var cast_id := 0
-var damaged_bodies: Array[Node2D] = []
+var damaged_actors: Array[DamageableActor] = []
 var is_cast_active := false
 
 
 func start_cast() -> void:
 	cast_id += 1
-	damaged_bodies.clear()
+	damaged_actors.clear()
 	is_cast_active = true
 	damage_overlaps_at_impact(cast_id)
 
@@ -35,18 +35,19 @@ func _on_body_entered(body: Node2D) -> void:
 
 
 func damage_body(body: Node2D) -> void:
+	var actor := body as DamageableActor
 	if (
 		not is_cast_active
-		or body == null
-		or not is_instance_valid(body)
+		or actor == null
+		or not is_instance_valid(actor)
 	):
 		return
 
-	if damaged_bodies.has(body):
+	if damaged_actors.has(actor):
 		return
 
-	damaged_bodies.append(body)
-	body.take_damage(1, body.global_position - global_position)
+	damaged_actors.append(actor)
+	actor.take_damage(1, actor.global_position - global_position)
 
 
 func _on_animation_player_animation_finished(animation_name: StringName) -> void:
