@@ -55,6 +55,10 @@ func set_campaign_controls_enabled(_enabled: bool) -> void:
 	pass
 
 
+func start_campaign_victory_story() -> bool:
+	return false
+
+
 func suspend_from_campaign() -> void:
 	pass
 

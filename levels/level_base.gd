@@ -4,6 +4,7 @@ extends "res://levels/campaign_level.gd"
 signal intro_finished
 
 @export_node_path("Node") var _campaign_completion_source_path: NodePath
+@export_file("*.json") var _campaign_victory_story_path := ""
 
 @onready var player = $Player
 @onready var hud = $HUD
@@ -59,6 +60,22 @@ func get_campaign_music_playback_position() -> float:
 
 func set_campaign_controls_enabled(enabled: bool) -> void:
 	player.set_controls_enabled(enabled)
+
+
+func start_campaign_victory_story() -> bool:
+	if story != null or _campaign_victory_story_path.is_empty():
+		return false
+
+	set_campaign_controls_enabled(false)
+	var story_scene := load("res://ui/story.tscn") as PackedScene
+	story = story_scene.instantiate() as CanvasLayer
+	story.name = "VictoryStory"
+	story.set("story_path", _campaign_victory_story_path)
+	story.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	story.connect("story_finished", _on_victory_story_finished, CONNECT_ONE_SHOT)
+	add_child(story)
+	get_tree().paused = true
+	return true
 
 
 func suspend_from_campaign() -> void:
@@ -118,6 +135,15 @@ func _on_story_finished() -> void:
 	get_tree().paused = false
 	finished_story.queue_free()
 	intro_finished.emit()
+	campaign_story_phase_finished.emit()
+
+
+func _on_victory_story_finished() -> void:
+	var finished_story := story
+	story = null
+
+	get_tree().paused = false
+	finished_story.queue_free()
 	campaign_story_phase_finished.emit()
 
 

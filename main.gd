@@ -5,7 +5,6 @@ const LEVEL_00_SCENE := preload("res://levels/level_00.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
 const STORY_SCENE := preload("res://ui/story.tscn")
-const LEVEL_01_VICTORY_STORY := "res://levels/level_01_a_story.json"
 const LEVEL_02_VICTORY_STORY := "res://levels/level_02_a_story.json"
 const RESULT_DEAD := "DEAD"
 const CAMPAIGN_PHASE_TITLE := &"title"
@@ -179,15 +178,26 @@ func _on_campaign_outcome_reached(outcome: StringName, source: CampaignLevel) ->
 		CampaignLevel.OUTCOME_COMPLETION:
 			match source.get_campaign_id():
 				&"level_01":
-					play_victory_story(
-						LEVEL_01_VICTORY_STORY,
-						_on_victory_story_finished
-					)
+					play_level_01_victory_story(source)
 				&"level_02":
 					play_victory_story(
 						LEVEL_02_VICTORY_STORY,
 						_on_level_02_victory_story_finished
 					)
+
+
+func play_level_01_victory_story(source: CampaignLevel) -> void:
+	if victory_story_active:
+		return
+	if not source.start_campaign_victory_story():
+		return
+
+	victory_story_active = true
+	game_result_popup.visible = false
+	source.campaign_story_phase_finished.connect(
+		_on_level_01_victory_story_finished,
+		CONNECT_ONE_SHOT
+	)
 
 
 func play_victory_story(story_path: String, finished_callback: Callable) -> void:
@@ -206,9 +216,7 @@ func play_victory_story(story_path: String, finished_callback: Callable) -> void
 	get_tree().paused = true
 
 
-func _on_victory_story_finished(story: CanvasLayer) -> void:
-	get_tree().paused = false
-	story.queue_free()
+func _on_level_01_victory_story_finished() -> void:
 	victory_story_active = false
 	start_level_02()
 
