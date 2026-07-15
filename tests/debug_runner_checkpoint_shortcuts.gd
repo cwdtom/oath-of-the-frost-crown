@@ -1,12 +1,54 @@
 extends SceneTree
 
 
+class DiagnosticLogger:
+	extends Logger
+
+	const MESSAGE_PREFIX := "Debug Runner: checkpoint "
+
+	var _messages: Array[String] = []
+	var _mutex := Mutex.new()
+
+	func _log_message(message: String, _error: bool) -> void:
+		if not message.begins_with(MESSAGE_PREFIX):
+			return
+		_mutex.lock()
+		_messages.append(message.trim_suffix("\n"))
+		_mutex.unlock()
+
+	func _log_error(
+		_function: String,
+		_file: String,
+		_line: int,
+		_code: String,
+		_rationale: String,
+		_editor_notify: bool,
+		_error_type: int,
+		_script_backtraces: Array[ScriptBacktrace]
+	) -> void:
+		pass
+
+	func get_messages() -> Array[String]:
+		_mutex.lock()
+		var messages := _messages.duplicate()
+		_mutex.unlock()
+		return messages
+
+
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const DEBUG_RUNNER_SCENE := preload("res://debug/debug_runner.tscn")
 const MAIN_SCENE := preload("res://main.tscn")
+const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const MAX_STORY_ADVANCE_INPUTS := 64
+const RESERVED_SLOT_DIAGNOSTICS := [
+	"Debug Runner: checkpoint 5 is unassigned.",
+	"Debug Runner: checkpoint 6 is unassigned.",
+	"Debug Runner: checkpoint 7 is unassigned.",
+	"Debug Runner: checkpoint 8 is unassigned.",
+]
 
 var fixture: HeadlessGameplayFixture
+var diagnostic_logger := DiagnosticLogger.new()
 
 
 func _init() -> void:
@@ -15,13 +57,34 @@ func _init() -> void:
 
 func _run() -> void:
 	fixture = HeadlessGameplayFixture.new(self)
+	OS.add_logger(diagnostic_logger)
 	var runner := fixture.instantiate_scene(DEBUG_RUNNER_SCENE)
 	fixture.set_current_scene(runner)
 	await fixture.process_frames(1)
 
 	await verify_runner_shortcuts(runner)
 	await retire_runner(runner)
+
+	runner = fixture.instantiate_scene(DEBUG_RUNNER_SCENE)
+	fixture.set_current_scene(runner)
+	await fixture.process_frames(1)
+	await verify_victory_story_interruption(runner)
+	await retire_runner(runner)
+
+	runner = fixture.instantiate_scene(DEBUG_RUNNER_SCENE)
+	fixture.set_current_scene(runner)
+	await fixture.process_frames(1)
+	await verify_defeat_result_replacement(runner)
+	await retire_runner(runner)
+
+	runner = fixture.instantiate_scene(DEBUG_RUNNER_SCENE)
+	fixture.set_current_scene(runner)
+	await fixture.process_frames(1)
+	await verify_reserved_slots(runner)
+	await retire_runner(runner)
+
 	await verify_production_main_is_inert()
+	OS.remove_logger(diagnostic_logger)
 
 	fixture.complete(false)
 	await fixture.process_frames(3)
@@ -86,14 +149,259 @@ func verify_runner_shortcuts(runner: Node) -> void:
 	if level_01_story == null:
 		return
 
-	await advance_story_phase(level_01_story)
+	await advance_story_phase(level_01_story, "Ctrl+1 Level01 opening Story")
 	var prologue := runner.call("get_active_campaign_level") as CampaignLevel
 	fixture.expect(
 		prologue != null and prologue.get_campaign_id() == &"level_00",
 		"Ctrl+1 retains the normal Level00 prologue flow"
 	)
-	if prologue != null:
-		fixture.add_node(prologue)
+	if prologue == null:
+		return
+	fixture.add_node(prologue)
+
+	var level_02_combat_after_prologue := await switch_checkpoint(
+		runner, prologue, KEY_4, &"level_02", false, "Ctrl+4 during Level00"
+	)
+	fixture.expect(
+		not is_instance_valid(level_01_story),
+		"Checkpoint switching during Level00 disposes the suspended Level01"
+	)
+	if level_02_combat_after_prologue == null:
+		return
+
+	var replacement_level_01 := await switch_checkpoint(
+		runner, level_02_combat_after_prologue, KEY_1, &"level_01", true,
+		"Ctrl+1 after abandoning Level00"
+	)
+	if replacement_level_01 == null:
+		return
+
+	await advance_story_phase(replacement_level_01, "Replacement Level01 opening Story")
+	var replacement_prologue := runner.call("get_active_campaign_level") as CampaignLevel
+	fixture.expect(
+		replacement_prologue != null
+		and replacement_prologue.get_campaign_id() == &"level_00",
+		"Re-entered checkpoint 1 starts a fresh Level00 prologue"
+	)
+	if replacement_prologue == null:
+		return
+	fixture.add_node(replacement_prologue)
+
+	await advance_story_phase(replacement_prologue, "Replacement Level00 prologue")
+	fixture.expect(
+		runner.call("get_active_campaign_level") == replacement_level_01,
+		"Fresh Level00 completion restores the replacement Level01"
+	)
+	fixture.expect(
+		replacement_level_01.is_campaign_control_available(),
+		"Restored replacement Level01 is usable"
+	)
+	fixture.expect(not paused, "Restored replacement Level01 leaves the SceneTree unpaused")
+
+
+func verify_victory_story_interruption(runner: Node) -> void:
+	var opening_level := runner.call("get_active_campaign_level") as CampaignLevel
+	var abandoned_level := await switch_checkpoint(
+		runner, opening_level, KEY_2, &"level_01", false, "Victory test Ctrl+2"
+	)
+	if abandoned_level == null:
+		return
+
+	abandoned_level.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+	fixture.expect(
+		abandoned_level.is_campaign_story_phase_active(),
+		"Level01 completion starts its victory Story"
+	)
+	fixture.expect(paused, "Level01 victory Story pauses the SceneTree")
+
+	var replacement := await switch_checkpoint(
+		runner, abandoned_level, KEY_2, &"level_01", false,
+		"Ctrl+2 during a victory Story"
+	)
+	if replacement == null:
+		return
+	fixture.expect(
+		replacement.is_campaign_control_available(),
+		"Victory Story replacement starts usable Level01 combat"
+	)
+	fixture.expect(not paused, "Victory Story replacement unpauses the SceneTree")
+
+	replacement.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+	fixture.expect(
+		replacement.is_campaign_story_phase_active(),
+		"Replacement Level can start its own victory Story"
+	)
+
+	runner.call("replace_campaign_session", LEVEL_01_SCENE, false)
+	var final_replacement := runner.call("get_active_campaign_level") as CampaignLevel
+	fixture.expect(
+		final_replacement != null and final_replacement != replacement,
+		"Victory replacement starts a fresh session for stale-source verification"
+	)
+	if final_replacement == null or final_replacement == replacement:
+		return
+	fixture.add_node(final_replacement)
+
+	replacement.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+	replacement.campaign_story_phase_finished.emit()
+	fixture.expect(
+		runner.call("get_active_campaign_level") == final_replacement,
+		"Delayed abandoned victory signals cannot transition the replacement session"
+	)
+	fixture.expect(
+		not bool(runner.call("is_campaign_result_visible")),
+		"Delayed abandoned victory signals cannot expose result UI"
+	)
+
+	final_replacement.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+	fixture.expect(
+		final_replacement.is_campaign_story_phase_active(),
+		"Final replacement Level can start its own victory Story"
+	)
+	await advance_story_phase(final_replacement, "Replacement Level01 victory Story")
+	var level_02 := runner.call("get_active_campaign_level") as CampaignLevel
+	fixture.expect(
+		level_02 != null and level_02.get_campaign_id() == &"level_02",
+		"Replacement Level victory completes through normal campaign progression"
+	)
+	if level_02 != null:
+		fixture.add_node(level_02)
+
+
+func verify_defeat_result_replacement(runner: Node) -> void:
+	var opening_level := runner.call("get_active_campaign_level") as CampaignLevel
+	var defeated_level := await switch_checkpoint(
+		runner, opening_level, KEY_2, &"level_01", false, "Defeat test Ctrl+2"
+	)
+	if defeated_level == null:
+		return
+
+	defeated_level.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
+	fixture.expect(
+		bool(runner.call("is_campaign_result_visible")),
+		"Level defeat presents its result before checkpoint replacement"
+	)
+
+	var replacement := await switch_checkpoint(
+		runner, defeated_level, KEY_4, &"level_02", false, "Ctrl+4 from defeat result"
+	)
+	fixture.expect(
+		not bool(runner.call("is_campaign_result_visible")),
+		"Checkpoint replacement dismisses the stale defeat result"
+	)
+	if replacement == null:
+		return
+	fixture.expect(
+		replacement.is_campaign_control_available(),
+		"Defeat-result replacement starts usable Level02 combat"
+	)
+
+	replacement.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
+	fixture.expect(
+		bool(runner.call("is_campaign_result_visible")),
+		"Replacement Level can still reach its own defeat result"
+	)
+
+
+func verify_reserved_slots(runner: Node) -> void:
+	var opening_story := runner.call("get_active_campaign_level") as CampaignLevel
+	fixture.expect(opening_story != null, "Reserved-slot test starts checkpoint 1")
+	if opening_story == null:
+		return
+	fixture.add_node(opening_story)
+
+	var previous_diagnostic_count := diagnostic_logger.get_messages().size()
+	for _press in 2:
+		for keycode in [KEY_5, KEY_6, KEY_7, KEY_8]:
+			send_key(keycode, true)
+	await fixture.process_frames(1)
+	expect_new_diagnostics(
+		previous_diagnostic_count,
+		RESERVED_SLOT_DIAGNOSTICS + RESERVED_SLOT_DIAGNOSTICS,
+		"Reserved Story slots"
+	)
+	fixture.expect(
+		runner.call("get_active_campaign_level") == opening_story,
+		"Reserved slots cannot advance or replace an active opening Story"
+	)
+	fixture.expect(
+		opening_story.is_campaign_story_phase_active(),
+		"Reserved slots leave the opening Story active"
+	)
+	fixture.expect(paused, "Reserved slots leave the opening Story paused")
+	fixture.expect(
+		not bool(runner.call("is_campaign_result_visible")),
+		"Reserved slots do not present gameplay UI during a Story"
+	)
+
+	var combat_level := await switch_checkpoint(
+		runner, opening_story, KEY_2, &"level_01", false, "Reserved-slot test Ctrl+2"
+	)
+	if combat_level == null:
+		return
+	previous_diagnostic_count = diagnostic_logger.get_messages().size()
+	for keycode in [KEY_5, KEY_6, KEY_7, KEY_8]:
+		send_key(keycode, true)
+		send_key(keycode, true, true, true)
+	await fixture.process_frames(1)
+	expect_new_diagnostics(
+		previous_diagnostic_count,
+		RESERVED_SLOT_DIAGNOSTICS,
+		"Reserved combat slots and echo events"
+	)
+	fixture.expect(
+		runner.call("get_active_campaign_level") == combat_level,
+		"Reserved slots and their echo events cannot replace active combat"
+	)
+	fixture.expect(
+		combat_level.is_campaign_control_available(),
+		"Reserved slots leave active combat usable"
+	)
+	fixture.expect(not paused, "Reserved slots do not pause active combat")
+	fixture.expect(
+		not bool(runner.call("is_campaign_result_visible")),
+		"Reserved slots do not present gameplay UI during combat"
+	)
+
+	combat_level.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
+	fixture.expect(
+		bool(runner.call("is_campaign_result_visible")),
+		"Reserved-slot result test presents a defeat result"
+	)
+	previous_diagnostic_count = diagnostic_logger.get_messages().size()
+	for keycode in [KEY_5, KEY_6, KEY_7, KEY_8]:
+		send_key(keycode, true)
+	await fixture.process_frames(1)
+	expect_new_diagnostics(
+		previous_diagnostic_count,
+		RESERVED_SLOT_DIAGNOSTICS,
+		"Reserved result slots"
+	)
+	fixture.expect(
+		runner.call("get_active_campaign_level") == combat_level,
+		"Reserved slots cannot replace a Level behind an active result"
+	)
+	fixture.expect(
+		bool(runner.call("is_campaign_result_visible")),
+		"Reserved slots leave the active result visible"
+	)
+	fixture.expect(
+		not combat_level.is_campaign_control_available(),
+		"Reserved slots leave result-state controls disabled"
+	)
+	fixture.expect(not paused, "Reserved slots do not pause an active result")
+
+
+func expect_new_diagnostics(
+	previous_count: int,
+	expected: Array,
+	description: String
+) -> void:
+	var messages := diagnostic_logger.get_messages()
+	fixture.expect(
+		messages.slice(previous_count) == expected,
+		"%s emit exactly one concise diagnostic per non-echo press" % description
+	)
 
 
 func switch_checkpoint(
@@ -182,7 +490,7 @@ func send_key(
 	Input.parse_input_event(input)
 
 
-func advance_story_phase(level: CampaignLevel) -> void:
+func advance_story_phase(level: CampaignLevel, description: String) -> void:
 	var finished := [false]
 	level.campaign_story_phase_finished.connect(func() -> void: finished[0] = true)
 	for _input_index in MAX_STORY_ADVANCE_INPUTS:
@@ -190,7 +498,7 @@ func advance_story_phase(level: CampaignLevel) -> void:
 			break
 		send_key(KEY_ENTER, false)
 		await fixture.process_frames(1)
-	fixture.expect(finished[0], "Ctrl+1 Level01 opening Story completes through input")
+	fixture.expect(finished[0], "%s completes through input" % description)
 
 
 func verify_debug_health_overrides(level: CampaignLevel, checkpoint: String) -> void:
@@ -227,15 +535,15 @@ func verify_production_main_is_inert() -> void:
 	var campaign_phase: StringName = main.call("get_campaign_phase")
 	var active_level := main.call("get_active_campaign_level") as CampaignLevel
 
-	for keycode in [KEY_1, KEY_2, KEY_3, KEY_4]:
+	for keycode in [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8]:
 		send_key(keycode, true)
 		await fixture.process_frames(1)
 
 	fixture.expect(
 		main.call("get_campaign_phase") == campaign_phase,
-		"Ctrl+1 through Ctrl+4 leave the production Campaign phase unchanged"
+		"Ctrl+1 through Ctrl+8 leave the production Campaign phase unchanged"
 	)
 	fixture.expect(
 		main.call("get_active_campaign_level") == active_level,
-		"Ctrl+1 through Ctrl+4 leave the production active Level unchanged"
+		"Ctrl+1 through Ctrl+8 leave the production active Level unchanged"
 	)

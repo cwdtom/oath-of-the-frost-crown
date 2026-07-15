@@ -1,20 +1,44 @@
 extends "res://main.gd"
 
 
+class CheckpointInputGuard:
+	extends Node
+
+	var checkpoint_input: Callable
+
+	func _input(event: InputEvent) -> void:
+		checkpoint_input.call(event)
+
+
 const DEBUG_PLAYER_HEALTH := 999
 const DEBUG_ENEMY_HEALTH := 1
+const CHECKPOINTS := [
+	{"scene": LEVEL_01_SCENE, "play_opening_story": true},
+	{"scene": LEVEL_01_SCENE, "play_opening_story": false},
+	{"scene": LEVEL_02_SCENE, "play_opening_story": true},
+	{"scene": LEVEL_02_SCENE, "play_opening_story": false},
+	null,
+	null,
+	null,
+	null,
+]
 
 var _replacing_level := false
+var _checkpoint_input_guard: CheckpointInputGuard
 
 
 func _ready() -> void:
 	super._ready()
 	get_tree().node_added.connect(_on_node_added)
-	get_window().window_input.connect(_on_window_input)
 	start_level_01()
+	_checkpoint_input_guard = CheckpointInputGuard.new()
+	_checkpoint_input_guard.name = "CheckpointInputGuard"
+	_checkpoint_input_guard.process_mode = Node.PROCESS_MODE_ALWAYS
+	_checkpoint_input_guard.checkpoint_input = _on_checkpoint_input
+	add_child(_checkpoint_input_guard)
 
 
-func _on_window_input(event: InputEvent) -> void:
+func _on_checkpoint_input(event: InputEvent) -> void:
 	if not event is InputEventKey:
 		return
 
@@ -22,26 +46,21 @@ func _on_window_input(event: InputEvent) -> void:
 	if not key_event.pressed or key_event.echo or not key_event.ctrl_pressed:
 		return
 
-	var checkpoint_scene: PackedScene
-	var play_opening_story: bool
-	match key_event.keycode:
-		KEY_1:
-			checkpoint_scene = LEVEL_01_SCENE
-			play_opening_story = true
-		KEY_2:
-			checkpoint_scene = LEVEL_01_SCENE
-			play_opening_story = false
-		KEY_3:
-			checkpoint_scene = LEVEL_02_SCENE
-			play_opening_story = true
-		KEY_4:
-			checkpoint_scene = LEVEL_02_SCENE
-			play_opening_story = false
-		_:
-			return
+	if key_event.keycode < KEY_1 or key_event.keycode > KEY_8:
+		return
 
 	get_viewport().set_input_as_handled()
-	replace_campaign_session(checkpoint_scene, play_opening_story)
+	var checkpoint_number := key_event.keycode - KEY_1 + 1
+	var checkpoint: Variant = CHECKPOINTS[checkpoint_number - 1]
+	if checkpoint == null:
+		print("Debug Runner: checkpoint %d is unassigned." % checkpoint_number)
+		return
+
+	var checkpoint_config := checkpoint as Dictionary
+	replace_campaign_session(
+		checkpoint_config["scene"] as PackedScene,
+		bool(checkpoint_config["play_opening_story"])
+	)
 
 
 func replace_level(scene: PackedScene, next_level: CampaignLevel) -> void:
