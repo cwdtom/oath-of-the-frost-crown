@@ -44,11 +44,10 @@ func _handle_species_skill_collisions() -> void:
 			body == null
 			or not is_instance_valid(body)
 			or (body.collision_layer & PLAYER_COLLISION_LAYER) == 0
-			or not body.has_method("hurt")
 		):
 			continue
 
-		body.hurt(-collision.get_normal())
+		body.take_damage(1, -collision.get_normal())
 
 
 func _blocks_weapon_damage_during_skill() -> bool:

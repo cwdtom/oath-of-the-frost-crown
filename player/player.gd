@@ -165,11 +165,11 @@ func _physics_process(delta: float) -> void:
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		if collision.get_collider().is_in_group("enemies"):
-			hurt(collision.get_normal())
+			take_damage(1, collision.get_normal())
 
 
-func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
-	if not _health.accept_damage(1):
+func take_damage(amount: int, knockback_direction: Vector2) -> void:
+	if not _health.accept_damage(amount):
 		return
 
 	hurt_taken.emit()

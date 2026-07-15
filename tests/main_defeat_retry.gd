@@ -65,7 +65,7 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 				defeat_outcomes[0] += 1
 	)
 	for expected_health in [4, 3, 2, 1, 0]:
-		player.call("hurt")
+		player.call("take_damage", 1, Vector2.ZERO)
 		expect(
 			player.call("get_current_health") == expected_health,
 			"%s Player reaches exactly %d health" % [campaign_id, expected_health]
@@ -93,7 +93,7 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 	)
 	expect(defeat_outcomes[0] == 1, "%s Player depletion emits one campaign defeat" % campaign_id)
 
-	player.call("hurt")
+	player.call("take_damage", 1, Vector2.ZERO)
 	expect(
 		bool(result_interface.call("is_result_visible")),
 		"%s damage after depletion keeps one result visible" % campaign_id
@@ -145,7 +145,11 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 
 func find_player_event_source(level: CampaignLevel) -> Node:
 	for node in level.find_children("*", "", true, false):
-		if node.has_method("hurt") and node.has_signal("health_changed") and node.has_signal("died"):
+		if (
+			node.has_method("take_damage")
+			and node.has_signal("health_changed")
+			and node.has_signal("died")
+		):
 			return node
 	return null
 

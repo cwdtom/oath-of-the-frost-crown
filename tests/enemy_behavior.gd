@@ -116,6 +116,14 @@ func test_initialization_patrol_limits_and_facing() -> void:
 			"%s exposes authoritative terminal health" % example.name
 		)
 		expect(
+			configured_enemy.has_method("take_damage"),
+			"%s exposes the actor damage seam" % example.name
+		)
+		expect(
+			not configured_enemy.has_method("hurt"),
+			"%s removes the legacy damage entry point" % example.name
+		)
+		expect(
 			configured_enemy.has_method("restore_full_health"),
 			"%s delegates restoration to authoritative health" % example.name
 		)
@@ -421,7 +429,7 @@ func test_hurt_immunity_death_notification_and_cleanup() -> void:
 			and health_outcomes[-1] == Vector2i(0, example.health),
 			"%s exact depletion publishes one terminal health outcome" % example.name
 		)
-		enemy.call("hurt")
+		enemy.call("take_damage", 1, Vector2.ZERO)
 		expect(
 			health_outcomes.size() == example.health,
 			"%s damage after depletion publishes no later health outcome" % example.name

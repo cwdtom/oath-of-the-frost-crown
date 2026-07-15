@@ -384,7 +384,7 @@ func _on_hurt_box_area_entered(area: Area2D) -> void:
 	):
 		return
 
-	hurt(global_position - area.global_position)
+	take_damage(1, global_position - area.global_position)
 
 
 func _on_skill_detect_body_entered(_body: Node2D) -> void:
@@ -399,8 +399,8 @@ func _on_skill_detect_body_entered(_body: Node2D) -> void:
 	start_skill()
 
 
-func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
-	if not _health.accept_damage(1):
+func take_damage(amount: int, knockback_direction: Vector2) -> void:
+	if not _health.accept_damage(amount):
 		return
 
 	_prepare_hurt(knockback_direction)

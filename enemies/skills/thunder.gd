@@ -39,7 +39,6 @@ func damage_body(body: Node2D) -> void:
 		not is_cast_active
 		or body == null
 		or not is_instance_valid(body)
-		or not body.has_method("hurt")
 	):
 		return
 
@@ -47,7 +46,7 @@ func damage_body(body: Node2D) -> void:
 		return
 
 	damaged_bodies.append(body)
-	body.hurt(body.global_position - global_position)
+	body.take_damage(1, body.global_position - global_position)
 
 
 func _on_animation_player_animation_finished(animation_name: StringName) -> void:

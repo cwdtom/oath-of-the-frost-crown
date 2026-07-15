@@ -19,6 +19,7 @@ func _run() -> void:
 	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
 	harness = EnemyHarness.new(self)
 
+	await test_player_contact_damage()
 	await test_dash_distance_reentry_and_cooldown()
 	await test_dash_collision_and_weapon_immunity()
 
@@ -28,6 +29,32 @@ func _run() -> void:
 	await process_frame
 	await create_timer(0.1).timeout
 	finish()
+
+
+func test_player_contact_damage() -> void:
+	var wolf_position := Vector2(1500.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		wolf_position,
+		{"idle_duration": 10.0}
+	)
+	var player_start := wolf_position + Vector2(-65.0, 0.0)
+	var player := harness.instantiate_actor(
+		preload("res://player/player.tscn"),
+		player_start
+	)
+	var hurt_event_count: Array[int] = [0]
+	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
+	player.velocity = Vector2(600.0, 0.0)
+
+	await harness.physics_frames(2)
+	expect(hurt_event_count[0] == 1, "Player contact with an Enemy deals one point of damage")
+	expect(player.get_current_health() == 4, "Enemy contact crosses the actor damage seam")
+	expect(player.global_position.x < player_start.x - 90.0, "Enemy contact keeps Player knockback")
+
+	harness.remove_actor(wolf)
+	harness.remove_actor(player)
+	await process_frame
 
 
 func test_dash_distance_reentry_and_cooldown() -> void:

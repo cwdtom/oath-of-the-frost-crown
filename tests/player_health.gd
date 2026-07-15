@@ -24,6 +24,8 @@ func _run() -> void:
 	expect(player.has_method("get_maximum_health"), "Player exposes authoritative maximum health")
 	expect(player.has_method("is_hurt_immune"), "Player exposes authoritative hurt immunity")
 	expect(player.has_method("is_health_depleted"), "Player exposes authoritative terminal health")
+	expect(player.has_method("take_damage"), "Player exposes the actor damage seam")
+	expect(not player.has_method("hurt"), "Player removes the legacy damage entry point")
 	expect(player.has_signal("health_changed"), "Player publishes authoritative health outcomes")
 	expect(hud.has_method("present_health"), "HUD consumes authoritative health outcomes")
 	expect(hud.has_method("is_presenting_health"), "HUD exposes its health presentation")
@@ -52,7 +54,7 @@ func _run() -> void:
 		expect(player.call("get_current_health") == 5, "Player starts with five current health")
 		expect(player.call("get_maximum_health") == 5, "Player keeps its five-health maximum")
 		expect(hud.call("is_presenting_health", 5, 5), "HUD initializes from authoritative health")
-		player.hurt()
+		player.take_damage(1, Vector2.ZERO)
 		expect(player.call("get_current_health") == 4, "One production hit removes one health")
 		expect(hud.call("is_presenting_health", 4, 5), "HUD updates immediately after accepted damage")
 		expect(
@@ -60,7 +62,7 @@ func _run() -> void:
 			"Accepted damage publishes the authoritative current and maximum health"
 		)
 		expect(player.call("is_hurt_immune"), "Accepted damage starts Player hurt immunity")
-		player.hurt()
+		player.take_damage(1, Vector2.ZERO)
 		expect(player.call("get_current_health") == 4, "Damage during hurt immunity is ignored")
 		expect(observed_health.size() == 1, "Ignored damage publishes no health outcome")
 		expect(hurt_reactions[0] == 1, "Ignored damage does not repeat the hurt reaction")
@@ -73,14 +75,14 @@ func _run() -> void:
 			"Restoration publishes the same authoritative health outcome"
 		)
 		expect(hud.call("is_presenting_health", 5, 5), "HUD updates immediately after restoration")
-		player.hurt()
+		player.take_damage(1, Vector2.ZERO)
 		expect(player.call("get_current_health") == 5, "Restored health remains immune to the repeated hit")
 		expect(hurt_reactions[0] == 1, "Restoration does not permit a repeated hurt reaction")
 		await create_timer(HURT_IMMUNITY_WAIT_SECONDS).timeout
 		expect(not player.call("is_hurt_immune"), "Player immunity keeps its existing duration")
 
 		for expected_health in [4, 3, 2, 1, 0]:
-			player.hurt()
+			player.take_damage(1, Vector2.ZERO)
 			expect(
 				player.call("get_current_health") == expected_health,
 				"Accepted damage reaches exactly %d health" % expected_health
@@ -92,7 +94,7 @@ func _run() -> void:
 		expect(death_notifications[0] == 1, "Exact depletion emits one death notification")
 		var outcome_count_at_death: int = observed_health.size()
 		var hurt_count_at_death: int = hurt_reactions[0]
-		player.hurt()
+		player.take_damage(1, Vector2.ZERO)
 		expect(player.call("get_current_health") == 0, "Damage after depletion leaves health at zero")
 		expect(observed_health.size() == outcome_count_at_death, "Damage after depletion emits no health outcome")
 		expect(hurt_reactions[0] == hurt_count_at_death, "Damage after depletion emits no hurt reaction")
@@ -101,7 +103,7 @@ func _run() -> void:
 		player.restore_full_health()
 		expect(not player.call("is_health_depleted"), "Restoration clears authoritative terminal health")
 		expect(hud.call("is_presenting_health", 5, 5), "HUD presents restoration after depletion")
-		player.hurt()
+		player.take_damage(1, Vector2.ZERO)
 		expect(
 			player.call("get_current_health") == 4,
 			"Restored Player damage acceptance is authoritative in the health module"
