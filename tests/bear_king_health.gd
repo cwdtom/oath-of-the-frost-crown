@@ -29,7 +29,7 @@ func _run() -> void:
 	await test_damage_faces_attacker_and_interrupts_earthquake()
 
 	fixture.complete(false)
-	await fixture.process_frames(2)
+	await fixture.process_frames(3)
 	fixture.complete()
 
 
