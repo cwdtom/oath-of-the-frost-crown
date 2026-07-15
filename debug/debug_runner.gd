@@ -26,11 +26,7 @@ func _apply_debug_health_overrides(level: CampaignLevel) -> void:
 		player.call("apply_debug_health_override", DEBUG_PLAYER_HEALTH)
 
 	for node in get_tree().get_nodes_in_group("enemies"):
-		if (
-			node is Node
-			and level.is_ancestor_of(node)
-			and node.has_method("apply_debug_health_override")
-		):
+		if node is Node and _is_compatible_enemy(level, node):
 			node.call("apply_debug_health_override", DEBUG_ENEMY_HEALTH)
 
 
@@ -39,12 +35,7 @@ func _on_node_added(node: Node) -> void:
 		return
 
 	var level := get_active_campaign_level()
-	if (
-		level == null
-		or not level.is_ancestor_of(node)
-		or not node.is_in_group("enemies")
-		or not node.has_method("apply_debug_health_override")
-	):
+	if level == null or not _is_compatible_enemy(level, node):
 		return
 
 	if node.is_node_ready():
@@ -55,7 +46,14 @@ func _on_node_added(node: Node) -> void:
 
 func _apply_late_enemy_health_override(enemy: Node) -> void:
 	var level := get_active_campaign_level()
-	if level == null or not level.is_ancestor_of(enemy):
+	if level == null or not _is_compatible_enemy(level, enemy):
 		return
-	if enemy.is_in_group("enemies") and enemy.has_method("apply_debug_health_override"):
-		enemy.call("apply_debug_health_override", DEBUG_ENEMY_HEALTH)
+	enemy.call("apply_debug_health_override", DEBUG_ENEMY_HEALTH)
+
+
+func _is_compatible_enemy(level: CampaignLevel, node: Node) -> bool:
+	return (
+		level.is_ancestor_of(node)
+		and node.is_in_group("enemies")
+		and node.has_method("apply_debug_health_override")
+	)
