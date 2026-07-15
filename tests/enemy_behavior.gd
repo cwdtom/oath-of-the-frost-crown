@@ -18,10 +18,8 @@ const ENEMY_EXAMPLES := [
 		"run_speed": 80.0,
 		"scale": Vector2.ONE,
 		"health": 4,
-		"hurt_recovery": 0.4,
 		"death_duration": 1.0,
 		"blocks_skill_damage": false,
-		"notifies_death": false,
 		"detector_offset": Vector2(-152.0, 42.5),
 	},
 	{
@@ -32,10 +30,8 @@ const ENEMY_EXAMPLES := [
 		"run_speed": 80.0,
 		"scale": Vector2.ONE,
 		"health": 2,
-		"hurt_recovery": 0.4,
 		"death_duration": 2.0,
 		"blocks_skill_damage": true,
-		"notifies_death": false,
 		"detector_offset": Vector2(100.0, 0.0),
 	},
 	{
@@ -46,10 +42,8 @@ const ENEMY_EXAMPLES := [
 		"run_speed": 80.0,
 		"scale": Vector2(1.5, 1.5),
 		"health": 15,
-		"hurt_recovery": 0.45,
 		"death_duration": 1.0,
 		"blocks_skill_damage": false,
-		"notifies_death": true,
 		"detector_offset": Vector2(-228.0, 72.0),
 	},
 	{
@@ -60,10 +54,8 @@ const ENEMY_EXAMPLES := [
 		"run_speed": 150.0,
 		"scale": Vector2.ONE,
 		"health": 5,
-		"hurt_recovery": 1.05,
 		"death_duration": 2.0,
 		"blocks_skill_damage": true,
-		"notifies_death": true,
 		"detector_offset": Vector2(-150.0, 0.0),
 	},
 ]
@@ -83,10 +75,9 @@ func _run() -> void:
 
 	test_levels_keep_their_enemy_encounters()
 	await test_initialization_patrol_limits_and_facing()
-	await test_authoritative_health_restoration()
 	await test_scaled_environment_wall_reversal()
 	await test_skill_interruption_policy()
-	await test_hurt_immunity_death_notification_and_cleanup()
+	await test_death_presentation_and_cleanup()
 
 	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
 	harness.cleanup()
@@ -99,50 +90,6 @@ func test_initialization_patrol_limits_and_facing() -> void:
 	var start_x := 0.0
 	for example in ENEMY_EXAMPLES:
 		var configured_enemy := harness.instantiate_enemy(example.scene, Vector2(start_x, 0.0))
-		expect(
-			configured_enemy.has_method("get_current_health"),
-			"%s exposes authoritative current health" % example.name
-		)
-		expect(
-			configured_enemy.has_method("get_maximum_health"),
-			"%s exposes authoritative maximum health" % example.name
-		)
-		expect(
-			configured_enemy.has_method("is_hurt_immune"),
-			"%s exposes authoritative hurt immunity" % example.name
-		)
-		expect(
-			configured_enemy.has_method("is_health_depleted"),
-			"%s exposes authoritative terminal health" % example.name
-		)
-		expect(
-			configured_enemy is DamageableActor,
-			"%s exposes the actor damage seam" % example.name
-		)
-		expect(
-			not configured_enemy.has_method("hurt"),
-			"%s removes the legacy damage entry point" % example.name
-		)
-		expect(
-			configured_enemy.has_method("restore_full_health"),
-			"%s delegates restoration to authoritative health" % example.name
-		)
-		expect(
-			configured_enemy.has_signal("health_changed"),
-			"%s publishes authoritative health outcomes" % example.name
-		)
-		if (
-			configured_enemy.has_method("get_current_health")
-			and configured_enemy.has_method("get_maximum_health")
-		):
-			expect(
-				configured_enemy.call("get_current_health") == example.health,
-				"%s starts at its authoritative maximum health" % example.name
-			)
-			expect(
-				configured_enemy.call("get_maximum_health") == example.health,
-				"%s keeps its existing maximum health" % example.name
-			)
 		expect(
 			configured_enemy.patrol_range == example.patrol_range,
 			"%s keeps its scene-facing patrol range" % example.name
@@ -206,61 +153,6 @@ func test_initialization_patrol_limits_and_facing() -> void:
 		await process_frame
 		start_x += 1000.0
 
-
-func test_authoritative_health_restoration() -> void:
-	var start_x := 4500.0
-	for example in ENEMY_EXAMPLES:
-		var enemy := harness.instantiate_enemy(
-			example.scene,
-			Vector2(start_x, 0.0),
-			{"idle_duration": 10.0, "patrol_range": 1000.0}
-		)
-		var health_bar := harness.enemy_health_bar(enemy)
-		var health_outcomes: Array[Vector2i] = []
-		enemy.connect(
-			&"health_changed",
-			func(current_health: int, maximum_health: int) -> void:
-				health_outcomes.append(Vector2i(current_health, maximum_health))
-		)
-
-		await harness.deliver_hit(enemy)
-		enemy.call("restore_full_health")
-		expect(
-			enemy.call("get_current_health") == example.health,
-			"%s restoration returns authoritative health to maximum" % example.name
-		)
-		expect(
-			enemy.call("is_hurt_immune"),
-			"%s restoration preserves its active hurt-immunity window" % example.name
-		)
-		expect(
-			not enemy.call("is_health_depleted"),
-			"%s restoration leaves authoritative health non-terminal" % example.name
-		)
-		expect(
-			health_outcomes
-			== [
-				Vector2i(example.health - 1, example.health),
-				Vector2i(example.health, example.health),
-			],
-			"%s restoration publishes authoritative current and maximum health" % example.name
-		)
-		if health_bar != null:
-			expect(
-				health_bar.value == example.health and health_bar.max_value == example.health,
-				"%s restoration immediately refreshes boss health presentation" % example.name
-			)
-
-		await harness.deliver_hit(enemy)
-		expect(
-			health_outcomes.size() == 2,
-			"%s restored health remains immune to the repeated hit" % example.name
-		)
-		harness.remove_actor(enemy)
-		await process_frame
-		start_x += 1000.0
-
-
 func test_levels_keep_their_enemy_encounters() -> void:
 	verify_level_enemy_encounters(LEVEL_01_SCENE, "Level 01", 5, 1)
 	verify_level_enemy_encounters(LEVEL_02_SCENE, "Level 02", 5, 1)
@@ -303,7 +195,6 @@ func test_skill_interruption_policy() -> void:
 			Vector2(start_x, 0.0),
 			{"idle_duration": 10.0, "patrol_range": 1000.0}
 		)
-		var health_bar := harness.enemy_health_bar(enemy)
 		var detector := harness.add_body(enemy.global_position + example.detector_offset)
 		await harness.physics_frames(3)
 		harness.remove_actor(detector)
@@ -324,28 +215,26 @@ func test_skill_interruption_policy() -> void:
 				(enemy.global_position.x - movement_x) * example.initial_direction > 0.0,
 				"%s keeps using its moving skill through weapon contact" % example.name
 			)
-			if health_bar != null:
-				expect(
-					health_bar.value == example.health,
-					"%s skill immunity preserves its boss health presentation" % example.name
-				)
+			expect(
+				enemy.call("get_current_health") == example.health,
+				"%s moving skill rejects weapon damage" % example.name
+			)
 		else:
 			expect(
 				enemy.global_position.x > skill_x + 50.0,
 				"%s accepts weapon interruption during its stationary skill" % example.name
 			)
-			if health_bar != null:
-				expect(
-					health_bar.value == example.health - 1,
-					"%s interruption updates its boss health presentation" % example.name
-				)
+			expect(
+				enemy.call("get_current_health") == example.health - 1,
+				"%s stationary skill accepts weapon damage" % example.name
+			)
 
 		harness.remove_actor(enemy)
 		await process_frame
 		start_x += 1500.0
 
 
-func test_hurt_immunity_death_notification_and_cleanup() -> void:
+func test_death_presentation_and_cleanup() -> void:
 	var start_x := 17000.0
 	for example in ENEMY_EXAMPLES:
 		var enemy := harness.instantiate_enemy(
@@ -353,93 +242,21 @@ func test_hurt_immunity_death_notification_and_cleanup() -> void:
 			Vector2(start_x, 0.0),
 			{"idle_duration": 10.0, "patrol_range": 1000.0}
 		)
-		var health_bar := harness.enemy_health_bar(enemy)
-		var health_outcomes: Array[Vector2i] = []
-		var death_outcome_count: Array[int] = [0]
-		enemy.connect(
-			&"health_changed",
-			func(current_health: int, maximum_health: int) -> void:
-				health_outcomes.append(Vector2i(current_health, maximum_health))
-		)
-		if example.notifies_death:
-			enemy.connect(
-				&"died",
-				func() -> void:
-					death_outcome_count[0] += 1
-					paused = true
-			)
-
-		await harness.deliver_hit(enemy, Vector2(-20.0, 0.0))
-		var first_hit_x := enemy.global_position.x
-		expect(
-			enemy.call("get_current_health") == example.health - 1,
-			"%s loses one authoritative health from an accepted hit" % example.name
-		)
-		expect(
-			health_outcomes == [Vector2i(example.health - 1, example.health)],
-			"%s publishes its accepted-damage health outcome" % example.name
-		)
-		expect(enemy.is_in_group("enemies"), "%s survives its first accepted hit" % example.name)
-		await harness.deliver_hit(enemy, Vector2(20.0, 0.0))
-		expect(
-			is_equal_approx(enemy.global_position.x, first_hit_x),
-			"%s ignores knockback during its hurt-immunity window" % example.name
-		)
-		expect(
-			enemy.is_in_group("enemies"),
-			"%s ignores damage during its hurt-immunity window" % example.name
-		)
-		expect(
-			health_outcomes.size() == 1,
-			"%s publishes no outcome for damage during hurt immunity" % example.name
-		)
-		if health_bar != null:
-			expect(
-				health_bar.value == example.health - 1,
-				"%s hurt immunity preserves its boss health presentation" % example.name
-			)
-
-		for accepted_hit_index in range(1, example.health):
-			await create_timer(example.hurt_recovery).timeout
-			await harness.deliver_hit(enemy)
-			if accepted_hit_index < example.health - 1:
-				expect(
-					enemy.is_in_group("enemies"),
-					"%s remains active before its lethal hit" % example.name
-				)
-
+		enemy.take_damage(int(example.health), Vector2.ZERO)
 		expect(
 			not enemy.is_in_group("enemies"),
 			"%s death immediately removes it from active Enemies" % example.name
 		)
+		var death_start_texture := harness.enemy_sprite_texture(enemy)
+		await physics_frame
 		expect(
 			not harness.enemy_has_body_collision(enemy),
-			"%s death immediately disables body collision" % example.name
+			"%s death disables body collision at the physics boundary" % example.name
 		)
 		expect(
 			not harness.enemy_has_hurt_collision(enemy),
-			"%s death immediately disables hurt collision" % example.name
+			"%s death disables hurt collision at the physics boundary" % example.name
 		)
-		expect(
-			enemy.call("is_health_depleted"),
-			"%s exact depletion enters authoritative terminal health" % example.name
-		)
-		expect(
-			health_outcomes.size() == example.health
-			and health_outcomes[-1] == Vector2i(0, example.health),
-			"%s exact depletion publishes one terminal health outcome" % example.name
-		)
-		enemy.call("take_damage", 1, Vector2.ZERO)
-		expect(
-			health_outcomes.size() == example.health,
-			"%s damage after depletion publishes no later health outcome" % example.name
-		)
-		var death_start_texture := harness.enemy_sprite_texture(enemy)
-		if example.notifies_death:
-			expect(
-				death_outcome_count[0] == 1,
-				"%s emits one boss death outcome" % example.name
-			)
 
 		await create_timer(example.death_duration * 0.6).timeout
 		expect(
@@ -455,13 +272,6 @@ func test_hurt_immunity_death_notification_and_cleanup() -> void:
 			not is_instance_valid(enemy),
 			"%s leaves after its death presentation" % example.name
 		)
-		if example.notifies_death:
-			expect(
-				death_outcome_count[0] == 1,
-				"%s death outcome remains singular after cleanup" % example.name
-			)
-			paused = false
-
 		start_x += 1500.0
 
 

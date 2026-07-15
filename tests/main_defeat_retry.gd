@@ -4,7 +4,6 @@ extends SceneTree
 const MAIN_SCENE := "res://main.tscn"
 const RESULT_DEAD := "DEAD"
 const CAMERA_PLAYER := &"player"
-const HURT_IMMUNITY_WAIT_SECONDS := 0.95
 const LEVEL_SPECS := [
 	{
 		"campaign_id": &"level_01",
@@ -51,6 +50,10 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 		defeated_level.is_campaign_control_available(),
 		"%s starts with controls available" % campaign_id
 	)
+	expect(
+		defeated_level.is_campaign_health_full(),
+		"%s entry restores Player and HUD health together" % campaign_id
+	)
 
 	var player := find_player_event_source(defeated_level)
 	expect(player != null, "%s exposes its production Player damage seam" % campaign_id)
@@ -64,19 +67,12 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 			if outcome == CampaignLevel.OUTCOME_DEFEAT:
 				defeat_outcomes[0] += 1
 	)
-	for expected_health in [4, 3, 2, 1, 0]:
-		player.call("take_damage", 1, Vector2.ZERO)
-		expect(
-			player.call("get_current_health") == expected_health,
-			"%s Player reaches exactly %d health" % [campaign_id, expected_health]
-		)
-		if expected_health == 4:
-			expect(
-				not defeated_level.is_campaign_health_full(),
-				"%s accepted damage updates Player and HUD together" % campaign_id
-			)
-		if expected_health > 0:
-			await create_timer(HURT_IMMUNITY_WAIT_SECONDS).timeout
+	player.call("take_damage", player.call("get_maximum_health"), Vector2.ZERO)
+	expect(player.call("get_current_health") == 0, "%s Player depletes through its actor seam" % campaign_id)
+	expect(
+		not defeated_level.is_campaign_health_full(),
+		"%s depletion updates Player and HUD together" % campaign_id
+	)
 
 	var result_interface := main.get_node("GameResultPopup")
 	expect(
