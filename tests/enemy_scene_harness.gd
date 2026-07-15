@@ -5,17 +5,25 @@ extends RefCounted
 const ENEMY_COLLISION_LAYER := 1 << 2
 const PLAYER_COLLISION_LAYER := 1 << 1
 const PLAYER_SCENE := preload("res://player/player.tscn")
+const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 
-var world := Node2D.new()
-var scene_tree: SceneTree
-var previous_current_scene: Node
+var world: Node2D
+var fixture: HeadlessGameplayFixture
+var _owns_fixture := false
 
 
-func _init(test_scene_tree: SceneTree) -> void:
-	scene_tree = test_scene_tree
-	previous_current_scene = test_scene_tree.current_scene
-	test_scene_tree.root.add_child(world)
-	test_scene_tree.current_scene = world
+func _init(owner: Variant, test_world: Node2D = null) -> void:
+	if owner is SceneTree:
+		fixture = HeadlessGameplayFixture.new(owner as SceneTree)
+		_owns_fixture = true
+	else:
+		fixture = owner as HeadlessGameplayFixture
+
+	if test_world == null:
+		world = fixture.add_node(Node2D.new()) as Node2D
+		fixture.set_current_scene(world)
+	else:
+		world = test_world
 
 
 func instantiate_enemy(
@@ -27,14 +35,14 @@ func instantiate_enemy(
 	enemy.position = position
 	for property in properties:
 		enemy.set(property, properties[property])
-	world.add_child(enemy)
+	fixture.add_node(enemy, world)
 	return enemy
 
 
 func instantiate_actor(scene: PackedScene, position: Vector2) -> CharacterBody2D:
 	var actor := scene.instantiate() as CharacterBody2D
 	actor.position = position
-	world.add_child(actor)
+	fixture.add_node(actor, world)
 	return actor
 
 
@@ -51,7 +59,7 @@ func add_body(position: Vector2, size := Vector2(20.0, 20.0)) -> CharacterBody2D
 	body.collision_mask = 0
 	body.position = position
 	body.add_child(_create_collision_shape(size))
-	world.add_child(body)
+	fixture.add_node(body, world)
 	return body
 
 
@@ -62,7 +70,7 @@ func add_weapon(position: Vector2, size := Vector2(32.0, 32.0)) -> Area2D:
 	weapon.position = position
 	weapon.add_to_group("weapons")
 	weapon.add_child(_create_collision_shape(size))
-	world.add_child(weapon)
+	fixture.add_node(weapon, world)
 	return weapon
 
 
@@ -72,7 +80,7 @@ func add_environment_wall(position: Vector2, size: Vector2) -> StaticBody2D:
 	wall.collision_mask = 0
 	wall.position = position
 	wall.add_child(_create_collision_shape(size))
-	world.add_child(wall)
+	fixture.add_node(wall, world)
 	return wall
 
 
@@ -109,10 +117,10 @@ func remove_actor(actor: Node) -> void:
 func deliver_hit(enemy: CharacterBody2D, offset := Vector2.ZERO) -> void:
 	var weapon := add_weapon(enemy.global_position + offset)
 	await physics_frames(3)
-	await scene_tree.process_frame
+	await fixture.process_frames(1)
 	remove_actor(weapon)
 	await physics_frames(2)
-	await scene_tree.process_frame
+	await fixture.process_frames(1)
 
 
 func reenter_skill_detection(actor: CharacterBody2D, detection_position: Vector2) -> void:
@@ -120,12 +128,11 @@ func reenter_skill_detection(actor: CharacterBody2D, detection_position: Vector2
 	await physics_frames(2)
 	actor.position = detection_position
 	await physics_frames(2)
-	await scene_tree.create_timer(0.05).timeout
+	await fixture.wait_seconds(0.05)
 
 
 func physics_frames(count: int) -> void:
-	for _frame in count:
-		await scene_tree.physics_frame
+	await fixture.physics_frames(count)
 
 
 func is_playing(enemy: CharacterBody2D, animation_name: StringName) -> bool:
@@ -137,13 +144,8 @@ func animation_position(enemy: CharacterBody2D, animation_name: StringName) -> f
 
 
 func cleanup() -> void:
-	if is_instance_valid(world):
-		world.process_mode = Node.PROCESS_MODE_DISABLED
-		for node in world.find_children("*", "AudioStreamPlayer2D", true, false):
-			(node as AudioStreamPlayer2D).stop()
-		world.queue_free()
-	if scene_tree.current_scene == world:
-		scene_tree.current_scene = previous_current_scene
+	if _owns_fixture:
+		fixture.complete(false)
 
 
 func _create_collision_shape(size: Vector2) -> CollisionShape2D:
