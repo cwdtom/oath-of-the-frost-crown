@@ -4,7 +4,6 @@ extends "res://enemies/enemy.gd"
 const MAX_HEALTH := 2
 const SKILL_DISTANCE := 300.0
 const SKILL_SPEED := 400.0
-const PLAYER_COLLISION_LAYER := 1 << 1
 const WOLF_WALL_CHECK_DISTANCE := 56.0
 
 
@@ -39,16 +38,11 @@ func _get_wall_check_distance() -> float:
 func _handle_species_skill_collisions() -> void:
 	for collision_index in get_slide_collision_count():
 		var collision := get_slide_collision(collision_index)
-		var body := collision.get_collider() as CollisionObject2D
-		if (
-			body == null
-			or not is_instance_valid(body)
-			or (body.collision_layer & PLAYER_COLLISION_LAYER) == 0
-			or not body.has_method("hurt")
-		):
+		var actor := collision.get_collider() as DamageableActor
+		if actor == null or not is_instance_valid(actor):
 			continue
 
-		body.hurt(-collision.get_normal())
+		actor.take_damage(1, -collision.get_normal())
 
 
 func _blocks_weapon_damage_during_skill() -> bool:

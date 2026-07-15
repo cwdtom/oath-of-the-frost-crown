@@ -12,9 +12,9 @@ func _get_max_health() -> int:
 	return BEAR_KING_MAX_HEALTH
 
 
-func _update_health_presentation() -> void:
-	health_bar.max_value = BEAR_KING_MAX_HEALTH
-	health_bar.value = max(_health, 0)
+func _update_health_presentation(current_health: int, maximum_health: int) -> void:
+	health_bar.max_value = maximum_health
+	health_bar.value = current_health
 
 
 func _prepare_hurt(knockback_direction: Vector2) -> void:

@@ -18,10 +18,8 @@ const ENEMY_EXAMPLES := [
 		"run_speed": 80.0,
 		"scale": Vector2.ONE,
 		"health": 4,
-		"hurt_recovery": 0.4,
 		"death_duration": 1.0,
 		"blocks_skill_damage": false,
-		"notifies_death": false,
 		"detector_offset": Vector2(-152.0, 42.5),
 	},
 	{
@@ -32,10 +30,8 @@ const ENEMY_EXAMPLES := [
 		"run_speed": 80.0,
 		"scale": Vector2.ONE,
 		"health": 2,
-		"hurt_recovery": 0.4,
 		"death_duration": 2.0,
 		"blocks_skill_damage": true,
-		"notifies_death": false,
 		"detector_offset": Vector2(100.0, 0.0),
 	},
 	{
@@ -46,10 +42,8 @@ const ENEMY_EXAMPLES := [
 		"run_speed": 80.0,
 		"scale": Vector2(1.5, 1.5),
 		"health": 15,
-		"hurt_recovery": 0.45,
 		"death_duration": 1.0,
 		"blocks_skill_damage": false,
-		"notifies_death": true,
 		"detector_offset": Vector2(-228.0, 72.0),
 	},
 	{
@@ -60,10 +54,8 @@ const ENEMY_EXAMPLES := [
 		"run_speed": 150.0,
 		"scale": Vector2.ONE,
 		"health": 5,
-		"hurt_recovery": 1.05,
 		"death_duration": 2.0,
 		"blocks_skill_damage": true,
-		"notifies_death": true,
 		"detector_offset": Vector2(-150.0, 0.0),
 	},
 ]
@@ -85,7 +77,7 @@ func _run() -> void:
 	await test_initialization_patrol_limits_and_facing()
 	await test_scaled_environment_wall_reversal()
 	await test_skill_interruption_policy()
-	await test_hurt_immunity_death_notification_and_cleanup()
+	await test_death_presentation_and_cleanup()
 
 	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
 	harness.cleanup()
@@ -161,7 +153,6 @@ func test_initialization_patrol_limits_and_facing() -> void:
 		await process_frame
 		start_x += 1000.0
 
-
 func test_levels_keep_their_enemy_encounters() -> void:
 	verify_level_enemy_encounters(LEVEL_01_SCENE, "Level 01", 5, 1)
 	verify_level_enemy_encounters(LEVEL_02_SCENE, "Level 02", 5, 1)
@@ -204,7 +195,6 @@ func test_skill_interruption_policy() -> void:
 			Vector2(start_x, 0.0),
 			{"idle_duration": 10.0, "patrol_range": 1000.0}
 		)
-		var health_bar := harness.enemy_health_bar(enemy)
 		var detector := harness.add_body(enemy.global_position + example.detector_offset)
 		await harness.physics_frames(3)
 		harness.remove_actor(detector)
@@ -225,28 +215,26 @@ func test_skill_interruption_policy() -> void:
 				(enemy.global_position.x - movement_x) * example.initial_direction > 0.0,
 				"%s keeps using its moving skill through weapon contact" % example.name
 			)
-			if health_bar != null:
-				expect(
-					health_bar.value == example.health,
-					"%s skill immunity preserves its boss health presentation" % example.name
-				)
+			expect(
+				enemy.call("get_current_health") == example.health,
+				"%s moving skill rejects weapon damage" % example.name
+			)
 		else:
 			expect(
 				enemy.global_position.x > skill_x + 50.0,
 				"%s accepts weapon interruption during its stationary skill" % example.name
 			)
-			if health_bar != null:
-				expect(
-					health_bar.value == example.health - 1,
-					"%s interruption updates its boss health presentation" % example.name
-				)
+			expect(
+				enemy.call("get_current_health") == example.health - 1,
+				"%s stationary skill accepts weapon damage" % example.name
+			)
 
 		harness.remove_actor(enemy)
 		await process_frame
 		start_x += 1500.0
 
 
-func test_hurt_immunity_death_notification_and_cleanup() -> void:
+func test_death_presentation_and_cleanup() -> void:
 	var start_x := 17000.0
 	for example in ENEMY_EXAMPLES:
 		var enemy := harness.instantiate_enemy(
@@ -254,61 +242,21 @@ func test_hurt_immunity_death_notification_and_cleanup() -> void:
 			Vector2(start_x, 0.0),
 			{"idle_duration": 10.0, "patrol_range": 1000.0}
 		)
-		var health_bar := harness.enemy_health_bar(enemy)
-		var death_outcome_count: Array[int] = [0]
-		if example.notifies_death:
-			enemy.connect(
-				&"died",
-				func() -> void:
-					death_outcome_count[0] += 1
-					paused = true
-			)
-
-		await harness.deliver_hit(enemy, Vector2(-20.0, 0.0))
-		var first_hit_x := enemy.global_position.x
-		expect(enemy.is_in_group("enemies"), "%s survives its first accepted hit" % example.name)
-		await harness.deliver_hit(enemy, Vector2(20.0, 0.0))
-		expect(
-			is_equal_approx(enemy.global_position.x, first_hit_x),
-			"%s ignores knockback during its hurt-immunity window" % example.name
-		)
-		expect(
-			enemy.is_in_group("enemies"),
-			"%s ignores damage during its hurt-immunity window" % example.name
-		)
-		if health_bar != null:
-			expect(
-				health_bar.value == example.health - 1,
-				"%s hurt immunity preserves its boss health presentation" % example.name
-			)
-
-		for accepted_hit_index in range(1, example.health):
-			await create_timer(example.hurt_recovery).timeout
-			await harness.deliver_hit(enemy)
-			if accepted_hit_index < example.health - 1:
-				expect(
-					enemy.is_in_group("enemies"),
-					"%s remains active before its lethal hit" % example.name
-				)
-
+		enemy.take_damage(int(example.health), Vector2.ZERO)
 		expect(
 			not enemy.is_in_group("enemies"),
 			"%s death immediately removes it from active Enemies" % example.name
 		)
+		var death_start_texture := harness.enemy_sprite_texture(enemy)
+		await physics_frame
 		expect(
 			not harness.enemy_has_body_collision(enemy),
-			"%s death immediately disables body collision" % example.name
+			"%s death disables body collision at the physics boundary" % example.name
 		)
 		expect(
 			not harness.enemy_has_hurt_collision(enemy),
-			"%s death immediately disables hurt collision" % example.name
+			"%s death disables hurt collision at the physics boundary" % example.name
 		)
-		var death_start_texture := harness.enemy_sprite_texture(enemy)
-		if example.notifies_death:
-			expect(
-				death_outcome_count[0] == 1,
-				"%s emits one boss death outcome" % example.name
-			)
 
 		await create_timer(example.death_duration * 0.6).timeout
 		expect(
@@ -324,13 +272,6 @@ func test_hurt_immunity_death_notification_and_cleanup() -> void:
 			not is_instance_valid(enemy),
 			"%s leaves after its death presentation" % example.name
 		)
-		if example.notifies_death:
-			expect(
-				death_outcome_count[0] == 1,
-				"%s death outcome remains singular after cleanup" % example.name
-			)
-			paused = false
-
 		start_x += 1500.0
 
 

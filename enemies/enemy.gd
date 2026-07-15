@@ -1,5 +1,7 @@
-extends CharacterBody2D
+extends "res://combat/damageable_actor.gd"
 
+
+signal health_changed(current_health: int, maximum_health: int)
 
 @export var patrol_range := 160.0
 @export var run_speed := 80.0
@@ -14,18 +16,19 @@ const HURT_KNOCKBACK_DISTANCE := 100.0
 const ENVIRONMENT_COLLISION_MASK := 1
 const WALL_CHECK_DISTANCE := 72.0
 const WALL_CHECK_Y_OFFSETS := [-24.0, 24.0]
+const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum {IDLE, RUN, HURT, DEAD, SKILL}
 
 var state := -1
-var _health := 0
-var is_hurting := false
+var _health: DamageAndHealth
 var start_x := 0.0
 var move_direction := 0.0
 var idle_time_left := 0.0
 var skill_return_state: int = IDLE
 var skill_detect_offset_x := 0.0
 var _moving_skill_distance_left := 0.0
+var _has_pending_depletion_outcome := false
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -40,13 +43,38 @@ var _moving_skill_distance_left := 0.0
 
 
 func _ready() -> void:
-	_health = _get_max_health()
+	_health = DamageAndHealthModule.new(_get_max_health())
+	_health.health_changed.connect(_on_health_changed)
+	_health.depleted.connect(_on_health_depleted)
 	animation_tree.active = true
 	start_x = global_position.x
 	move_direction = _get_initial_move_direction()
 	skill_detect_offset_x = absf(skill_detect_collision_shape.position.x)
 	change_state(IDLE)
-	_update_health_presentation()
+	_update_health_presentation(
+		_health.get_current_health(),
+		_health.get_maximum_health()
+	)
+
+
+func get_current_health() -> int:
+	return _health.get_current_health()
+
+
+func get_maximum_health() -> int:
+	return _health.get_maximum_health()
+
+
+func is_hurt_immune() -> bool:
+	return _health.is_hurt_immune()
+
+
+func is_health_depleted() -> bool:
+	return _health.is_depleted()
+
+
+func restore_full_health() -> void:
+	_health.restore_full_health()
 
 
 func change_state(new_state: int) -> void:
@@ -215,7 +243,7 @@ func _prepare_hurt(_knockback_direction: Vector2) -> void:
 	pass
 
 
-func _update_health_presentation() -> void:
+func _update_health_presentation(_current_health: int, _maximum_health: int) -> void:
 	pass
 
 
@@ -325,7 +353,7 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity += get_gravity() * delta
 
-	if is_hurting:
+	if _health.is_hurt_immune():
 		velocity.x = 0.0
 		move_and_slide()
 		return
@@ -356,34 +384,46 @@ func _on_hurt_box_area_entered(area: Area2D) -> void:
 	):
 		return
 
-	hurt(global_position - area.global_position)
+	take_damage(1, global_position - area.global_position)
 
 
 func _on_skill_detect_body_entered(_body: Node2D) -> void:
-	if state == DEAD or state == SKILL or is_hurting or not skill_cooldown_timer.is_stopped():
+	if (
+		state == DEAD
+		or state == SKILL
+		or _health.is_hurt_immune()
+		or not skill_cooldown_timer.is_stopped()
+	):
 		return
 
 	start_skill()
 
 
-func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
-	if is_hurting or state == DEAD:
+func take_damage(amount: int, knockback_direction: Vector2) -> void:
+	if not _health.accept_damage(amount):
 		return
 
 	_prepare_hurt(knockback_direction)
-	_health -= 1
-	_update_health_presentation()
-	if _health <= 0:
+	if _has_pending_depletion_outcome:
+		_has_pending_depletion_outcome = false
 		die()
 		return
 
 	var return_state := _get_hurt_return_state()
-	is_hurting = true
 	apply_knockback(knockback_direction)
 	change_state(HURT)
 	await get_tree().create_timer(_get_animation_length(HURT_ANIMATION)).timeout
-	is_hurting = false
+	_health.end_hurt_immunity()
 	change_state(return_state)
+
+
+func _on_health_changed(current_health: int, maximum_health: int) -> void:
+	health_changed.emit(current_health, maximum_health)
+	_update_health_presentation(current_health, maximum_health)
+
+
+func _on_health_depleted() -> void:
+	_has_pending_depletion_outcome = true
 
 
 func die() -> void:

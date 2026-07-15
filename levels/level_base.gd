@@ -37,7 +37,11 @@ func is_campaign_hud_visible() -> bool:
 
 
 func is_campaign_health_full() -> bool:
-	return player.health == player.MAX_HEALTH and hud.current_health == player.MAX_HEALTH
+	var maximum_health: int = player.get_maximum_health()
+	return (
+		player.get_current_health() == maximum_health
+		and hud.is_presenting_health(maximum_health, maximum_health)
+	)
 
 
 func get_campaign_camera_role() -> StringName:
@@ -97,8 +101,8 @@ func restore_to_campaign() -> void:
 
 
 func _ready() -> void:
-	hud.set_health(player.health)
-	player.hurt_taken.connect(hud.decrease_health)
+	hud.present_health(player.get_current_health(), player.get_maximum_health())
+	player.health_changed.connect(hud.present_health)
 	player.connect("died", _on_campaign_defeated)
 
 	var completion_source := get_node_or_null(_campaign_completion_source_path)

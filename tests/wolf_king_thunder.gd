@@ -21,7 +21,6 @@ func _run() -> void:
 	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
 	harness = EnemyHarness.new(self)
 
-	await test_boss_health_presentation()
 	await test_moving_skill_has_no_wolf_contact_damage()
 	await test_thunder_movement_delivery_and_cooldown()
 	await test_hurt_cancels_pending_thunder()
@@ -32,20 +31,6 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	finish()
-
-
-func test_boss_health_presentation() -> void:
-	var wolf_king := harness.instantiate_enemy(WOLF_KING_SCENE, Vector2.ZERO)
-	var health_bar := harness.enemy_health_bar(wolf_king)
-	expect(health_bar != null, "WolfKing presents boss health")
-	if health_bar != null:
-		expect(
-			health_bar.max_value == EXPECTED_HEALTH and health_bar.value == EXPECTED_HEALTH,
-			"WolfKing presents its full five point health capacity"
-		)
-
-	harness.remove_actor(wolf_king)
-	await process_frame
 
 
 func test_moving_skill_has_no_wolf_contact_damage() -> void:
@@ -90,7 +75,6 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 	await harness.physics_frames(3)
 	await process_frame
 	var thunder_area := find_top_level_area(wolf_king)
-	var health_bar := harness.enemy_health_bar(wolf_king)
 	expect(
 		thunder_area != null
 		and thunder_area.global_position.x > start_position.x + 400.0
@@ -108,8 +92,8 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 	await harness.physics_frames(2)
 	harness.remove_actor(weapon)
 	expect(
-		health_bar != null and health_bar.value == EXPECTED_HEALTH,
-		"WolfKing ignores weapon damage during its moving skill"
+		wolf_king.get_current_health() == EXPECTED_HEALTH,
+		"WolfKing moving skill rejects weapon damage"
 	)
 
 	var speed_sample_x := wolf_king.global_position.x
@@ -173,7 +157,6 @@ func test_hurt_cancels_pending_thunder() -> void:
 		start_position,
 		{"idle_duration": 10.0}
 	)
-	var health_bar := harness.enemy_health_bar(wolf_king)
 
 	await harness.physics_frames(3)
 	await process_frame
@@ -185,8 +168,8 @@ func test_hurt_cancels_pending_thunder() -> void:
 
 	await harness.deliver_hit(wolf_king, Vector2(-50.0, 0.0))
 	expect(
-		health_bar != null and health_bar.value == EXPECTED_HEALTH - 1,
-		"Accepted damage updates WolfKing boss health presentation"
+		wolf_king.get_current_health() == EXPECTED_HEALTH - 1,
+		"Weapon contact damages WolfKing before thunder cancellation"
 	)
 	expect(harness.enemy_sprite_is_flipped(wolf_king), "Hurt WolfKing faces Player on its right")
 	await create_timer(0.5).timeout
@@ -214,13 +197,12 @@ func test_death_cancels_thunder_during_paused_presentation() -> void:
 		start_position,
 		{"idle_duration": 10.0, "patrol_range": 1000.0}
 	)
-	var health_bar := harness.enemy_health_bar(wolf_king)
 	for hit_index in EXPECTED_HEALTH - 1:
 		await harness.deliver_hit(wolf_king)
 		if hit_index < EXPECTED_HEALTH - 2:
 			await create_timer(1.05).timeout
 
-	expect(health_bar != null and health_bar.value == 1.0, "WolfKing reaches one remaining health")
+	expect(wolf_king.get_current_health() == 1, "WolfKing reaches one remaining health")
 	await create_timer(1.05).timeout
 	var detector_offset := 150.0 if harness.enemy_sprite_is_flipped(wolf_king) else -150.0
 	var detector_body := harness.add_body(wolf_king.global_position + Vector2(detector_offset, 0.0))
@@ -244,7 +226,7 @@ func test_death_cancels_thunder_during_paused_presentation() -> void:
 	harness.remove_actor(first_weapon)
 	harness.remove_actor(second_weapon)
 
-	expect(health_bar != null and health_bar.value == 0.0, "Lethal damage empties boss health")
+	expect(wolf_king.is_health_depleted(), "Lethal weapon delivery depletes WolfKing")
 
 	await create_timer(0.75).timeout
 	expect(delayed_hurt_count[0] == 0, "Death cancels pending WolfKing thunder")

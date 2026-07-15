@@ -71,9 +71,9 @@ func _prepare_hurt(_knockback_direction: Vector2) -> void:
 	face_move_direction()
 
 
-func _update_health_presentation() -> void:
-	_health_bar.max_value = WOLF_KING_MAX_HEALTH
-	_health_bar.value = max(_health, 0)
+func _update_health_presentation(current_health: int, maximum_health: int) -> void:
+	_health_bar.max_value = maximum_health
+	_health_bar.value = current_health
 
 
 func _prepare_death_presentation() -> void:
@@ -90,7 +90,7 @@ func _cast_thunder() -> void:
 
 
 func _play_thunder_cast(thunder_x: float, thunder_y: float) -> void:
-	if state == DEAD or is_hurting:
+	if state == DEAD or is_hurt_immune():
 		return
 
 	_thunder.global_position = Vector2(thunder_x, thunder_y)

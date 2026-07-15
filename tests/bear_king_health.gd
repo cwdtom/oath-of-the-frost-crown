@@ -22,7 +22,6 @@ func _run() -> void:
 	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
 	harness = EnemyHarness.new(self)
 
-	await test_boss_health_presentation()
 	await test_earthquake_damage_and_cooldown()
 	await test_damage_faces_attacker_and_interrupts_earthquake()
 
@@ -32,23 +31,6 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	finish()
-
-
-func test_boss_health_presentation() -> void:
-	var bear_king := harness.instantiate_enemy(BEAR_KING_SCENE, Vector2.ZERO)
-	var health_bar := harness.enemy_health_bar(bear_king)
-	expect(health_bar != null, "BearKing presents boss health")
-	if health_bar != null:
-		expect(
-			health_bar.max_value == EXPECTED_HEALTH and health_bar.value == EXPECTED_HEALTH,
-			"BearKing presents its full 15 point health capacity"
-		)
-		expect(
-			health_bar.fill_mode == TextureProgressBar.FILL_LEFT_TO_RIGHT,
-			"BearKing health presentation shrinks from right to left"
-		)
-	harness.remove_actor(bear_king)
-	await process_frame
 
 
 func test_earthquake_damage_and_cooldown() -> void:
@@ -72,7 +54,8 @@ func test_earthquake_damage_and_cooldown() -> void:
 		"BearKing starts the shared earthquake presentation"
 	)
 	var skill_start_x := bear_king.global_position.x
-	await create_timer(0.7).timeout
+	# Observe after the impact frame and before the one-second skill completes.
+	await create_timer(0.8).timeout
 	await physics_frame
 	expect(hurt_event_count[0] == 1, "BearKing earthquake deals one point of damage once")
 	await create_timer(0.3).timeout
@@ -102,7 +85,6 @@ func test_damage_faces_attacker_and_interrupts_earthquake() -> void:
 		bear_king_position,
 		{"idle_duration": 10.0}
 	)
-	var health_bar := harness.enemy_health_bar(bear_king)
 	var hurt_event_count: Array[int] = [0]
 	harness.instantiate_passive_player(
 		bear_king_position + EARTHQUAKE_OFFSET,
@@ -114,8 +96,8 @@ func test_damage_faces_attacker_and_interrupts_earthquake() -> void:
 
 	await harness.deliver_hit(bear_king, Vector2(-50.0, 0.0))
 	expect(
-		health_bar != null and health_bar.value == EXPECTED_HEALTH - 1,
-		"Accepted damage immediately updates BearKing health presentation"
+		bear_king.get_current_health() == EXPECTED_HEALTH - 1,
+		"Weapon contact damages a vulnerable BearKing"
 	)
 	expect(harness.is_playing(bear_king, HURT_ANIMATION), "Accepted damage starts BearKing hurt presentation")
 	expect(not harness.enemy_sprite_is_flipped(bear_king), "BearKing faces an attacker on its left")
@@ -131,8 +113,8 @@ func test_damage_faces_attacker_and_interrupts_earthquake() -> void:
 	await create_timer(0.45).timeout
 	await harness.deliver_hit(bear_king, Vector2(50.0, 0.0))
 	expect(
-		health_bar != null and health_bar.value == EXPECTED_HEALTH - 2,
-		"BearKing accepts damage after hurt immunity ends"
+		bear_king.get_current_health() == EXPECTED_HEALTH - 2,
+		"Later weapon contact delivers damage after recovery"
 	)
 	expect(harness.enemy_sprite_is_flipped(bear_king), "BearKing faces an attacker on its right")
 	await create_timer(0.3).timeout

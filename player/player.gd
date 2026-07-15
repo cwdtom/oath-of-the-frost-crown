@@ -1,8 +1,9 @@
-extends CharacterBody2D
+extends "res://combat/damageable_actor.gd"
 
 
 signal hurt_taken
 signal died
+signal health_changed(current_health: int, maximum_health: int)
 
 const SPEED = 300.0
 const JUMP_VELOCITY = -500.0
@@ -13,12 +14,12 @@ const MAX_HEALTH = 5
 const DEAD_ANIMATION = "dead"
 const HURT_ANIMATION = "hurt"
 const HURT_KNOCKBACK_DISTANCE = 100.0
+const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum {IDLE, RUN, JUMP, HURT, DEAD, ATTACK}
 var state = -1
-var health := MAX_HEALTH
-var is_hurting := false
 var controls_enabled := true
+var _health := DamageAndHealthModule.new(MAX_HEALTH)
 
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var animation_tree: AnimationTree = $AnimationTree
@@ -26,6 +27,27 @@ var controls_enabled := true
 @onready var visual_root: Node2D = $VisualRoot
 @onready var weapon_collision_shape: CollisionShape2D = $VisualRoot/WeaponMount/Area2D/CollisionShape2D
 @onready var thunder_animation_player := get_node_or_null("Player_Thunder/AnimationPlayer") as AnimationPlayer
+
+
+func _init() -> void:
+	_health.health_changed.connect(_on_health_changed)
+	_health.depleted.connect(_on_health_depleted)
+
+
+func get_current_health() -> int:
+	return _health.get_current_health()
+
+
+func get_maximum_health() -> int:
+	return _health.get_maximum_health()
+
+
+func is_hurt_immune() -> bool:
+	return _health.is_hurt_immune()
+
+
+func is_health_depleted() -> bool:
+	return _health.is_depleted()
 
 
 func change_state(new_state: int) -> void:
@@ -66,7 +88,7 @@ func set_controls_enabled(enabled: bool) -> void:
 
 
 func restore_full_health() -> void:
-	health = MAX_HEALTH
+	_health.restore_full_health()
 
 
 func set_attack_return_conditions(direction: float) -> void:
@@ -121,7 +143,7 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	if is_hurting:
+	if _health.is_hurt_immune():
 		return
 
 	if wants_attack:
@@ -142,23 +164,28 @@ func _physics_process(delta: float) -> void:
 
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
-		if collision.get_collider().is_in_group("enemies"):
-			hurt(collision.get_normal())
+		if collision.get_collider() is DamageableActor:
+			take_damage(1, collision.get_normal())
 
 
-func hurt(knockback_direction: Vector2 = Vector2.ZERO) -> void:
-	if is_hurting or state == DEAD:
+func take_damage(amount: int, knockback_direction: Vector2) -> void:
+	if not _health.accept_damage(amount):
 		return
 
-	health -= 1
 	hurt_taken.emit()
-	if health <= 0:
-		change_state(DEAD)
-		died.emit()
+	if _health.is_depleted():
 		return
 
-	is_hurting = true
 	apply_knockback(knockback_direction)
 	change_state(HURT)
 	await get_tree().create_timer(animation_player.get_animation(HURT_ANIMATION).length).timeout
-	is_hurting = false
+	_health.end_hurt_immunity()
+
+
+func _on_health_changed(current_health: int, maximum_health: int) -> void:
+	health_changed.emit(current_health, maximum_health)
+
+
+func _on_health_depleted() -> void:
+	change_state(DEAD)
+	died.emit()
