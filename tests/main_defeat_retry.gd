@@ -3,7 +3,6 @@ extends SceneTree
 
 const MAIN_SCENE := "res://main.tscn"
 const RESULT_DEAD := "DEAD"
-const FULL_PLAYER_HEALTH := 5
 const CAMERA_PLAYER := &"player"
 const LEVEL_SPECS := [
 	{
@@ -54,31 +53,32 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 
 	defeated_level.campaign_outcome_reached.emit(&"defeat")
 
-	var popup := main.get_node("GameResultPopup") as CanvasLayer
-	var result_label := (
-		main.get_node("GameResultPopup/Control/NinePatchRect/VBoxContainer/Label") as Label
+	var result_interface := main.get_node("GameResultPopup")
+	expect(
+		bool(result_interface.call("is_result_visible")),
+		"%s defeat presents a result" % campaign_id
 	)
-	expect(popup.visible, "%s defeat presents a result" % campaign_id)
-	expect(result_label.text == RESULT_DEAD, "%s defeat presents DEAD" % campaign_id)
+	expect(
+		str(result_interface.call("get_result_text")) == RESULT_DEAD,
+		"%s defeat presents DEAD" % campaign_id
+	)
 	expect(
 		not defeated_level.is_campaign_control_available(),
 		"%s defeat disables controls through the Level seam" % campaign_id
 	)
 
 	defeated_level.campaign_outcome_reached.emit(&"defeat")
-	expect(popup.visible, "%s duplicate defeat keeps one result visible" % campaign_id)
+	expect(
+		bool(result_interface.call("is_result_visible")),
+		"%s duplicate defeat keeps one result visible" % campaign_id
+	)
 	expect(
 		main.call("get_active_campaign_level") == defeated_level,
 		"%s duplicate defeat does not transition the campaign" % campaign_id
 	)
 
 	var defeated_instance_id := defeated_level.get_instance_id()
-	var retry_button := (
-		main.get_node(
-			"GameResultPopup/Control/NinePatchRect/VBoxContainer/HBoxContainer/Retry"
-		) as Button
-	)
-	retry_button.pressed.emit()
+	result_interface.emit_signal("retry_requested")
 	await process_frame
 
 	var replacement := main.call("get_active_campaign_level") as CampaignLevel
@@ -99,25 +99,21 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 			"%s retry enables controls" % campaign_id
 		)
 		expect(
-			get_displayed_health(replacement) == FULL_PLAYER_HEALTH,
-			"%s retry displays full Player health" % campaign_id
+			replacement.is_campaign_health_full(),
+			"%s retry restores full campaign health" % campaign_id
 		)
 		expect(replacement.is_campaign_hud_visible(), "%s retry shows the HUD" % campaign_id)
 		expect(
 			replacement.get_campaign_camera_role() == CAMERA_PLAYER,
 			"%s retry restores the Player Camera" % campaign_id
 		)
-	expect(not popup.visible, "%s retry hides the result" % campaign_id)
+	expect(
+		not bool(result_interface.call("is_result_visible")),
+		"%s retry hides the result" % campaign_id
+	)
 	expect(not paused, "%s retry leaves the scene tree unpaused" % campaign_id)
 
 	await cleanup(main)
-
-
-func get_displayed_health(level: CampaignLevel) -> int:
-	var hud := level.get_node_or_null("HUD")
-	if hud == null:
-		return -1
-	return int(hud.get("current_health"))
 
 
 func instantiate_main() -> Node:

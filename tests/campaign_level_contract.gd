@@ -6,16 +6,19 @@ const LEVEL_SPECS := [
 		"scene": "res://levels/level_00.tscn",
 		"campaign_id": &"level_00",
 		"outcomes": [],
+		"has_music": false,
 	},
 	{
 		"scene": "res://levels/level_01.tscn",
 		"campaign_id": &"level_01",
 		"outcomes": [&"defeat", &"completion"],
+		"has_music": true,
 	},
 	{
 		"scene": "res://levels/level_02.tscn",
 		"campaign_id": &"level_02",
 		"outcomes": [&"defeat", &"completion"],
+		"has_music": true,
 	},
 ]
 const MAX_STORY_ADVANCE_INPUTS := 64
@@ -54,6 +57,10 @@ func verify_level_contract(spec: Dictionary) -> void:
 	expect(
 		level.get_supported_campaign_outcomes() == spec["outcomes"],
 		"%s declares only its supported outcomes" % scene_path
+	)
+	expect(
+		level.has_campaign_music() == spec["has_music"],
+		"%s declares its campaign music capability" % scene_path
 	)
 	level.free()
 
@@ -110,6 +117,8 @@ func verify_lifecycle_contract() -> void:
 			not paused,
 			"%s can start without replaying its Story phase" % scene_path
 		)
+		if (spec["outcomes"] as Array).has(CampaignLevel.OUTCOME_DEFEAT):
+			expect(level.is_campaign_health_full(), "%s starts at full campaign health" % scene_path)
 		level.set_campaign_controls_enabled(false)
 		level.set_campaign_controls_enabled(true)
 		level.suspend_from_campaign()

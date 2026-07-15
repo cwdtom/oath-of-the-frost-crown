@@ -35,8 +35,16 @@ func is_campaign_hud_visible() -> bool:
 	return false
 
 
+func is_campaign_health_full() -> bool:
+	return false
+
+
 func get_campaign_camera_role() -> StringName:
 	return CAMERA_NONE
+
+
+func has_campaign_music() -> bool:
+	return false
 
 
 func is_campaign_music_playing() -> bool:

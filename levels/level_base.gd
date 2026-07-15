@@ -1,8 +1,6 @@
 extends "res://levels/campaign_level.gd"
 
 
-signal intro_finished
-
 @export_node_path("Node") var _campaign_completion_source_path: NodePath
 @export_file("*.json") var _campaign_victory_story_path := ""
 
@@ -38,12 +36,20 @@ func is_campaign_hud_visible() -> bool:
 	return is_inside_tree() and hud.visible
 
 
+func is_campaign_health_full() -> bool:
+	return player.health == player.MAX_HEALTH and hud.current_health == player.MAX_HEALTH
+
+
 func get_campaign_camera_role() -> StringName:
 	if story_camera != null and story_camera.is_current():
 		return CAMERA_OPENING_STORY
 	if player_camera.is_current():
 		return CAMERA_PLAYER
 	return CAMERA_NONE
+
+
+func has_campaign_music() -> bool:
+	return get_node_or_null("Background") != null
 
 
 func is_campaign_music_playing() -> bool:
@@ -134,7 +140,6 @@ func _on_story_finished() -> void:
 	hud.visible = true
 	get_tree().paused = false
 	finished_story.queue_free()
-	intro_finished.emit()
 	campaign_story_phase_finished.emit()
 
 

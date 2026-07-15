@@ -33,9 +33,12 @@ func _run() -> void:
 		return
 
 	level_01.campaign_story_phase_finished.connect(_record_level_01_story_completion)
-	var popup := main.get_node("GameResultPopup") as CanvasLayer
+	var result_interface := main.get_node("GameResultPopup")
 	level_01.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
-	expect(popup.visible, "Level01 defeat presents the result interface")
+	expect(
+		bool(result_interface.call("is_result_visible")),
+		"Level01 defeat presents the result interface"
+	)
 	expect(
 		not level_01.is_campaign_control_available(),
 		"Level01 defeat disables controls"
@@ -53,11 +56,17 @@ func _run() -> void:
 		not level_01.is_campaign_control_available(),
 		"Level01 victory Story disables controls"
 	)
-	expect(not popup.visible, "Level01 victory Story suppresses the result interface")
+	expect(
+		not bool(result_interface.call("is_result_visible")),
+		"Level01 victory Story suppresses the result interface"
+	)
 
 	level_01.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
 	level_01.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
-	expect(not popup.visible, "Victory takes precedence over competing defeat")
+	expect(
+		not bool(result_interface.call("is_result_visible")),
+		"Victory takes precedence over competing defeat"
+	)
 	expect(
 		main.call("get_active_campaign_level") == level_01,
 		"Competing terminal outcomes do not transition during the victory Story"
@@ -81,7 +90,10 @@ func _run() -> void:
 		return
 	expect(level_02.get_campaign_id() == &"level_02", "Level01 completion starts Level02")
 	expect(not is_instance_valid(level_01), "Level01 is permanently disposed after completion")
-	expect(not popup.visible, "Level02 starts without a result interface")
+	expect(
+		not bool(result_interface.call("is_result_visible")),
+		"Level02 starts without a result interface"
+	)
 	expect(level_02.is_campaign_story_phase_active(), "Level02 starts its opening Story")
 	expect(paused, "Level02 opening Story pauses gameplay")
 	expect(
@@ -127,12 +139,18 @@ func _run() -> void:
 		not level_02.is_campaign_control_available(),
 		"Level02 final victory Story disables controls"
 	)
-	expect(not popup.visible, "Level02 final victory Story suppresses the result interface")
+	expect(
+		not bool(result_interface.call("is_result_visible")),
+		"Level02 final victory Story suppresses the result interface"
+	)
 
 	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
 	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
 	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
-	expect(not popup.visible, "Level02 victory takes precedence over competing defeat")
+	expect(
+		not bool(result_interface.call("is_result_visible")),
+		"Level02 victory takes precedence over competing defeat"
+	)
 	expect(
 		main.call("get_active_campaign_level") == level_02,
 		"Duplicate Level02 terminal outcomes retain the final campaign Level"
@@ -177,18 +195,16 @@ func _run() -> void:
 
 	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
 	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
-	expect(popup.visible, "Level02 can present defeat after final Story completion")
+	expect(
+		bool(result_interface.call("is_result_visible")),
+		"Level02 can present defeat after final Story completion"
+	)
 	expect(
 		not level_02.is_campaign_control_available(),
 		"Post-victory Level02 defeat disables controls"
 	)
 
-	var retry_button := (
-		main.get_node(
-			"GameResultPopup/Control/NinePatchRect/VBoxContainer/HBoxContainer/Retry"
-		) as Button
-	)
-	retry_button.pressed.emit()
+	result_interface.emit_signal("retry_requested")
 	await process_frame
 
 	var replacement := main.call("get_active_campaign_level") as CampaignLevel
@@ -206,7 +222,10 @@ func _run() -> void:
 			replacement.get_campaign_camera_role() == CAMERA_PLAYER,
 			"Level02 retry restores the Player Camera"
 		)
-	expect(not popup.visible, "Level02 retry hides the result interface")
+	expect(
+		not bool(result_interface.call("is_result_visible")),
+		"Level02 retry hides the result interface"
+	)
 	expect(not paused, "Level02 retry leaves the scene tree unpaused")
 
 	await cleanup(main)
