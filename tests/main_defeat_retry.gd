@@ -4,6 +4,7 @@ extends SceneTree
 const MAIN_SCENE := "res://main.tscn"
 const RESULT_DEAD := "DEAD"
 const CAMERA_PLAYER := &"player"
+const HURT_IMMUNITY_WAIT_SECONDS := 0.95
 const LEVEL_SPECS := [
 	{
 		"campaign_id": &"level_01",
@@ -51,7 +52,31 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 		"%s starts with controls available" % campaign_id
 	)
 
-	defeated_level.campaign_outcome_reached.emit(&"defeat")
+	var player := find_player_event_source(defeated_level)
+	expect(player != null, "%s exposes its production Player damage seam" % campaign_id)
+	if player == null:
+		await cleanup(main)
+		return
+
+	var defeat_outcomes := [0]
+	defeated_level.campaign_outcome_reached.connect(
+		func(outcome: StringName) -> void:
+			if outcome == CampaignLevel.OUTCOME_DEFEAT:
+				defeat_outcomes[0] += 1
+	)
+	for expected_health in [4, 3, 2, 1, 0]:
+		player.call("hurt")
+		expect(
+			player.call("get_current_health") == expected_health,
+			"%s Player reaches exactly %d health" % [campaign_id, expected_health]
+		)
+		if expected_health == 4:
+			expect(
+				not defeated_level.is_campaign_health_full(),
+				"%s accepted damage updates Player and HUD together" % campaign_id
+			)
+		if expected_health > 0:
+			await create_timer(HURT_IMMUNITY_WAIT_SECONDS).timeout
 
 	var result_interface := main.get_node("GameResultPopup")
 	expect(
@@ -66,16 +91,18 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 		not defeated_level.is_campaign_control_available(),
 		"%s defeat disables controls through the Level seam" % campaign_id
 	)
+	expect(defeat_outcomes[0] == 1, "%s Player depletion emits one campaign defeat" % campaign_id)
 
-	defeated_level.campaign_outcome_reached.emit(&"defeat")
+	player.call("hurt")
 	expect(
 		bool(result_interface.call("is_result_visible")),
-		"%s duplicate defeat keeps one result visible" % campaign_id
+		"%s damage after depletion keeps one result visible" % campaign_id
 	)
 	expect(
 		main.call("get_active_campaign_level") == defeated_level,
-		"%s duplicate defeat does not transition the campaign" % campaign_id
+		"%s damage after depletion does not transition the campaign" % campaign_id
 	)
+	expect(defeat_outcomes[0] == 1, "%s damage after depletion cannot repeat campaign defeat" % campaign_id)
 
 	var defeated_instance_id := defeated_level.get_instance_id()
 	result_interface.emit_signal("retry_requested")
@@ -114,6 +141,13 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 	expect(not paused, "%s retry leaves the scene tree unpaused" % campaign_id)
 
 	await cleanup(main)
+
+
+func find_player_event_source(level: CampaignLevel) -> Node:
+	for node in level.find_children("*", "", true, false):
+		if node.has_method("hurt") and node.has_signal("health_changed") and node.has_signal("died"):
+			return node
+	return null
 
 
 func instantiate_main() -> Node:
