@@ -8,6 +8,7 @@ const WOLF_KING_SCENE := preload("res://enemies/wolf_king.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
+const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 
 const ENEMY_EXAMPLES := [
 	{
@@ -20,6 +21,7 @@ const ENEMY_EXAMPLES := [
 		"health": 4,
 		"death_duration": 1.0,
 		"blocks_skill_damage": false,
+		"notifies_death": false,
 		"detector_offset": Vector2(-152.0, 42.5),
 	},
 	{
@@ -32,6 +34,7 @@ const ENEMY_EXAMPLES := [
 		"health": 2,
 		"death_duration": 2.0,
 		"blocks_skill_damage": true,
+		"notifies_death": false,
 		"detector_offset": Vector2(100.0, 0.0),
 	},
 	{
@@ -44,6 +47,7 @@ const ENEMY_EXAMPLES := [
 		"health": 15,
 		"death_duration": 1.0,
 		"blocks_skill_damage": false,
+		"notifies_death": true,
 		"detector_offset": Vector2(-228.0, 72.0),
 	},
 	{
@@ -56,11 +60,12 @@ const ENEMY_EXAMPLES := [
 		"health": 5,
 		"death_duration": 2.0,
 		"blocks_skill_damage": true,
+		"notifies_death": true,
 		"detector_offset": Vector2(-150.0, 0.0),
 	},
 ]
 
-var failures: Array[String] = []
+var fixture: HeadlessGameplayFixture
 var harness: EnemySceneHarness
 
 
@@ -69,9 +74,11 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var original_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
-	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
-	harness = EnemyHarness.new(self)
+	fixture = HeadlessGameplayFixture.new(self)
+	fixture.set_project_setting("physics/2d/default_gravity", 0.0)
+	var world := fixture.add_node(Node2D.new()) as Node2D
+	fixture.set_current_scene(world)
+	harness = EnemyHarness.new(fixture, world)
 
 	test_levels_keep_their_enemy_encounters()
 	await test_initialization_patrol_limits_and_facing()
@@ -79,35 +86,32 @@ func _run() -> void:
 	await test_skill_interruption_policy()
 	await test_death_presentation_and_cleanup()
 
-	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
-	harness.cleanup()
-	await process_frame
-	await process_frame
-	finish()
+	await fixture.process_frames(2)
+	fixture.complete()
 
 
 func test_initialization_patrol_limits_and_facing() -> void:
 	var start_x := 0.0
 	for example in ENEMY_EXAMPLES:
 		var configured_enemy := harness.instantiate_enemy(example.scene, Vector2(start_x, 0.0))
-		expect(
+		fixture.expect(
 			configured_enemy.patrol_range == example.patrol_range,
 			"%s keeps its scene-facing patrol range" % example.name
 		)
-		expect(
+		fixture.expect(
 			configured_enemy.run_speed == example.run_speed,
 			"%s keeps its scene-facing run speed" % example.name
 		)
-		expect(
+		fixture.expect(
 			configured_enemy.idle_duration == 1.0,
 			"%s keeps its scene-facing idle duration" % example.name
 		)
-		expect(
+		fixture.expect(
 			configured_enemy.scale == example.scale,
 			"%s keeps its scene-facing scale" % example.name
 		)
-		harness.remove_actor(configured_enemy)
-		await process_frame
+		configured_enemy.queue_free()
+		await fixture.process_frames(1)
 
 		var enemy := harness.instantiate_enemy(
 			example.scene,
@@ -115,42 +119,51 @@ func test_initialization_patrol_limits_and_facing() -> void:
 			{"idle_duration": 0.15, "patrol_range": 20.0, "run_speed": 80.0}
 		)
 		var initial_x := enemy.global_position.x
-		await create_timer(0.05).timeout
-		expect(enemy.is_in_group("enemies"), "%s initializes as an active Enemy" % example.name)
-		expect(harness.enemy_has_body_collision(enemy), "%s initializes with body collision" % example.name)
-		expect(harness.enemy_has_hurt_collision(enemy), "%s initializes with hurt collision" % example.name)
-		expect(
+		await fixture.wait_seconds(0.05)
+		fixture.expect(
+			enemy.is_in_group("enemies"),
+			"%s initializes as an active Enemy" % example.name
+		)
+		fixture.expect(
+			harness.enemy_has_body_collision(enemy),
+			"%s initializes with body collision" % example.name
+		)
+		fixture.expect(
+			harness.enemy_has_hurt_collision(enemy),
+			"%s initializes with hurt collision" % example.name
+		)
+		fixture.expect(
 			is_equal_approx(enemy.global_position.x, initial_x),
 			"%s stays still for its configured idle" % example.name
 		)
-		expect(
+		fixture.expect(
 			not harness.enemy_sprite_is_flipped(enemy),
 			"%s visibly faces its initial patrol direction" % example.name
 		)
 
-		await create_timer(0.2).timeout
-		expect(
+		await fixture.wait_seconds(0.2)
+		fixture.expect(
 			(enemy.global_position.x - initial_x) * example.initial_direction > 0.0,
 			"%s begins patrolling after idling" % example.name
 		)
 
-		await create_timer(0.45).timeout
+		await fixture.wait_seconds(0.45)
 		var patrol_limit: float = initial_x + example.initial_direction * 20.0
-		expect(
+		fixture.expect(
 			absf(enemy.global_position.x - initial_x) <= 20.01,
 			"%s stays within its configured patrol limits" % example.name
 		)
-		expect(
+		fixture.expect(
 			(enemy.global_position.x - patrol_limit) * -example.initial_direction > 0.0,
 			"%s reverses and continues from its patrol limit" % example.name
 		)
-		expect(
+		fixture.expect(
 			harness.enemy_sprite_is_flipped(enemy),
 			"%s visibly faces its reversed patrol direction" % example.name
 		)
 
-		harness.remove_actor(enemy)
-		await process_frame
+		enemy.queue_free()
+		await fixture.process_frames(1)
 		start_x += 1000.0
 
 func test_levels_keep_their_enemy_encounters() -> void:
@@ -176,11 +189,11 @@ func verify_level_enemy_encounters(
 		if enemy.has_signal(&"died") and harness.enemy_health_bar(enemy) != null:
 			boss_count += 1
 
-	expect(
+	fixture.expect(
 		enemy_count == expected_enemy_count,
 		"%s keeps all existing packed Enemy encounters" % level_name
 	)
-	expect(
+	fixture.expect(
 		boss_count == expected_boss_count,
 		"%s keeps its existing boss Enemy encounter" % level_name
 	)
@@ -196,41 +209,41 @@ func test_skill_interruption_policy() -> void:
 			{"idle_duration": 10.0, "patrol_range": 1000.0}
 		)
 		var detector := harness.add_body(enemy.global_position + example.detector_offset)
-		await harness.physics_frames(3)
-		harness.remove_actor(detector)
+		await fixture.physics_frames(3)
+		detector.queue_free()
 		var skill_x := enemy.global_position.x
 
 		var weapon := harness.add_weapon(
 			enemy.global_position + Vector2(-50.0, 0.0),
 			Vector2(200.0, 200.0)
 		)
-		await harness.physics_frames(2)
-		harness.remove_actor(weapon)
-		await process_frame
+		await fixture.physics_frames(2)
+		weapon.queue_free()
+		await fixture.process_frames(1)
 
 		if example.blocks_skill_damage:
 			var movement_x := enemy.global_position.x
-			await harness.physics_frames(6)
-			expect(
+			await fixture.physics_frames(6)
+			fixture.expect(
 				(enemy.global_position.x - movement_x) * example.initial_direction > 0.0,
 				"%s keeps using its moving skill through weapon contact" % example.name
 			)
-			expect(
+			fixture.expect(
 				enemy.call("get_current_health") == example.health,
 				"%s moving skill rejects weapon damage" % example.name
 			)
 		else:
-			expect(
+			fixture.expect(
 				enemy.global_position.x > skill_x + 50.0,
 				"%s accepts weapon interruption during its stationary skill" % example.name
 			)
-			expect(
+			fixture.expect(
 				enemy.call("get_current_health") == example.health - 1,
 				"%s stationary skill accepts weapon damage" % example.name
 			)
 
-		harness.remove_actor(enemy)
-		await process_frame
+		enemy.queue_free()
+		await fixture.process_frames(1)
 		start_x += 1500.0
 
 
@@ -242,36 +255,52 @@ func test_death_presentation_and_cleanup() -> void:
 			Vector2(start_x, 0.0),
 			{"idle_duration": 10.0, "patrol_range": 1000.0}
 		)
+		var death_notification_count := [0]
+		if example.notifies_death:
+			enemy.connect(
+				&"died",
+				func() -> void: death_notification_count[0] += 1
+			)
 		enemy.take_damage(int(example.health), Vector2.ZERO)
-		expect(
+		fixture.expect(
 			not enemy.is_in_group("enemies"),
 			"%s death immediately removes it from active Enemies" % example.name
 		)
+		if example.notifies_death:
+			fixture.expect(
+				death_notification_count[0] == 1,
+				"%s publishes one boss death notification" % example.name
+			)
 		var death_start_texture := harness.enemy_sprite_texture(enemy)
-		await physics_frame
-		expect(
+		await fixture.physics_frames(1)
+		fixture.expect(
 			not harness.enemy_has_body_collision(enemy),
 			"%s death disables body collision at the physics boundary" % example.name
 		)
-		expect(
+		fixture.expect(
 			not harness.enemy_has_hurt_collision(enemy),
 			"%s death disables hurt collision at the physics boundary" % example.name
 		)
 
-		await create_timer(example.death_duration * 0.6).timeout
-		expect(
+		await fixture.wait_seconds(example.death_duration * 0.6)
+		fixture.expect(
 			is_instance_valid(enemy),
 			"%s remains during its death presentation" % example.name
 		)
-		expect(
+		fixture.expect(
 			harness.enemy_sprite_texture(enemy) != death_start_texture,
 			"%s visibly advances its death presentation" % example.name
 		)
-		await create_timer(example.death_duration * 0.55).timeout
-		expect(
+		await fixture.wait_seconds(example.death_duration * 0.55)
+		fixture.expect(
 			not is_instance_valid(enemy),
 			"%s leaves after its death presentation" % example.name
 		)
+		if example.notifies_death:
+			fixture.expect(
+				death_notification_count[0] == 1,
+				"%s boss death notification remains singular after cleanup" % example.name
+			)
 		start_x += 1500.0
 
 
@@ -294,39 +323,23 @@ func test_scaled_environment_wall_reversal() -> void:
 			}
 		)
 
-		await harness.physics_frames(12)
-		expect(
+		await fixture.physics_frames(12)
+		fixture.expect(
 			(enemy.global_position.x - start_position.x) * initial_direction < 0.0,
 			"Scaled %s reverses away from an environment wall" % example.name
 		)
-		expect(
+		fixture.expect(
 			harness.enemy_sprite_is_flipped(enemy),
 			"Scaled %s visibly faces away from the wall" % example.name
 		)
 		var turned_x := enemy.global_position.x
-		await harness.physics_frames(6)
-		expect(
+		await fixture.physics_frames(6)
+		fixture.expect(
 			(enemy.global_position.x - turned_x) * initial_direction < 0.0,
 			"%s keeps patrolling after its wall reversal" % example.name
 		)
 
-		harness.remove_actor(enemy)
-		harness.remove_actor(wall)
-		await process_frame
+		enemy.queue_free()
+		wall.queue_free()
+		await fixture.process_frames(1)
 		start_x += 1000.0
-
-
-func expect(condition: bool, message: String) -> void:
-	if not condition:
-		failures.append(message)
-
-
-func finish() -> void:
-	if failures.is_empty():
-		print("Shared Enemy behavior test passed")
-		quit(0)
-		return
-
-	for failure in failures:
-		push_error(failure)
-	quit(1)
