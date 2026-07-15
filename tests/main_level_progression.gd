@@ -116,6 +116,99 @@ func _run() -> void:
 		"Level02 restores the Player Camera after its Story"
 	)
 
+	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+	expect(
+		main.call("get_active_campaign_level") == level_02,
+		"Level02 remains active during its final victory Story"
+	)
+	expect(level_02.is_campaign_story_phase_active(), "Level02 starts its final victory Story")
+	expect(paused, "Level02 final victory Story pauses gameplay")
+	expect(
+		not level_02.is_campaign_control_available(),
+		"Level02 final victory Story disables controls"
+	)
+	expect(not popup.visible, "Level02 final victory Story suppresses the result interface")
+
+	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
+	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+	expect(not popup.visible, "Level02 victory takes precedence over competing defeat")
+	expect(
+		main.call("get_active_campaign_level") == level_02,
+		"Duplicate Level02 terminal outcomes retain the final campaign Level"
+	)
+
+	for _input_index in MAX_STORY_ADVANCE_INPUTS:
+		if level_02_story_completion_count > 1:
+			break
+		await send_story_input()
+
+	expect(
+		level_02_story_completion_count == 2,
+		"Duplicate Level02 terminal outcomes produce one final Story completion"
+	)
+	expect(
+		main.call("get_active_campaign_level") == level_02,
+		"Final Story completion retains the same Level02 instance"
+	)
+	expect(
+		not level_02.is_campaign_story_phase_active(),
+		"Final Story completion removes the Story"
+	)
+	expect(not paused, "Final Story completion unpauses gameplay")
+	expect(level_02.is_campaign_control_available(), "Final Story completion enables controls")
+	expect(level_02.is_campaign_hud_visible(), "Final Story completion keeps the HUD visible")
+	expect(
+		level_02.get_campaign_camera_role() == CAMERA_PLAYER,
+		"Final Story completion keeps the Player Camera current"
+	)
+
+	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+	level_02.campaign_story_phase_finished.emit()
+	await process_frame
+	expect(
+		not level_02.is_campaign_story_phase_active(),
+		"Late completion notifications cannot restart the final Story"
+	)
+	expect(
+		main.call("get_active_campaign_level") == level_02,
+		"Late completion notifications cannot transition the final campaign Level"
+	)
+
+	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
+	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
+	expect(popup.visible, "Level02 can present defeat after final Story completion")
+	expect(
+		not level_02.is_campaign_control_available(),
+		"Post-victory Level02 defeat disables controls"
+	)
+
+	var retry_button := (
+		main.get_node(
+			"GameResultPopup/Control/NinePatchRect/VBoxContainer/HBoxContainer/Retry"
+		) as Button
+	)
+	retry_button.pressed.emit()
+	await process_frame
+
+	var replacement := main.call("get_active_campaign_level") as CampaignLevel
+	expect(replacement != null, "Level02 retry creates a replacement Level")
+	expect(not is_instance_valid(level_02), "Level02 retry disposes the completed session")
+	if replacement != null:
+		expect(replacement.get_campaign_id() == &"level_02", "Level02 retry keeps campaign identity")
+		expect(
+			not replacement.is_campaign_story_phase_active(),
+			"Level02 retry skips its opening Story"
+		)
+		expect(replacement.is_campaign_control_available(), "Level02 retry enables controls")
+		expect(replacement.is_campaign_hud_visible(), "Level02 retry shows the HUD")
+		expect(
+			replacement.get_campaign_camera_role() == CAMERA_PLAYER,
+			"Level02 retry restores the Player Camera"
+		)
+	expect(not popup.visible, "Level02 retry hides the result interface")
+	expect(not paused, "Level02 retry leaves the scene tree unpaused")
+
 	await cleanup(main)
 	finish()
 

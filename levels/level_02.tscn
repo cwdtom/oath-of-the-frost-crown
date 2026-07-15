@@ -304,6 +304,7 @@ sources/1 = SubResource("TileSetAtlasSource_h518d")
 campaign_id = &"level_02"
 supported_campaign_outcomes = Array[StringName]([&"defeat", &"completion"])
 _campaign_completion_source_path = NodePath("Enemies/BearKing")
+_campaign_victory_story_path = "res://levels/level_02_a_story.json"
 
 [node name="Background" parent="." index="0" unique_id=226699892 instance=ExtResource("2_h518d")]
 

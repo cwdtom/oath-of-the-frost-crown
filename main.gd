@@ -4,8 +4,6 @@ extends Node2D
 const LEVEL_00_SCENE := preload("res://levels/level_00.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
-const STORY_SCENE := preload("res://ui/story.tscn")
-const LEVEL_02_VICTORY_STORY := "res://levels/level_02_a_story.json"
 const RESULT_DEAD := "DEAD"
 const CAMPAIGN_PHASE_TITLE := &"title"
 const CAMPAIGN_PHASE_GUIDE := &"guide"
@@ -14,6 +12,7 @@ const CAMPAIGN_PHASE_LEVEL := &"level"
 var level: CampaignLevel = null
 var suspended_level_01: CampaignLevel = null
 var victory_story_active := false
+var level_completion_handled := false
 var current_level_scene: PackedScene = null
 
 @onready var title: Control = $Title
@@ -95,6 +94,7 @@ func replace_level(scene: PackedScene, next_level: CampaignLevel) -> void:
 
 	current_level_scene = scene
 	level = next_level
+	level_completion_handled = false
 
 	add_child(level)
 	move_child(level, 0)
@@ -176,56 +176,34 @@ func _on_campaign_outcome_reached(outcome: StringName, source: CampaignLevel) ->
 			if not victory_story_active:
 				show_result(RESULT_DEAD)
 		CampaignLevel.OUTCOME_COMPLETION:
-			match source.get_campaign_id():
-				&"level_01":
-					play_level_01_victory_story(source)
-				&"level_02":
-					play_victory_story(
-						LEVEL_02_VICTORY_STORY,
-						_on_level_02_victory_story_finished
-					)
+			play_level_victory_story(source)
 
 
-func play_level_01_victory_story(source: CampaignLevel) -> void:
-	if victory_story_active:
+func play_level_victory_story(source: CampaignLevel) -> void:
+	if victory_story_active or level_completion_handled:
 		return
 	if not source.start_campaign_victory_story():
 		return
 
 	victory_story_active = true
+	level_completion_handled = true
 	game_result_popup.visible = false
 	source.campaign_story_phase_finished.connect(
-		_on_level_01_victory_story_finished,
+		_on_level_victory_story_finished.bind(source),
 		CONNECT_ONE_SHOT
 	)
 
 
-func play_victory_story(story_path: String, finished_callback: Callable) -> void:
-	if victory_story_active:
+func _on_level_victory_story_finished(source: CampaignLevel) -> void:
+	victory_story_active = false
+	if source != level:
 		return
 
-	victory_story_active = true
-	game_result_popup.visible = false
-	set_level_controls_enabled(false)
-	var story := STORY_SCENE.instantiate() as CanvasLayer
-	story.name = "VictoryStory"
-	story.set("story_path", story_path)
-	story.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
-	story.connect("story_finished", finished_callback.bind(story), CONNECT_ONE_SHOT)
-	level.add_child(story)
-	get_tree().paused = true
-
-
-func _on_level_01_victory_story_finished() -> void:
-	victory_story_active = false
-	start_level_02()
-
-
-func _on_level_02_victory_story_finished(story: CanvasLayer) -> void:
-	get_tree().paused = false
-	story.queue_free()
-	victory_story_active = false
-	set_level_controls_enabled(true)
+	match source.get_campaign_id():
+		&"level_01":
+			start_level_02()
+		&"level_02":
+			set_level_controls_enabled(true)
 
 
 func _on_retry_pressed() -> void:
