@@ -83,7 +83,7 @@ func _run() -> void:
 	test_levels_keep_their_enemy_encounters()
 	await test_initialization_patrol_limits_and_facing()
 	await test_scaled_environment_wall_reversal()
-	await test_skill_interruption_policy()
+	await test_skill_damage_policy()
 	await test_death_presentation_and_cleanup()
 
 	await fixture.process_frames(2)
@@ -200,7 +200,7 @@ func verify_level_enemy_encounters(
 	level.free()
 
 
-func test_skill_interruption_policy() -> void:
+func test_skill_damage_policy() -> void:
 	var start_x := 10000.0
 	for example in ENEMY_EXAMPLES:
 		var enemy := harness.instantiate_enemy(
@@ -234,12 +234,16 @@ func test_skill_interruption_policy() -> void:
 			)
 		else:
 			fixture.expect(
-				enemy.global_position.x > skill_x + 50.0,
-				"%s accepts weapon interruption during its stationary skill" % example.name
+				is_equal_approx(enemy.global_position.x, skill_x),
+				"%s stationary skill ignores hurt knockback" % example.name
 			)
 			fixture.expect(
 				enemy.call("get_current_health") == example.health - 1,
 				"%s stationary skill accepts weapon damage" % example.name
+			)
+			fixture.expect(
+				harness.is_playing(enemy, &"skill"),
+				"%s keeps releasing its stationary skill after damage" % example.name
 			)
 
 		enemy.queue_free()

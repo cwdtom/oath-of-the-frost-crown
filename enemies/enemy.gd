@@ -413,6 +413,11 @@ func take_damage(amount: int, knockback_direction: Vector2) -> void:
 		die()
 		return
 
+	if state == SKILL:
+		await get_tree().create_timer(_get_animation_length(HURT_ANIMATION)).timeout
+		_health.end_hurt_immunity()
+		return
+
 	var return_state := _get_hurt_return_state()
 	apply_knockback(knockback_direction)
 	change_state(HURT)

@@ -4,7 +4,6 @@ extends SceneTree
 const BEAR_SCENE := preload("res://enemies/bear.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
-const HURT_ANIMATION := &"hurt"
 const SKILL_ANIMATION := &"skill"
 const EARTHQUAKE_CAST_ANIMATION := &"cast"
 
@@ -24,7 +23,7 @@ func _run() -> void:
 	harness = EnemyHarness.new(fixture, world)
 
 	await test_earthquake_activation_and_cooldown()
-	await test_earthquake_damage_interruption()
+	await test_earthquake_damage_does_not_interrupt_cast()
 	await test_death_cancels_earthquake()
 
 	fixture.complete(false)
@@ -115,7 +114,7 @@ func test_earthquake_activation_and_cooldown() -> void:
 	await fixture.wait_seconds(1.0)
 
 
-func test_earthquake_damage_interruption() -> void:
+func test_earthquake_damage_does_not_interrupt_cast() -> void:
 	var bear_position := Vector2(5000.0, 0.0)
 	var bear := harness.instantiate_enemy(
 		BEAR_SCENE,
@@ -138,22 +137,27 @@ func test_earthquake_damage_interruption() -> void:
 	await fixture.physics_frames(3)
 	await fixture.process_frames(1)
 	fixture.expect(
-		harness.is_playing(bear, HURT_ANIMATION),
-		"Accepted damage visibly interrupts earthquake"
+		harness.is_playing(bear, SKILL_ANIMATION),
+		"Accepted damage keeps Bear in its earthquake skill"
 	)
 	fixture.expect(
-		not harness.is_playing(bear, EARTHQUAKE_CAST_ANIMATION),
-		"Hurt stops the earthquake cast"
+		harness.is_playing(bear, EARTHQUAKE_CAST_ANIMATION),
+		"Accepted damage does not stop the earthquake cast"
 	)
 	weapon.queue_free()
 	await fixture.wait_seconds(0.65)
 	fixture.expect(
-		hurt_event_count[0] == 0,
-		"Interrupted earthquake never reaches its damaging impact"
+		hurt_event_count[0] == 1,
+		"Damaged Bear earthquake still reaches its impact"
 	)
 	fixture.expect(
+		harness.is_playing(bear, SKILL_ANIMATION),
+		"Damaged Bear keeps releasing after earthquake impact"
+	)
+	await fixture.wait_seconds(0.3)
+	fixture.expect(
 		not harness.is_playing(bear, SKILL_ANIMATION),
-		"Interrupted earthquake does not resume after hurt"
+		"Damaged Bear earthquake completes at its normal duration"
 	)
 
 

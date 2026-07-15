@@ -301,10 +301,10 @@ physics_layer_0/physics_material = SubResource("PhysicsMaterial_h518d")
 sources/1 = SubResource("TileSetAtlasSource_h518d")
 
 [node name="Level02" unique_id=1993614508 instance=ExtResource("1_nnn84")]
-campaign_id = &"level_02"
-supported_campaign_outcomes = Array[StringName]([&"defeat", &"completion"])
 _campaign_completion_source_path = NodePath("Enemies/BearKing")
 _campaign_victory_story_path = "res://levels/level_02_a_story.json"
+campaign_id = &"level_02"
+supported_campaign_outcomes = Array[StringName]([&"defeat", &"completion"])
 
 [node name="Background" parent="." index="0" unique_id=226699892 instance=ExtResource("2_h518d")]
 
@@ -408,5 +408,4 @@ position = Vector2(3061, 499)
 position = Vector2(4234, 534)
 
 [node name="Story" parent="." index="7" unique_id=1214048430 instance=ExtResource("14_pdr83")]
-visible = false
 story_path = "res://levels/level_02_story.json"

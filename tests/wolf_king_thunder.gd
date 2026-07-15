@@ -26,7 +26,7 @@ func _run() -> void:
 
 	await test_moving_skill_has_no_wolf_contact_damage()
 	await test_thunder_movement_delivery_and_cooldown()
-	await test_hurt_cancels_pending_thunder()
+	await test_hurt_does_not_cancel_pending_thunder()
 	await test_death_cancels_thunder_during_paused_presentation()
 
 	fixture.complete(false)
@@ -156,7 +156,7 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 	await fixture.process_frames(1)
 
 
-func test_hurt_cancels_pending_thunder() -> void:
+func test_hurt_does_not_cancel_pending_thunder() -> void:
 	var start_position := Vector2(5500.0, 0.0)
 	var floor_body := harness.add_environment_wall(
 		start_position + Vector2(0.0, 300.0),
@@ -185,14 +185,14 @@ func test_hurt_cancels_pending_thunder() -> void:
 	await harness.deliver_hit(wolf_king, Vector2(-50.0, 0.0))
 	fixture.expect(
 		wolf_king.get_current_health() == EXPECTED_HEALTH - 1,
-		"Weapon contact damages WolfKing before thunder cancellation"
+		"Weapon contact damages WolfKing during thunder delivery"
 	)
 	fixture.expect(
 		harness.enemy_sprite_is_flipped(wolf_king),
 		"Hurt WolfKing faces Player on its right"
 	)
 	await fixture.wait_seconds(0.5)
-	fixture.expect(hurt_event_count[0] == 0, "Accepted damage cancels pending WolfKing thunder")
+	fixture.expect(hurt_event_count[0] == 1, "Accepted damage does not cancel pending WolfKing thunder")
 
 	wolf_king.queue_free()
 	player.queue_free()
