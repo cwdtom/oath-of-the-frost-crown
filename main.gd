@@ -60,46 +60,28 @@ func get_active_campaign_level() -> CampaignLevel:
 
 
 func connect_level_events() -> void:
-	var player := level.get_node("Player")
-	player.connect("died", _on_player_died)
-
-	var wolf_king := level.get_node_or_null("Enemies/WolfKing")
-	if wolf_king != null:
-		wolf_king.connect("died", _on_wolf_king_died)
-
-	var bear_king := level.get_node_or_null("Enemies/BearKing")
-	if bear_king != null:
-		bear_king.connect("died", _on_bear_king_died)
+	level.campaign_outcome_reached.connect(_on_campaign_outcome_reached.bind(level))
 
 
-func set_player_controls_enabled(enabled: bool) -> void:
+func set_level_controls_enabled(enabled: bool) -> void:
 	if level == null:
 		return
 
-	var player := level.get_node_or_null("Player")
-	if player != null and player.has_method("set_controls_enabled"):
-		player.set_controls_enabled(enabled)
+	level.set_campaign_controls_enabled(enabled)
 
 
 func show_result(result_text: String) -> void:
 	if game_result_popup.visible:
 		return
 
-	set_player_controls_enabled(false)
+	set_level_controls_enabled(false)
 	result_label.text = result_text
 	game_result_popup.visible = true
 
 
 func start_level(scene: PackedScene, play_intro: bool) -> void:
 	var next_level := scene.instantiate() as CampaignLevel
-	var player := next_level.get_node("Player")
-	player.restore_full_health()
-	if not play_intro:
-		var story := next_level.get_node_or_null("Story")
-		if story != null:
-			next_level.remove_child(story)
-			story.queue_free()
-
+	next_level.prepare_for_campaign(play_intro)
 	replace_level(scene, next_level)
 
 
@@ -186,19 +168,26 @@ func _on_level_00_story_finished() -> void:
 	level.restore_to_campaign()
 
 
-func _on_player_died() -> void:
-	if victory_story_active:
+func _on_campaign_outcome_reached(outcome: StringName, source: CampaignLevel) -> void:
+	if source != level:
 		return
 
-	show_result(RESULT_DEAD)
-
-
-func _on_wolf_king_died() -> void:
-	play_victory_story(LEVEL_01_VICTORY_STORY, _on_victory_story_finished)
-
-
-func _on_bear_king_died() -> void:
-	play_victory_story(LEVEL_02_VICTORY_STORY, _on_level_02_victory_story_finished)
+	match outcome:
+		CampaignLevel.OUTCOME_DEFEAT:
+			if not victory_story_active:
+				show_result(RESULT_DEAD)
+		CampaignLevel.OUTCOME_COMPLETION:
+			match source.get_campaign_id():
+				&"level_01":
+					play_victory_story(
+						LEVEL_01_VICTORY_STORY,
+						_on_victory_story_finished
+					)
+				&"level_02":
+					play_victory_story(
+						LEVEL_02_VICTORY_STORY,
+						_on_level_02_victory_story_finished
+					)
 
 
 func play_victory_story(story_path: String, finished_callback: Callable) -> void:
@@ -207,7 +196,7 @@ func play_victory_story(story_path: String, finished_callback: Callable) -> void
 
 	victory_story_active = true
 	game_result_popup.visible = false
-	set_player_controls_enabled(false)
+	set_level_controls_enabled(false)
 	var story := STORY_SCENE.instantiate() as CanvasLayer
 	story.name = "VictoryStory"
 	story.set("story_path", story_path)
@@ -228,13 +217,14 @@ func _on_level_02_victory_story_finished(story: CanvasLayer) -> void:
 	get_tree().paused = false
 	story.queue_free()
 	victory_story_active = false
-	set_player_controls_enabled(true)
+	set_level_controls_enabled(true)
 
 
 func _on_retry_pressed() -> void:
 	if current_level_scene == null:
 		return
 
+	get_tree().paused = false
 	start_level(current_level_scene, false)
 
 
