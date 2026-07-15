@@ -10,7 +10,38 @@ var _replacing_level := false
 func _ready() -> void:
 	super._ready()
 	get_tree().node_added.connect(_on_node_added)
+	get_window().window_input.connect(_on_window_input)
 	start_level_01()
+
+
+func _on_window_input(event: InputEvent) -> void:
+	if not event is InputEventKey:
+		return
+
+	var key_event := event as InputEventKey
+	if not key_event.pressed or key_event.echo or not key_event.ctrl_pressed:
+		return
+
+	var checkpoint_scene: PackedScene
+	var play_opening_story: bool
+	match key_event.keycode:
+		KEY_1:
+			checkpoint_scene = LEVEL_01_SCENE
+			play_opening_story = true
+		KEY_2:
+			checkpoint_scene = LEVEL_01_SCENE
+			play_opening_story = false
+		KEY_3:
+			checkpoint_scene = LEVEL_02_SCENE
+			play_opening_story = true
+		KEY_4:
+			checkpoint_scene = LEVEL_02_SCENE
+			play_opening_story = false
+		_:
+			return
+
+	get_viewport().set_input_as_handled()
+	replace_campaign_session(checkpoint_scene, play_opening_story)
 
 
 func replace_level(scene: PackedScene, next_level: CampaignLevel) -> void:
