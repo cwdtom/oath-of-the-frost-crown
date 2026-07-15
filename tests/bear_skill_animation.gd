@@ -3,11 +3,13 @@ extends SceneTree
 
 const BEAR_SCENE := preload("res://enemies/bear.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
+const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const HURT_ANIMATION := &"hurt"
 const SKILL_ANIMATION := &"skill"
 const EARTHQUAKE_CAST_ANIMATION := &"cast"
 
 var failures: Array[String] = []
+var fixture: HeadlessGameplayFixture
 var harness: EnemySceneHarness
 
 
@@ -16,16 +18,17 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var original_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
-	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
-	harness = EnemyHarness.new(self)
+	fixture = HeadlessGameplayFixture.new(self)
+	fixture.set_project_setting("physics/2d/default_gravity", 0.0)
+	var world := fixture.add_node(Node2D.new()) as Node2D
+	fixture.set_current_scene(world)
+	harness = EnemyHarness.new(fixture, world)
 
 	await test_earthquake_activation_and_cooldown()
 	await test_earthquake_damage_interruption()
 	await test_death_cancels_earthquake()
 
-	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
-	harness.cleanup()
+	fixture.complete(false)
 	await process_frame
 	await process_frame
 	finish()
@@ -44,7 +47,7 @@ func test_earthquake_activation_and_cooldown() -> void:
 		func() -> void: hurt_event_count[0] += 1
 	)
 
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await create_timer(0.05).timeout
 	expect(harness.is_playing(bear, SKILL_ANIMATION), "Gameplay detection starts Bear earthquake")
 	expect(harness.is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Earthquake cast starts with Bear skill")
@@ -107,16 +110,16 @@ func test_earthquake_damage_interruption() -> void:
 		bear_position + Vector2(-152.0, 42.5),
 		func() -> void: hurt_event_count[0] += 1
 	)
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await create_timer(0.05).timeout
 	expect(harness.is_playing(bear, SKILL_ANIMATION), "Bear starts earthquake for an entering gameplay body")
 
 	var weapon := harness.add_weapon(bear_position)
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await process_frame
 	expect(harness.is_playing(bear, HURT_ANIMATION), "Accepted damage visibly interrupts earthquake")
 	expect(not harness.is_playing(bear, EARTHQUAKE_CAST_ANIMATION), "Hurt stops the earthquake cast")
-	harness.remove_actor(weapon)
+	weapon.queue_free()
 	await create_timer(0.65).timeout
 	expect(hurt_event_count[0] == 0, "Interrupted earthquake never reaches its damaging impact")
 	expect(not harness.is_playing(bear, SKILL_ANIMATION), "Interrupted earthquake does not resume after hurt")
@@ -140,7 +143,7 @@ func test_death_cancels_earthquake() -> void:
 		bear.global_position + Vector2(-152.0, 42.5),
 		func() -> void: hurt_event_count[0] += 1
 	)
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await create_timer(0.05).timeout
 	expect(harness.is_playing(bear, SKILL_ANIMATION), "Bear starts earthquake before lethal damage")
 

@@ -3,6 +3,7 @@ extends SceneTree
 
 const BEAR_KING_SCENE := preload("res://enemies/bear_king.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
+const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const HURT_ANIMATION := &"hurt"
 const SKILL_ANIMATION := &"skill"
 const EARTHQUAKE_CAST_ANIMATION := &"cast"
@@ -10,6 +11,7 @@ const EXPECTED_HEALTH := 15
 const EARTHQUAKE_OFFSET := Vector2(-228.0, 72.0)
 
 var failures: Array[String] = []
+var fixture: HeadlessGameplayFixture
 var harness: EnemySceneHarness
 
 
@@ -18,16 +20,17 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var original_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
-	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
-	harness = EnemyHarness.new(self)
+	fixture = HeadlessGameplayFixture.new(self)
+	fixture.set_project_setting("physics/2d/default_gravity", 0.0)
+	var world := fixture.add_node(Node2D.new()) as Node2D
+	fixture.set_current_scene(world)
+	harness = EnemyHarness.new(fixture, world)
 
 	await test_earthquake_damage_and_cooldown()
 	await test_damage_faces_attacker_and_interrupts_earthquake()
 
 	paused = false
-	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
-	harness.cleanup()
+	fixture.complete(false)
 	await process_frame
 	await process_frame
 	finish()
@@ -46,7 +49,7 @@ func test_earthquake_damage_and_cooldown() -> void:
 		func() -> void: hurt_event_count[0] += 1
 	)
 
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await create_timer(0.05).timeout
 	expect(harness.is_playing(bear_king, SKILL_ANIMATION), "Gameplay detection starts BearKing earthquake")
 	expect(
@@ -90,7 +93,7 @@ func test_damage_faces_attacker_and_interrupts_earthquake() -> void:
 		bear_king_position + EARTHQUAKE_OFFSET,
 		func() -> void: hurt_event_count[0] += 1
 	)
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await create_timer(0.05).timeout
 	expect(harness.is_playing(bear_king, SKILL_ANIMATION), "BearKing is vulnerable during earthquake")
 

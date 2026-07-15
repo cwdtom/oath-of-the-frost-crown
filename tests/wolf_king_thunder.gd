@@ -3,12 +3,14 @@ extends SceneTree
 
 const WOLF_KING_SCENE := preload("res://enemies/wolf_king.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
+const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const DEAD_ANIMATION := &"dead"
 const RUN_ANIMATION := &"run"
 const EXPECTED_HEALTH := 5
 const SKILL_DISTANCE := 300.0
 
 var failures: Array[String] = []
+var fixture: HeadlessGameplayFixture
 var harness: EnemySceneHarness
 
 
@@ -17,17 +19,18 @@ func _init() -> void:
 
 
 func _run() -> void:
-	var original_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
-	ProjectSettings.set_setting("physics/2d/default_gravity", 0.0)
-	harness = EnemyHarness.new(self)
+	fixture = HeadlessGameplayFixture.new(self)
+	fixture.set_project_setting("physics/2d/default_gravity", 0.0)
+	var world := fixture.add_node(Node2D.new()) as Node2D
+	fixture.set_current_scene(world)
+	harness = EnemyHarness.new(fixture, world)
 
 	await test_moving_skill_has_no_wolf_contact_damage()
 	await test_thunder_movement_delivery_and_cooldown()
 	await test_hurt_cancels_pending_thunder()
 	await test_death_cancels_thunder_during_paused_presentation()
 
-	ProjectSettings.set_setting("physics/2d/default_gravity", original_gravity)
-	harness.cleanup()
+	fixture.complete(false)
 	await process_frame
 	await process_frame
 	finish()
@@ -46,11 +49,11 @@ func test_moving_skill_has_no_wolf_contact_damage() -> void:
 		{"idle_duration": 10.0}
 	)
 
-	await harness.physics_frames(4)
+	await fixture.physics_frames(4)
 	expect(hurt_event_count[0] == 0, "WolfKing movement does not inherit Wolf contact damage")
 
-	harness.remove_actor(wolf_king)
-	harness.remove_actor(player)
+	wolf_king.queue_free()
+	player.queue_free()
 	await process_frame
 
 
@@ -72,7 +75,7 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 		{"idle_duration": 10.0}
 	)
 
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await process_frame
 	var thunder_area := find_top_level_area(wolf_king)
 	expect(
@@ -87,24 +90,24 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 	)
 	expect(harness.is_playing(wolf_king, RUN_ANIMATION), "WolfKing moves with its run presentation")
 
-	harness.remove_actor(detector_body)
+	detector_body.queue_free()
 	var weapon := harness.add_weapon(wolf_king.global_position, Vector2(200.0, 200.0))
-	await harness.physics_frames(2)
-	harness.remove_actor(weapon)
+	await fixture.physics_frames(2)
+	weapon.queue_free()
 	expect(
 		wolf_king.get_current_health() == EXPECTED_HEALTH,
 		"WolfKing moving skill rejects weapon damage"
 	)
 
 	var speed_sample_x := wolf_king.global_position.x
-	await harness.physics_frames(6)
+	await fixture.physics_frames(6)
 	expect(
 		absf(wolf_king.global_position.x - speed_sample_x + 60.0) <= 1.0,
 		"WolfKing keeps its 600 pixel per second skill speed"
 	)
 	var repeated_detector := harness.add_body(wolf_king.global_position + Vector2(-150.0, 0.0))
-	await harness.physics_frames(2)
-	harness.remove_actor(repeated_detector)
+	await fixture.physics_frames(2)
+	repeated_detector.queue_free()
 
 	if thunder_area != null:
 		player.global_position = thunder_area.global_position + Vector2(20.0, 0.0)
@@ -122,21 +125,21 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 
 	var skill_end_x := wolf_king.global_position.x
 	var cooldown_detector := harness.add_body(wolf_king.global_position + Vector2(-150.0, 0.0))
-	await harness.physics_frames(3)
-	harness.remove_actor(cooldown_detector)
+	await fixture.physics_frames(3)
+	cooldown_detector.queue_free()
 	expect(
 		is_equal_approx(wolf_king.global_position.x, skill_end_x),
 		"WolfKing cannot restart its skill during cooldown"
 	)
 	await create_timer(1.25).timeout
 	var ready_detector := harness.add_body(wolf_king.global_position + Vector2(-150.0, 0.0))
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	expect(wolf_king.global_position.x < skill_end_x, "WolfKing can use its skill after three seconds")
 
-	harness.remove_actor(wolf_king)
-	harness.remove_actor(player)
-	harness.remove_actor(ready_detector)
-	harness.remove_actor(floor_body)
+	wolf_king.queue_free()
+	player.queue_free()
+	ready_detector.queue_free()
+	floor_body.queue_free()
 	await process_frame
 
 
@@ -158,10 +161,10 @@ func test_hurt_cancels_pending_thunder() -> void:
 		{"idle_duration": 10.0}
 	)
 
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await process_frame
 	var thunder_area := find_top_level_area(wolf_king)
-	harness.remove_actor(detector_body)
+	detector_body.queue_free()
 	await create_timer(0.55).timeout
 	if thunder_area != null:
 		player.global_position = thunder_area.global_position + Vector2(20.0, 0.0)
@@ -175,9 +178,9 @@ func test_hurt_cancels_pending_thunder() -> void:
 	await create_timer(0.5).timeout
 	expect(hurt_event_count[0] == 0, "Accepted damage cancels pending WolfKing thunder")
 
-	harness.remove_actor(wolf_king)
-	harness.remove_actor(player)
-	harness.remove_actor(floor_body)
+	wolf_king.queue_free()
+	player.queue_free()
+	floor_body.queue_free()
 	await process_frame
 
 
@@ -206,10 +209,10 @@ func test_death_cancels_thunder_during_paused_presentation() -> void:
 	await create_timer(1.05).timeout
 	var detector_offset := 150.0 if harness.enemy_sprite_is_flipped(wolf_king) else -150.0
 	var detector_body := harness.add_body(wolf_king.global_position + Vector2(detector_offset, 0.0))
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await process_frame
 	var thunder_area := find_top_level_area(wolf_king)
-	harness.remove_actor(detector_body)
+	detector_body.queue_free()
 	await create_timer(0.55).timeout
 	if thunder_area != null:
 		player.global_position = thunder_area.global_position + Vector2(20.0, 0.0)
@@ -221,10 +224,10 @@ func test_death_cancels_thunder_during_paused_presentation() -> void:
 	)
 	var first_weapon := harness.add_weapon(wolf_king.global_position + Vector2(-40.0, 0.0))
 	var second_weapon := harness.add_weapon(wolf_king.global_position + Vector2(40.0, 0.0))
-	await harness.physics_frames(3)
+	await fixture.physics_frames(3)
 	await process_frame
-	harness.remove_actor(first_weapon)
-	harness.remove_actor(second_weapon)
+	first_weapon.queue_free()
+	second_weapon.queue_free()
 
 	expect(wolf_king.is_health_depleted(), "Lethal weapon delivery depletes WolfKing")
 
@@ -236,9 +239,9 @@ func test_death_cancels_thunder_during_paused_presentation() -> void:
 	)
 	paused = false
 
-	harness.remove_actor(wolf_king)
-	harness.remove_actor(player)
-	harness.remove_actor(floor_body)
+	wolf_king.queue_free()
+	player.queue_free()
+	floor_body.queue_free()
 	await process_frame
 
 

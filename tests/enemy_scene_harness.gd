@@ -9,21 +9,11 @@ const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.
 
 var world: Node2D
 var fixture: HeadlessGameplayFixture
-var _owns_fixture := false
 
 
-func _init(owner: Variant, test_world: Node2D = null) -> void:
-	if owner is SceneTree:
-		fixture = HeadlessGameplayFixture.new(owner as SceneTree)
-		_owns_fixture = true
-	else:
-		fixture = owner as HeadlessGameplayFixture
-
-	if test_world == null:
-		world = fixture.add_node(Node2D.new()) as Node2D
-		fixture.set_current_scene(world)
-	else:
-		world = test_world
+func _init(test_fixture: HeadlessGameplayFixture, test_world: Node2D) -> void:
+	fixture = test_fixture
+	world = test_world
 
 
 func instantiate_enemy(
@@ -109,30 +99,21 @@ func enemy_health_bar(enemy: CharacterBody2D) -> TextureProgressBar:
 	return null
 
 
-func remove_actor(actor: Node) -> void:
-	if is_instance_valid(actor):
-		actor.queue_free()
-
-
 func deliver_hit(enemy: CharacterBody2D, offset := Vector2.ZERO) -> void:
 	var weapon := add_weapon(enemy.global_position + offset)
-	await physics_frames(3)
+	await fixture.physics_frames(3)
 	await fixture.process_frames(1)
-	remove_actor(weapon)
-	await physics_frames(2)
+	weapon.queue_free()
+	await fixture.physics_frames(2)
 	await fixture.process_frames(1)
 
 
 func reenter_skill_detection(actor: CharacterBody2D, detection_position: Vector2) -> void:
 	actor.position = detection_position + Vector2(400.0, 0.0)
-	await physics_frames(2)
+	await fixture.physics_frames(2)
 	actor.position = detection_position
-	await physics_frames(2)
+	await fixture.physics_frames(2)
 	await fixture.wait_seconds(0.05)
-
-
-func physics_frames(count: int) -> void:
-	await fixture.physics_frames(count)
 
 
 func is_playing(enemy: CharacterBody2D, animation_name: StringName) -> bool:
@@ -141,11 +122,6 @@ func is_playing(enemy: CharacterBody2D, animation_name: StringName) -> bool:
 
 func animation_position(enemy: CharacterBody2D, animation_name: StringName) -> float:
 	return float(enemy.call("_get_animation_position", animation_name))
-
-
-func cleanup() -> void:
-	if _owns_fixture:
-		fixture.complete(false)
 
 
 func _create_collision_shape(size: Vector2) -> CollisionShape2D:
