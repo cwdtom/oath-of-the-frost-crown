@@ -23,6 +23,16 @@ func start_music() -> void:
 	music.play(playback_position)
 
 
+func is_music_playing() -> bool:
+	return music.playing
+
+
+func get_music_playback_position() -> float:
+	if music.playing:
+		return music.get_playback_position()
+	return playback_position
+
+
 func _exit_tree() -> void:
 	stop_music()
 

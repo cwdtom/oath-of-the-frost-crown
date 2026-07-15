@@ -1,7 +1,8 @@
-extends Node2D
+extends "res://levels/campaign_level.gd"
 
 
-signal intro_finished
+@export_node_path("Node") var _campaign_completion_source_path: NodePath
+@export_file("*.json") var _campaign_victory_story_path := ""
 
 @onready var player = $Player
 @onready var hud = $HUD
@@ -11,9 +12,98 @@ signal intro_finished
 var story_camera: Camera2D = null
 
 
+func prepare_for_campaign(play_opening_story: bool) -> void:
+	var level_player := get_node("Player")
+	level_player.restore_full_health()
+	if play_opening_story:
+		return
+
+	var opening_story := get_node_or_null("Story")
+	if opening_story != null:
+		remove_child(opening_story)
+		opening_story.queue_free()
+
+
+func is_campaign_story_phase_active() -> bool:
+	return story != null
+
+
+func is_campaign_control_available() -> bool:
+	return is_inside_tree() and not get_tree().paused and player.controls_enabled
+
+
+func is_campaign_hud_visible() -> bool:
+	return is_inside_tree() and hud.visible
+
+
+func is_campaign_health_full() -> bool:
+	return player.health == player.MAX_HEALTH and hud.current_health == player.MAX_HEALTH
+
+
+func get_campaign_camera_role() -> StringName:
+	if story_camera != null and story_camera.is_current():
+		return CAMERA_OPENING_STORY
+	if player_camera.is_current():
+		return CAMERA_PLAYER
+	return CAMERA_NONE
+
+
+func has_campaign_music() -> bool:
+	return get_node_or_null("Background") != null
+
+
+func is_campaign_music_playing() -> bool:
+	var background := get_node_or_null("Background")
+	return background != null and bool(background.call("is_music_playing"))
+
+
+func get_campaign_music_playback_position() -> float:
+	var background := get_node_or_null("Background")
+	if background == null:
+		return 0.0
+	return float(background.call("get_music_playback_position"))
+
+
+func set_campaign_controls_enabled(enabled: bool) -> void:
+	player.set_controls_enabled(enabled)
+
+
+func start_campaign_victory_story() -> bool:
+	if story != null or _campaign_victory_story_path.is_empty():
+		return false
+
+	set_campaign_controls_enabled(false)
+	var story_scene := load("res://ui/story.tscn") as PackedScene
+	story = story_scene.instantiate() as CanvasLayer
+	story.name = "VictoryStory"
+	story.set("story_path", _campaign_victory_story_path)
+	story.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	story.connect("story_finished", _on_victory_story_finished, CONNECT_ONE_SHOT)
+	add_child(story)
+	get_tree().paused = true
+	return true
+
+
+func suspend_from_campaign() -> void:
+	var background := get_node_or_null("Background")
+	if background != null:
+		background.call("stop_music")
+
+
+func restore_to_campaign() -> void:
+	var background := get_node_or_null("Background")
+	if background != null:
+		background.call("start_music")
+
+
 func _ready() -> void:
 	hud.set_health(player.health)
 	player.hurt_taken.connect(hud.decrease_health)
+	player.connect("died", _on_campaign_defeated)
+
+	var completion_source := get_node_or_null(_campaign_completion_source_path)
+	if completion_source != null:
+		completion_source.connect("died", _on_campaign_completed)
 
 	if story != null:
 		story_camera = Camera2D.new()
@@ -50,4 +140,21 @@ func _on_story_finished() -> void:
 	hud.visible = true
 	get_tree().paused = false
 	finished_story.queue_free()
-	intro_finished.emit()
+	campaign_story_phase_finished.emit()
+
+
+func _on_victory_story_finished() -> void:
+	var finished_story := story
+	story = null
+
+	get_tree().paused = false
+	finished_story.queue_free()
+	campaign_story_phase_finished.emit()
+
+
+func _on_campaign_defeated() -> void:
+	campaign_outcome_reached.emit(OUTCOME_DEFEAT)
+
+
+func _on_campaign_completed() -> void:
+	campaign_outcome_reached.emit(OUTCOME_COMPLETION)

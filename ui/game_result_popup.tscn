@@ -2,12 +2,14 @@
 
 [ext_resource type="Texture2D" uid="uid://breo0avoh4rlh" path="res://assets/ui/window.png" id="1_ngauu"]
 [ext_resource type="FontFile" uid="uid://cbl6avwsx7b62" path="res://assets/ui/fonts/Cinzel-Black.ttf" id="2_oy4m7"]
+[ext_resource type="Script" uid="uid://dyorw1iv5473e" path="res://ui/game_result_popup.gd" id="3_result"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_1n5kv"]
 font = ExtResource("2_oy4m7")
 font_size = 46
 
 [node name="GameResultPopup" type="CanvasLayer" unique_id=1422562202]
+script = ExtResource("3_result")
 
 [node name="Control" type="Control" parent="." unique_id=419745906]
 layout_mode = 3
