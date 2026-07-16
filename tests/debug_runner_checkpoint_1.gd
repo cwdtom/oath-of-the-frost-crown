@@ -155,7 +155,13 @@ func verify_campaign_progression(runner: Node, level_01: CampaignLevel) -> void:
 		hud != null and hud.call("is_presenting_health", 8, 8),
 		"Level03 keeps its normal eight-heart presentation"
 	)
-	fixture.expect(get_level_enemies(level_03).is_empty(), "Level03 starts without Enemies")
+	var enemies := get_level_enemies(level_03)
+	fixture.expect(not enemies.is_empty(), "Level03 starts with compatible Enemies")
+	for enemy in enemies:
+		fixture.expect(
+			enemy.call("get_current_health") == 1,
+			"Level03 gives %s 1 internal health" % enemy.name
+		)
 
 
 func advance_story_phase(level: CampaignLevel, description: String) -> void:

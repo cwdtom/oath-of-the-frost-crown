@@ -143,7 +143,7 @@ func verify_runner_shortcuts(runner: Node) -> void:
 		return
 
 	var level_03 := await switch_checkpoint(
-		runner, repeated_level_02_combat, KEY_5, &"level_03", false, "Ctrl+5", false
+		runner, repeated_level_02_combat, KEY_5, &"level_03", false, "Ctrl+5"
 	)
 	if level_03 == null:
 		return

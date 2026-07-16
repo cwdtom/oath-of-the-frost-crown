@@ -19,3 +19,17 @@ _Avoid_: Level Completion, scene jump
 **Level Initialization**:
 The playable starting state of a newly active Level: full Player health, visible HUD, available controls, the Player Camera active, no result interface, and an unpaused campaign. A Level without an Opening Story enters this state immediately.
 _Avoid_: Scene instantiation, Level Advancement
+
+### Combat
+
+**Skill Detection Area**:
+The forward-facing region in which the Player's presence allows an Enemy to initiate its species skill.
+_Avoid_: Aggro range, attack range
+
+**Elk Thunder Strike Point**:
+A grounded location whose horizontal coordinate is randomly selected from an Elk's Skill Detection Area when its thunder skill begins.
+_Avoid_: Elk position, Player position
+
+**Elk Thunder Cast**:
+A stationary Enemy skill during which an Elk pauses its patrol, releases thunder at its selected Elk Thunder Strike Point, and then resumes its prior behavior.
+_Avoid_: Thunder pursuit, moving cast

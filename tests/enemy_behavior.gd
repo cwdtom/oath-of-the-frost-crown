@@ -3,6 +3,7 @@ extends SceneTree
 
 const BEAR_SCENE := preload("res://enemies/bear.tscn")
 const WOLF_SCENE := preload("res://enemies/wolf.tscn")
+const ELK_SCENE := preload("res://enemies/elk.tscn")
 const BEAR_KING_SCENE := preload("res://enemies/bear_king.tscn")
 const WOLF_KING_SCENE := preload("res://enemies/wolf_king.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
@@ -36,6 +37,20 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": true,
 		"notifies_death": false,
 		"detector_offset": Vector2(100.0, 0.0),
+	},
+	{
+		"name": "Elk",
+		"scene": ELK_SCENE,
+		"initial_direction": -1.0,
+		"patrol_range": 160.0,
+		"run_speed": 80.0,
+		"scale": Vector2.ONE,
+		"health": 3,
+		"death_duration": 0.7,
+		"blocks_skill_damage": false,
+		"notifies_death": false,
+		"detector_offset": Vector2(-172.0, 0.0),
+		"skill_animation": &"idle",
 	},
 	{
 		"name": "BearKing",
@@ -242,7 +257,7 @@ func test_skill_damage_policy() -> void:
 				"%s stationary skill accepts weapon damage" % example.name
 			)
 			fixture.expect(
-				harness.is_playing(enemy, &"skill"),
+				harness.is_playing(enemy, example.get("skill_animation", &"skill")),
 				"%s keeps releasing its stationary skill after damage" % example.name
 			)
 
