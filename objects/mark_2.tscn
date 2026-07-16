@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://b8a2rnrf7fudi"]
+
+[ext_resource type="Texture2D" uid="uid://dqiwkmxe5nrqu" path="res://assets/objects/mark_ice.png" id="1_7cnh2"]
+
+[node name="Mark" type="Node2D" unique_id=436800957]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1361411344]
+texture = ExtResource("1_7cnh2")
