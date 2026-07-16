@@ -170,70 +170,73 @@ func _run() -> void:
 		"Duplicate Level02 terminal outcomes produce one final Story completion"
 	)
 	fixture.expect(
-		main.call("get_active_campaign_level") == level_02,
-		"Final Story completion retains the same Level02 instance"
+		not is_instance_valid(level_02),
+		"Final Story completion disposes Level02"
+	)
+	var level_03 := main.call("get_active_campaign_level") as CampaignLevel
+	fixture.expect(level_03 != null, "Level02 final Story completion starts a Level")
+	if level_03 == null:
+		fixture.complete()
+		return
+	fixture.add_node(level_03)
+	fixture.expect(
+		level_03.get_campaign_id() == &"level_03",
+		"Level02 final Story completion starts Level03"
 	)
 	fixture.expect(
-		not level_02.is_campaign_story_phase_active(),
-		"Final Story completion removes the Story"
+		level_03.get_supported_campaign_outcomes() == [&"defeat"],
+		"Level03 supports defeat without declaring an unfinished completion outcome"
 	)
-	fixture.expect(not paused, "Final Story completion unpauses gameplay")
-	fixture.expect(level_02.is_campaign_control_available(), "Final Story completion enables controls")
-	fixture.expect(level_02.is_campaign_health_full(), "Final Story completion keeps full campaign health")
-	fixture.expect(level_02.is_campaign_hud_visible(), "Final Story completion keeps the HUD visible")
+	fixture.expect(not level_03.is_campaign_story_phase_active(), "Level03 starts without a Story")
+	fixture.expect(not paused, "Level03 starts with gameplay unpaused")
+	fixture.expect(level_03.is_campaign_control_available(), "Level03 starts with controls available")
+	fixture.expect(level_03.is_campaign_health_full(), "Level03 starts with full campaign health")
+	fixture.expect(level_03.is_campaign_hud_visible(), "Level03 starts with its HUD visible")
 	fixture.expect(
-		level_02.get_campaign_camera_role() == CAMERA_PLAYER,
-		"Final Story completion keeps the Player Camera current"
+		level_03.get_campaign_camera_role() == CAMERA_PLAYER,
+		"Level03 starts with the Player Camera current"
+	)
+	fixture.expect(
+		not bool(result_interface.call("is_result_visible")),
+		"Level03 starts without a result interface"
 	)
 
-	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
-	level_02.campaign_story_phase_finished.emit()
-	await fixture.process_frames(1)
-	fixture.expect(
-		not level_02.is_campaign_story_phase_active(),
-		"Late completion notifications cannot restart the final Story"
-	)
-	fixture.expect(
-		main.call("get_active_campaign_level") == level_02,
-		"Late completion notifications cannot transition the final campaign Level"
-	)
-
-	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
-	level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
+	level_03.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
+	level_03.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
 	fixture.expect(
 		bool(result_interface.call("is_result_visible")),
-		"Level02 can present defeat after final Story completion"
+		"Level03 can present defeat"
 	)
 	fixture.expect(
-		not level_02.is_campaign_control_available(),
-		"Post-victory Level02 defeat disables controls"
+		not level_03.is_campaign_control_available(),
+		"Level03 defeat disables controls"
 	)
 
 	result_interface.emit_signal("retry_requested")
 	await fixture.process_frames(1)
 
 	var replacement := main.call("get_active_campaign_level") as CampaignLevel
-	fixture.expect(replacement != null, "Level02 retry creates a replacement Level")
-	fixture.expect(not is_instance_valid(level_02), "Level02 retry disposes the completed session")
+	fixture.expect(replacement != null, "Level03 retry creates a replacement Level")
+	fixture.expect(not is_instance_valid(level_03), "Level03 retry disposes the defeated session")
 	if replacement != null:
 		fixture.add_node(replacement)
-		fixture.expect(replacement.get_campaign_id() == &"level_02", "Level02 retry keeps campaign identity")
+		fixture.expect(replacement.get_campaign_id() == &"level_03", "Level03 retry keeps campaign identity")
 		fixture.expect(
 			not replacement.is_campaign_story_phase_active(),
-			"Level02 retry skips its opening Story"
+			"Level03 retry remains free of an Opening Story"
 		)
-		fixture.expect(replacement.is_campaign_control_available(), "Level02 retry enables controls")
-		fixture.expect(replacement.is_campaign_health_full(), "Level02 retry restores full campaign health")
-		fixture.expect(replacement.is_campaign_hud_visible(), "Level02 retry shows the HUD")
+		fixture.expect(replacement.is_campaign_control_available(), "Level03 retry enables controls")
+		fixture.expect(replacement.is_campaign_health_full(), "Level03 retry restores full campaign health")
+		fixture.expect(replacement.is_campaign_hud_visible(), "Level03 retry shows the HUD")
 		fixture.expect(
 			replacement.get_campaign_camera_role() == CAMERA_PLAYER,
-			"Level02 retry restores the Player Camera"
+			"Level03 retry restores the Player Camera"
 		)
 	fixture.expect(
 		not bool(result_interface.call("is_result_visible")),
-		"Level02 retry hides the result interface"
+		"Level03 retry hides the result interface"
 	)
-	fixture.expect(not paused, "Level02 retry leaves the scene tree unpaused")
+	fixture.expect(not paused, "Level03 retry leaves the scene tree unpaused")
 
 	fixture.complete(false)
 	await fixture.process_frames(3)

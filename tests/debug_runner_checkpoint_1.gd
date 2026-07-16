@@ -124,6 +124,38 @@ func verify_campaign_progression(runner: Node, level_01: CampaignLevel) -> void:
 		fixture.add_node(level_02)
 		fixture.expect(level_02.is_campaign_story_phase_active(), "Level02 starts its opening Story")
 		verify_debug_health_overrides(level_02)
+		await advance_story_phase(level_02, "Level02 opening Story")
+		level_02.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+		fixture.expect(level_02.is_campaign_story_phase_active(), "Level02 starts its victory Story")
+		await advance_story_phase(level_02, "Level02 victory Story")
+
+	var level_03 := runner.call("get_active_campaign_level") as CampaignLevel
+	fixture.expect(
+		level_03 != null and level_03.get_campaign_id() == &"level_03",
+		"Level02 victory automatically progresses to Level03"
+	)
+	if level_03 == null:
+		return
+	fixture.add_node(level_03)
+	fixture.expect(not level_03.is_campaign_story_phase_active(), "Level03 has no Opening Story")
+	fixture.expect(level_03.is_campaign_control_available(), "Level03 starts with controls available")
+	fixture.expect(level_03.is_campaign_hud_visible(), "Level03 starts with its HUD visible")
+	fixture.expect(not paused, "Level03 starts with the SceneTree unpaused")
+	var player := level_03.get_node_or_null("Player")
+	fixture.expect(
+		player != null and player.call("get_current_health") == 999,
+		"Level03 progression applies the Player health override"
+	)
+	fixture.expect(
+		player != null and player.call("get_maximum_health") == 8,
+		"Level03 keeps its normal eight-health presentation maximum"
+	)
+	var hud := level_03.get_node_or_null("HUD")
+	fixture.expect(
+		hud != null and hud.call("is_presenting_health", 8, 8),
+		"Level03 keeps its normal eight-heart presentation"
+	)
+	fixture.expect(get_level_enemies(level_03).is_empty(), "Level03 starts without Enemies")
 
 
 func advance_story_phase(level: CampaignLevel, description: String) -> void:

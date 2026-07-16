@@ -4,6 +4,7 @@ extends Node2D
 const LEVEL_00_SCENE := preload("res://levels/level_00.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
+const LEVEL_03_SCENE := preload("res://levels/level_03.tscn")
 const RESULT_DEAD := "DEAD"
 const CAMPAIGN_PHASE_TITLE := &"title"
 const CAMPAIGN_PHASE_GUIDE := &"guide"
@@ -131,6 +132,10 @@ func start_level_02(play_intro: bool = true) -> void:
 	start_level(LEVEL_02_SCENE, play_intro)
 
 
+func start_level_03() -> void:
+	start_level(LEVEL_03_SCENE, false)
+
+
 func play_level_00() -> void:
 	if _active_level == null or _active_level.get_campaign_id() != &"level_01":
 		return
@@ -217,7 +222,7 @@ func _on_level_victory_story_finished(source: CampaignLevel) -> void:
 		&"level_01":
 			start_level_02()
 		&"level_02":
-			set_level_controls_enabled(true)
+			start_level_03()
 
 
 func retry_campaign() -> void:
