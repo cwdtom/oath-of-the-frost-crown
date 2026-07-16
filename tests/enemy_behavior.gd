@@ -48,6 +48,7 @@ const ENEMY_EXAMPLES := [
 		"health": 3,
 		"death_duration": 0.7,
 		"blocks_skill_damage": false,
+		"starts_with_shield": true,
 		"notifies_death": false,
 		"detector_offset": Vector2(-172.0, 0.0),
 		"skill_animation": &"idle",
@@ -252,10 +253,16 @@ func test_skill_damage_policy() -> void:
 				is_equal_approx(enemy.global_position.x, skill_x),
 				"%s stationary skill ignores hurt knockback" % example.name
 			)
-			fixture.expect(
-				enemy.call("get_current_health") == example.health - 1,
-				"%s stationary skill accepts weapon damage" % example.name
-			)
+			if example.get("starts_with_shield", false):
+				fixture.expect(
+					enemy.call("get_current_health") == example.health,
+					"%s stationary skill consumes Shield before taking damage" % example.name
+				)
+			else:
+				fixture.expect(
+					enemy.call("get_current_health") == example.health - 1,
+					"%s stationary skill accepts weapon damage" % example.name
+				)
 			fixture.expect(
 				harness.is_playing(enemy, example.get("skill_animation", &"skill")),
 				"%s keeps releasing its stationary skill after damage" % example.name
@@ -280,6 +287,8 @@ func test_death_presentation_and_cleanup() -> void:
 				&"died",
 				func() -> void: death_notification_count[0] += 1
 			)
+		if example.get("starts_with_shield", false):
+			enemy.take_damage(1, Vector2.ZERO)
 		enemy.take_damage(int(example.health), Vector2.ZERO)
 		fixture.expect(
 			not enemy.is_in_group("enemies"),

@@ -21,9 +21,10 @@ func _run() -> void:
 	harness = EnemyHarness.new(fixture, world)
 
 	await test_elk_casts_grounded_thunder_within_its_detection_area()
-	await test_nonlethal_damage_does_not_interrupt_elk_thunder()
+	await test_shielded_damage_does_not_interrupt_elk_thunder()
 	await test_elk_death_cancels_pending_thunder()
 	await test_elk_resumes_patrol_and_keeps_its_cast_cooldown()
+	await test_elk_shield_recovers_without_extending_its_cooldown()
 
 	fixture.complete()
 
@@ -65,7 +66,7 @@ func test_elk_casts_grounded_thunder_within_its_detection_area() -> void:
 	await fixture.process_frames(1)
 
 
-func test_nonlethal_damage_does_not_interrupt_elk_thunder() -> void:
+func test_shielded_damage_does_not_interrupt_elk_thunder() -> void:
 	var start_position := Vector2(5000.0, 0.0)
 	var floor_body := harness.add_environment_wall(
 		start_position + Vector2(0.0, 300.0),
@@ -86,13 +87,15 @@ func test_nonlethal_damage_does_not_interrupt_elk_thunder() -> void:
 	await fixture.physics_frames(3)
 	await fixture.process_frames(1)
 	var thunder := elk.get_node("Thunder") as Area2D
+	var shield := elk.get_node("ShieldSkill/Shield") as Area2D
 	player.global_position = thunder.global_position + Vector2(20.0, 0.0)
 	detector_body.queue_free()
 	await harness.deliver_hit(elk)
-	fixture.expect(elk.get_current_health() == 2, "Elk accepts damage while casting thunder")
+	fixture.expect(elk.get_current_health() == 3, "Elk Shield negates damage during thunder")
+	fixture.expect(not shield.visible, "Negated damage consumes the Elk Shield")
 
 	await fixture.wait_seconds(0.95)
-	fixture.expect(hurt_event_count[0] == 1, "Accepted damage does not cancel Elk thunder")
+	fixture.expect(hurt_event_count[0] == 1, "Shielded damage does not cancel Elk thunder")
 
 	elk.queue_free()
 	player.queue_free()
@@ -163,12 +166,52 @@ func test_elk_death_cancels_pending_thunder() -> void:
 	var thunder := elk.get_node("Thunder") as Area2D
 	player.global_position = thunder.global_position + Vector2(20.0, 0.0)
 	detector_body.queue_free()
+	elk.take_damage(1, Vector2.ZERO)
 	elk.take_damage(3, Vector2.ZERO)
-	fixture.expect(elk.is_health_depleted(), "Lethal damage depletes Elk during its cast")
+	fixture.expect(
+		elk.is_health_depleted(),
+		"Damage after consuming Elk Shield depletes Elk during its cast"
+	)
 
 	await fixture.wait_seconds(1.1)
 	fixture.expect(delayed_hurt_count[0] == 0, "Elk death cancels pending thunder")
 
 	player.queue_free()
 	floor_body.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_elk_shield_recovers_without_extending_its_cooldown() -> void:
+	var elk := harness.instantiate_enemy(
+		ELK_SCENE,
+		Vector2(14000.0, 0.0),
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+	var shield := elk.get_node("ShieldSkill/Shield") as Area2D
+	var health_change_count := [0]
+	elk.health_changed.connect(
+		func(_current: int, _maximum: int) -> void:
+			health_change_count[0] += 1
+	)
+	var position_before_hit := elk.global_position
+
+	elk.take_damage(1, Vector2.RIGHT)
+	fixture.expect(not shield.visible, "Damage consumes the available Elk Shield")
+	fixture.expect(elk.get_current_health() == 3, "Elk Shield negates the consumed hit")
+	fixture.expect(elk.global_position == position_before_hit, "Elk Shield prevents hit knockback")
+	fixture.expect(health_change_count[0] == 0, "Elk Shield publishes no health change")
+
+	await fixture.wait_seconds(2.0)
+	elk.take_damage(1, Vector2.ZERO)
+	fixture.expect(elk.get_current_health() == 2, "Elk takes damage during Shield cooldown")
+
+	await fixture.wait_seconds(2.8)
+	fixture.expect(not shield.visible, "Elk Shield remains unavailable before five seconds")
+	await fixture.wait_seconds(0.3)
+	fixture.expect(shield.visible, "Elk Shield recovers after five seconds")
+
+	elk.take_damage(1, Vector2.ZERO)
+	fixture.expect(elk.get_current_health() == 2, "Recovered Elk Shield negates damage again")
+
+	elk.queue_free()
 	await fixture.process_frames(1)

@@ -33,3 +33,11 @@ _Avoid_: Elk position, Player position
 **Elk Thunder Cast**:
 A stationary Enemy skill during which an Elk pauses its patrol, releases thunder at its selected Elk Thunder Strike Point, and then resumes its prior behavior.
 _Avoid_: Thunder pursuit, moving cast
+
+**Elk Shield**:
+A rechargeable protection that negates one incoming damage event against an Elk, regardless of the damage source, while the protection is available. It then becomes unavailable for five seconds without causing a hit reaction or interrupting the Elk's current behavior.
+_Avoid_: Weapon block, damage immunity
+
+**Elk Shield Cooldown**:
+The fixed five-second interval after an Elk Shield negates damage and before it becomes available again. Damage received during this interval neither resets nor extends it.
+_Avoid_: Thunder cooldown, hurt immunity

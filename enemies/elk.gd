@@ -14,17 +14,29 @@ var _rng := RandomNumberGenerator.new()
 @onready var _thunder_animation_player: AnimationPlayer = $Thunder/AnimationPlayer
 @onready var _thunder_particles: CPUParticles2D = $Thunder/CPUParticles2D
 @onready var _thunder_start_offset: Vector2 = _thunder.position
+@onready var _shield: Area2D = $ShieldSkill/Shield
+@onready var _shield_cooldown_timer: Timer = $ShieldSkill/Cooldown
 
 
 func _ready() -> void:
 	_rng.randomize()
 	_thunder.top_level = true
 	_reset_thunder()
+	_shield_cooldown_timer.timeout.connect(_shield.show)
 	super._ready()
 
 
 func _get_max_health() -> int:
 	return MAX_HEALTH
+
+
+func take_damage(amount: int, knockback_direction: Vector2) -> void:
+	if amount > 0 and _shield.visible and not is_health_depleted():
+		_shield.hide()
+		_shield_cooldown_timer.start()
+		return
+
+	super.take_damage(amount, knockback_direction)
 
 
 func _get_skill_animation() -> StringName:

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b7s3n1mbf2w3y" path="res://enemies/elk.gd" id="1_elk"]
 [ext_resource type="Texture2D" uid="uid://bd5p0l6lxp0tt" path="res://assets/enemies/elk/west.png" id="1_lts8a"]
+[ext_resource type="PackedScene" uid="uid://8r01knpv8yqc" path="res://enemies/skills/shield.tscn" id="2_2grt2"]
 [ext_resource type="Texture2D" uid="uid://c0t5ql6267f88" path="res://assets/enemies/elk/dead/west/frame_000.png" id="2_flk7b"]
 [ext_resource type="Texture2D" uid="uid://cys7ur2p75mxa" path="res://assets/enemies/elk/hurt/west/frame_000.png" id="2_ka6x6"]
 [ext_resource type="Texture2D" uid="uid://ckey0xoxfu0g3" path="res://assets/enemies/elk/idle/west/frame_000.png" id="3_h0v8k"]
@@ -207,6 +208,15 @@ size = Vector2(284, 50.5)
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("1_elk")
+
+[node name="ShieldSkill" type="Node2D" parent="." unique_id=43684934]
+
+[node name="Shield" parent="ShieldSkill" unique_id=655684110 instance=ExtResource("2_2grt2")]
+scale = Vector2(1.2, 1.2)
+
+[node name="Cooldown" type="Timer" parent="ShieldSkill" unique_id=1761502872]
+wait_time = 5.0
+one_shot = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1532115245]
 texture = ExtResource("1_lts8a")
