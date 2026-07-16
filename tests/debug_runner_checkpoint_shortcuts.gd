@@ -41,7 +41,6 @@ const MAIN_SCENE := preload("res://main.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const MAX_STORY_ADVANCE_INPUTS := 64
 const RESERVED_SLOT_DIAGNOSTICS := [
-	"Debug Runner: checkpoint 6 is unassigned.",
 	"Debug Runner: checkpoint 7 is unassigned.",
 	"Debug Runner: checkpoint 8 is unassigned.",
 ]
@@ -142,14 +141,19 @@ func verify_runner_shortcuts(runner: Node) -> void:
 	if repeated_level_02_combat == null:
 		return
 
-	var level_03 := await switch_checkpoint(
-		runner, repeated_level_02_combat, KEY_5, &"level_03", false, "Ctrl+5"
+	var level_03_story := await switch_checkpoint(
+		runner, repeated_level_02_combat, KEY_5, &"level_03", true, "Ctrl+5"
 	)
-	if level_03 == null:
+	if level_03_story == null:
+		return
+	var level_03_combat := await switch_checkpoint(
+		runner, level_03_story, KEY_6, &"level_03", false, "Ctrl+6"
+	)
+	if level_03_combat == null:
 		return
 
 	var level_01_story := await switch_checkpoint(
-		runner, level_03, KEY_1, &"level_01", true, "Ctrl+1"
+		runner, level_03_combat, KEY_1, &"level_01", true, "Ctrl+1"
 	)
 	if level_01_story == null:
 		return
@@ -317,7 +321,7 @@ func verify_reserved_slots(runner: Node) -> void:
 
 	var previous_diagnostic_count := diagnostic_logger.get_messages().size()
 	for _press in 2:
-		for keycode in [KEY_6, KEY_7, KEY_8]:
+		for keycode in [KEY_7, KEY_8]:
 			send_key(keycode, true)
 	await fixture.process_frames(1)
 	expect_new_diagnostics(
@@ -345,7 +349,7 @@ func verify_reserved_slots(runner: Node) -> void:
 	if combat_level == null:
 		return
 	previous_diagnostic_count = diagnostic_logger.get_messages().size()
-	for keycode in [KEY_6, KEY_7, KEY_8]:
+	for keycode in [KEY_7, KEY_8]:
 		send_key(keycode, true)
 		send_key(keycode, true, true, true)
 	await fixture.process_frames(1)
@@ -374,7 +378,7 @@ func verify_reserved_slots(runner: Node) -> void:
 		"Reserved-slot result test presents a defeat result"
 	)
 	previous_diagnostic_count = diagnostic_logger.get_messages().size()
-	for keycode in [KEY_6, KEY_7, KEY_8]:
+	for keycode in [KEY_7, KEY_8]:
 		send_key(keycode, true)
 	await fixture.process_frames(1)
 	expect_new_diagnostics(

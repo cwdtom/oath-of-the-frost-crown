@@ -137,7 +137,11 @@ func verify_campaign_progression(runner: Node, level_01: CampaignLevel) -> void:
 	if level_03 == null:
 		return
 	fixture.add_node(level_03)
-	fixture.expect(not level_03.is_campaign_story_phase_active(), "Level03 has no Opening Story")
+	fixture.expect(level_03.is_campaign_story_phase_active(), "Level03 starts its Opening Story")
+	fixture.expect(not level_03.is_campaign_control_available(), "Level03 Story disables controls")
+	fixture.expect(not level_03.is_campaign_hud_visible(), "Level03 Story hides its HUD")
+	fixture.expect(paused, "Level03 Story pauses the SceneTree")
+	await advance_story_phase(level_03, "Level03 opening Story")
 	fixture.expect(level_03.is_campaign_control_available(), "Level03 starts with controls available")
 	fixture.expect(level_03.is_campaign_hud_visible(), "Level03 starts with its HUD visible")
 	fixture.expect(not paused, "Level03 starts with the SceneTree unpaused")

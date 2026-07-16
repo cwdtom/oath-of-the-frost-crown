@@ -17,8 +17,8 @@ const CHECKPOINTS := [
 	{"scene": LEVEL_01_SCENE, "play_opening_story": false},
 	{"scene": LEVEL_02_SCENE, "play_opening_story": true},
 	{"scene": LEVEL_02_SCENE, "play_opening_story": false},
+	{"scene": LEVEL_03_SCENE, "play_opening_story": true},
 	{"scene": LEVEL_03_SCENE, "play_opening_story": false},
-	null,
 	null,
 	null,
 ]

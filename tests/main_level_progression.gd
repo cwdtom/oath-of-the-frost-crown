@@ -187,18 +187,40 @@ func _run() -> void:
 		level_03.get_supported_campaign_outcomes() == [&"defeat"],
 		"Level03 supports defeat without declaring an unfinished completion outcome"
 	)
-	fixture.expect(not level_03.is_campaign_story_phase_active(), "Level03 starts without a Story")
-	fixture.expect(not paused, "Level03 starts with gameplay unpaused")
-	fixture.expect(level_03.is_campaign_control_available(), "Level03 starts with controls available")
-	fixture.expect(level_03.is_campaign_health_full(), "Level03 starts with full campaign health")
-	fixture.expect(level_03.is_campaign_hud_visible(), "Level03 starts with its HUD visible")
+	fixture.expect(level_03.is_campaign_story_phase_active(), "Level03 starts its opening Story")
+	fixture.expect(paused, "Level03 opening Story pauses gameplay")
 	fixture.expect(
-		level_03.get_campaign_camera_role() == CAMERA_PLAYER,
-		"Level03 starts with the Player Camera current"
+		not level_03.is_campaign_control_available(),
+		"Level03 opening Story keeps controls unavailable"
+	)
+	fixture.expect(level_03.is_campaign_health_full(), "Level03 starts with full campaign health")
+	fixture.expect(not level_03.is_campaign_hud_visible(), "Level03 opening Story hides the HUD")
+	fixture.expect(
+		level_03.get_campaign_camera_role() == CAMERA_OPENING_STORY,
+		"Level03 opening Story uses the Story Camera"
 	)
 	fixture.expect(
 		not bool(result_interface.call("is_result_visible")),
 		"Level03 starts without a result interface"
+	)
+
+	var level_03_story_finished := [false]
+	level_03.campaign_story_phase_finished.connect(
+		func() -> void: level_03_story_finished[0] = true,
+		CONNECT_ONE_SHOT
+	)
+	for _input_index in MAX_STORY_ADVANCE_INPUTS:
+		if level_03_story_finished[0]:
+			break
+		await send_story_input()
+	fixture.expect(level_03_story_finished[0], "Level03 opening Story completes through input")
+	fixture.expect(not level_03.is_campaign_story_phase_active(), "Level03 finishes its opening Story")
+	fixture.expect(not paused, "Level03 starts gameplay after its opening Story")
+	fixture.expect(level_03.is_campaign_control_available(), "Level03 enables controls after its Story")
+	fixture.expect(level_03.is_campaign_hud_visible(), "Level03 shows its HUD after its Story")
+	fixture.expect(
+		level_03.get_campaign_camera_role() == CAMERA_PLAYER,
+		"Level03 restores the Player Camera after its Story"
 	)
 
 	level_03.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)

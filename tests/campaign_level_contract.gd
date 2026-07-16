@@ -29,7 +29,7 @@ const LEVEL_SPECS := [
 		"campaign_id": &"level_03",
 		"outcomes": [&"defeat"],
 		"has_music": true,
-		"has_opening_story": false,
+		"has_opening_story": true,
 	},
 ]
 const MAX_STORY_ADVANCE_INPUTS := 64

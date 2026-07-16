@@ -133,7 +133,7 @@ func start_level_02(play_intro: bool = true) -> void:
 
 
 func start_level_03() -> void:
-	start_level(LEVEL_03_SCENE, false)
+	start_level(LEVEL_03_SCENE, true)
 
 
 func play_level_00() -> void:

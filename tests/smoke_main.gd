@@ -3,6 +3,7 @@ extends SceneTree
 
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const MAIN_SCENE := "res://main.tscn"
+const CAMERA_OPENING_STORY := &"opening_story"
 const CAMERA_PLAYER := &"player"
 const MAX_STORY_ADVANCE_INPUTS := 64
 
@@ -160,17 +161,29 @@ func _run() -> void:
 		find_player_event_source(level_03) != null,
 		"Level03 wires its production Player"
 	)
-	fixture.expect(not level_03.is_campaign_story_phase_active(), "Level03 has no Opening Story")
-	fixture.expect(not paused, "Level03 initialization leaves the campaign unpaused")
+	fixture.expect(level_03.is_campaign_story_phase_active(), "Level03 starts its Opening Story")
+	fixture.expect(paused, "Level03 Opening Story pauses the campaign")
 	fixture.expect(
-		level_03.is_campaign_control_available(),
-		"Level03 initialization enables Player control"
+		not level_03.is_campaign_control_available(),
+		"Level03 Opening Story keeps Player control unavailable"
 	)
 	fixture.expect(level_03.is_campaign_health_full(), "Level03 initializes at full health")
-	fixture.expect(level_03.is_campaign_hud_visible(), "Level03 initialization presents its HUD")
+	fixture.expect(not level_03.is_campaign_hud_visible(), "Level03 Opening Story hides its HUD")
+	fixture.expect(
+		level_03.get_campaign_camera_role() == CAMERA_OPENING_STORY,
+		"Level03 Opening Story uses its Story Camera"
+	)
+
+	await advance_story_phase(level_03, "Level03 opening Story")
+	fixture.expect(not paused, "Level03 starts gameplay after its Opening Story")
+	fixture.expect(
+		level_03.is_campaign_control_available(),
+		"Level03 enables Player control after its Opening Story"
+	)
+	fixture.expect(level_03.is_campaign_hud_visible(), "Level03 presents its HUD after its Story")
 	fixture.expect(
 		level_03.get_campaign_camera_role() == CAMERA_PLAYER,
-		"Level03 initialization uses its Player Camera"
+		"Level03 restores its Player Camera after its Story"
 	)
 
 	var exit_code := fixture.complete(false)
