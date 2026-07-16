@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://8r01knpv8yqc"]
 
-[ext_resource type="Texture2D" uid="uid://b1rq2lbjkfnlb" path="res://assets/enemies/skills/shield/shield.png" id="1_h4yti"]
 [ext_resource type="Texture2D" uid="uid://c7t7u2cdg5l2f" path="res://assets/enemies/skills/shield/idle/frame_000.png" id="2_bqpwa"]
 [ext_resource type="Texture2D" uid="uid://dpdx2vcxux852" path="res://assets/enemies/skills/shield/idle/frame_001.png" id="3_hwb5r"]
 [ext_resource type="Texture2D" uid="uid://cycxqjq08x2ur" path="res://assets/enemies/skills/shield/idle/frame_002.png" id="4_yxb51"]
@@ -26,7 +25,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [ExtResource("1_h4yti")]
+"values": [ExtResource("2_bqpwa")]
 }
 
 [sub_resource type="Animation" id="Animation_nqnra"]
@@ -55,7 +54,7 @@ _data = {
 [node name="Shield" type="Area2D" unique_id=655684110]
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1710600965]
-texture = ExtResource("1_h4yti")
+texture = ExtResource("2_bqpwa")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=868866063]
 shape = SubResource("CircleShape2D_1n5kv")
