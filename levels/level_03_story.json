@@ -1,0 +1,104 @@
+[
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "你总算来了。前面的路不太好走，我刚让人把伤员送回营地。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "发生了什么？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "林子里的动物比之前更加躁动，但很奇怪，它们没有往外逃，反而都在绕着山顶走。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "山顶有什么？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "一头巨大的麋鹿。附近的猎人叫它麋鹿王，说它原本很少离开北面的密林。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "它也被污染了？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "看起来是。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "它袭击了营地？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "没有。它一直守在山道尽头，谁靠近就攻击，但从不追出那片区域。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "像是在守护什么。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "或者只是被困在那里。我看见它几次撞向附近的石柱，可惜没能靠得更近。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "什么石柱？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "上面刻着符文，已经被雪和树根盖住大半。我认不出具体用途，但不像森林里原本的东西。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "这片森林里不该出现新的符文设施。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "所以我才觉得不对劲。不过现在最重要的，还是先通过山道。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "明白了。解决它之后，我们再检查那些石柱。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "好。只是小心一点，这片森林里的东西，越来越不像我们出发前听说的那样了。"
+	}
+]
