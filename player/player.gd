@@ -17,6 +17,11 @@ const HURT_KNOCKBACK_DISTANCE = 100.0
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum {IDLE, RUN, JUMP, HURT, DEAD, ATTACK}
+@export_range(1, 100, 1) var maximum_health := MAX_HEALTH:
+	set(value):
+		maximum_health = value
+		if _health != null:
+			_initialize_health(maximum_health)
 var state = -1
 var controls_enabled := true
 var _health := DamageAndHealthModule.new(MAX_HEALTH)
@@ -30,6 +35,15 @@ var _health := DamageAndHealthModule.new(MAX_HEALTH)
 
 
 func _init() -> void:
+	_connect_health_signals()
+
+
+func _initialize_health(value: int) -> void:
+	_health = DamageAndHealthModule.new(value)
+	_connect_health_signals()
+
+
+func _connect_health_signals() -> void:
 	_health.health_changed.connect(_on_health_changed)
 	_health.depleted.connect(_on_health_depleted)
 

@@ -12,7 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://dlctukv1npdo3" path="res://objects/trunk.tscn" id="6_y72ps"]
 [ext_resource type="PackedScene" uid="uid://xir5usb6quqc" path="res://objects/grass_3.tscn" id="7_2t17w"]
 [ext_resource type="PackedScene" uid="uid://m15j3k44k3g5" path="res://objects/pine.tscn" id="7_bm28l"]
-[ext_resource type="Texture2D" uid="uid://b811td0ecso5r" path="res://assets/tilesets/level01/water.png" id="7_qdeet"]
+[ext_resource type="Texture2D" uid="uid://b811td0ecso5r" path="res://assets/tilesets/level03/ice.png" id="7_qdeet"]
 [ext_resource type="PackedScene" uid="uid://i4dke2yr40d0" path="res://objects/grass_4.tscn" id="8_bm28l"]
 [ext_resource type="PackedScene" uid="uid://babasi3w3i51w" path="res://objects/grass.tscn" id="9_2qse1"]
 [ext_resource type="PackedScene" uid="uid://bt8a82ruxow0a" path="res://objects/mushroom_4.tscn" id="12_m68c3"]

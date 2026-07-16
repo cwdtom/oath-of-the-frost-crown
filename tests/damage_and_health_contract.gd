@@ -3,6 +3,7 @@ extends SceneTree
 
 const BEAR_SCENE := preload("res://enemies/bear.tscn")
 const WOLF_SCENE := preload("res://enemies/wolf.tscn")
+const PLAYER_03_SCENE := preload("res://player/player_03.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
@@ -83,6 +84,7 @@ func _run() -> void:
 
 	await verify_player_rejects_invalid_debug_health_overrides()
 	await verify_player_debug_health_override()
+	await verify_player_03_health()
 	await verify_enemy_rejects_invalid_debug_health_overrides()
 	await verify_enemy_debug_health_override()
 	for spec in ACTOR_SPECS:
@@ -91,6 +93,25 @@ func _run() -> void:
 	fixture.complete(false)
 	await fixture.process_frames(3)
 	fixture.complete()
+
+
+func verify_player_03_health() -> void:
+	var player := fixture.instantiate_scene(PLAYER_03_SCENE) as DamageableActor
+	fixture.expect(player != null, "Player03 loads through its production actor seam")
+	if player == null:
+		return
+
+	player.set_physics_process(false)
+	await fixture.process_frames(1)
+	fixture.expect(
+		player.call("get_maximum_health") == 8,
+		"Player03 exposes eight maximum health"
+	)
+	fixture.expect(
+		player.call("get_current_health") == 8,
+		"Player03 initializes at full eight health"
+	)
+	player.free()
 
 
 func verify_release_build_rejects_debug_health_overrides() -> void:
