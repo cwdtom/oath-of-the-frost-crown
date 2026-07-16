@@ -235,10 +235,6 @@ autoplay = &"idle"
 tree_root = SubResource("AnimationNodeStateMachine_1n5kv")
 anim_player = NodePath("../AnimationPlayer")
 
-[node name="Thunder" parent="." unique_id=1983643422 instance=ExtResource("10_bbepo")]
-position = Vector2(-184, -147)
-scale = Vector2(0.8, 0.8)
-
 [node name="HurtBox" type="Area2D" parent="." unique_id=929490731]
 collision_layer = 4
 collision_mask = 3
@@ -250,6 +246,10 @@ shape = SubResource("RectangleShape2D_parp5")
 [node name="SkillDetect" type="Area2D" parent="." unique_id=543670923]
 collision_layer = 4
 collision_mask = 2
+
+[node name="Thunder" parent="SkillDetect" unique_id=1983643422 instance=ExtResource("10_bbepo")]
+position = Vector2(-184, -147)
+scale = Vector2(0.8, 0.8)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="SkillDetect" unique_id=1658597527]
 position = Vector2(-172, 9)
