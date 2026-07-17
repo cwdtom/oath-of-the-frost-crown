@@ -2,6 +2,7 @@ extends SceneTree
 
 
 const ELK_SCENE := preload("res://enemies/elk.tscn")
+const ELK_KING_SCENE := preload("res://enemies/elk_king.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 
@@ -25,8 +26,72 @@ func _run() -> void:
 	await test_elk_death_cancels_pending_thunder()
 	await test_elk_resumes_patrol_and_keeps_its_cast_cooldown()
 	await test_elk_shield_recovers_without_extending_its_cooldown()
+	await test_elk_king_scene_reuses_elk_thunder()
+	await test_elk_king_scene_reuses_elk_shield()
 
 	fixture.complete()
+
+
+func test_elk_king_scene_reuses_elk_thunder() -> void:
+	var start_position := Vector2(17000.0, 0.0)
+	var floor_body := harness.add_environment_wall(
+		start_position + Vector2(0.0, 300.0),
+		Vector2(2000.0, 20.0)
+	)
+	var detector_body := harness.add_body(start_position + Vector2(-170.0, 0.0))
+	var elk_king := harness.instantiate_enemy(
+		ELK_KING_SCENE,
+		start_position,
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+
+	await fixture.physics_frames(4)
+	await fixture.process_frames(1)
+	var thunder := elk_king.get_node(
+		"SkillDetect/ThunderSkill/Thunder"
+	) as Area2D
+	var thunder_animation_player := thunder.get_node("AnimationPlayer") as AnimationPlayer
+	var strike_offset_x := thunder.global_position.x - start_position.x
+	fixture.expect(thunder.top_level, "Elk King reuses Elk thunder world positioning")
+	fixture.expect(
+		strike_offset_x >= -312.0 and strike_offset_x <= -28.0,
+		"Elk King reuses grounded random thunder inside its Skill Detection Area"
+	)
+	fixture.expect(
+		is_equal_approx(elk_king.global_position.x, start_position.x),
+		"Elk King reuses stationary Elk thunder casting"
+	)
+
+	await fixture.wait_seconds(3.1)
+	fixture.expect(
+		thunder_animation_player.is_playing(),
+		"Elk King thunder uses its independently located three-second cooldown"
+	)
+
+	elk_king.queue_free()
+	detector_body.queue_free()
+	floor_body.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_elk_king_scene_reuses_elk_shield() -> void:
+	var elk_king := harness.instantiate_enemy(
+		ELK_KING_SCENE,
+		Vector2(20000.0, 0.0),
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+	var shield := elk_king.get_node("ShieldSkill/Shield") as Area2D
+	var starting_health: int = elk_king.get_current_health()
+
+	elk_king.take_damage(1, Vector2.RIGHT)
+	fixture.expect(not shield.visible, "Elk King reuses the initially available Elk Shield")
+	fixture.expect(
+		elk_king.get_current_health() == starting_health,
+		"Reused Elk Shield negates one positive damage event"
+	)
+
+	elk_king.queue_free()
+	await fixture.process_frames(1)
 
 
 func test_elk_casts_grounded_thunder_within_its_detection_area() -> void:

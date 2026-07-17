@@ -40,7 +40,7 @@ var _has_pending_depletion_outcome := false
 @onready var hurt_box_collision_shape: CollisionShape2D = $HurtBox/CollisionShape2D
 @onready var skill_detect: Area2D = $SkillDetect
 @onready var skill_detect_collision_shape: CollisionShape2D = $SkillDetect/CollisionShape2D
-@onready var skill_cooldown_timer: Timer = $SkillDetect/Cooldown
+@onready var skill_cooldown_timer: Timer = _get_skill_cooldown_timer()
 
 
 func _ready() -> void:
@@ -146,6 +146,10 @@ func _get_run_animation() -> StringName:
 
 func _get_skill_animation() -> StringName:
 	return SKILL_ANIMATION
+
+
+func _get_skill_cooldown_timer() -> Timer:
+	return $SkillDetect/Cooldown
 
 
 func _get_moving_skill_distance() -> float:

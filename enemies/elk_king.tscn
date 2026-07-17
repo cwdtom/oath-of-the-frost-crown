@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://g0ie5c3rg1oc"]
 
-[ext_resource type="Script" uid="uid://b7s3n1mbf2w3y" path="res://enemies/elk.gd" id="1_2rs41"]
+[ext_resource type="Script" uid="uid://cxksbr8l0g4y0" path="res://enemies/elk_king.gd" id="1_2rs41"]
 [ext_resource type="PackedScene" uid="uid://8r01knpv8yqc" path="res://enemies/skills/shield.tscn" id="2_flq2x"]
 [ext_resource type="PackedScene" uid="uid://lu67rono1q4s" path="res://enemies/skills/earthquake.tscn" id="2_svy8c"]
 [ext_resource type="Texture2D" uid="uid://0r5oy1iueop0" path="res://assets/enemies/elk_king/west.png" id="3_tji46"]
