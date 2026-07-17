@@ -90,7 +90,7 @@ func test_elk_king_defeat_publishes_one_notification_and_remains_level_owned() -
 	)
 	fixture.expect(
 		death_notification_count[0] == 1,
-		"Elk King defeat notification remains singular while it is retained"
+		"Elk King Defeat notification remains singular while it is retained"
 	)
 	elk_king.queue_free()
 	await fixture.process_frames(1)
