@@ -43,7 +43,7 @@ func _prepare_death_presentation() -> void:
 	died.emit()
 
 
-func _starts_death_presentation_on_defeat() -> bool:
+func _starts_death_presentation_automatically() -> bool:
 	return false
 
 

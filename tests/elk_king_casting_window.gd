@@ -70,7 +70,7 @@ func test_reentry_restarts_completed_earthquake_safely() -> void:
 	)
 	detector_body.position += Vector2(400.0, 0.0)
 	await fixture.physics_frames(2)
-	await earthquake_animation.animation_finished
+	await fixture.wait_seconds(1.05)
 	fixture.expect(
 		not earthquake_animation.is_playing(),
 		"The first earthquake finishes before the Player re-enters"
@@ -88,7 +88,7 @@ func test_reentry_restarts_completed_earthquake_safely() -> void:
 		and earthquake_animation.current_animation == &"cast",
 		"Elk King safely restarts a completed earthquake when the Player re-enters"
 	)
-	await earthquake_animation.animation_finished
+	await fixture.wait_seconds(1.05)
 
 	elk_king.queue_free()
 	detector_body.queue_free()

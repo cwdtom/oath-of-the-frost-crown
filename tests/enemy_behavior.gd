@@ -134,7 +134,7 @@ func _run() -> void:
 	await test_persistent_skill_detection_retriggers_ready_skill()
 	await test_skill_ready_during_hurt_waits_for_hurt_completion()
 	await test_skill_damage_policy()
-	await test_death_presentation_and_cleanup()
+	await test_death_presentation_and_lifetime()
 
 	await fixture.process_frames(2)
 	fixture.complete()
@@ -457,7 +457,7 @@ func test_skill_damage_policy() -> void:
 		start_x += 1500.0
 
 
-func test_death_presentation_and_cleanup() -> void:
+func test_death_presentation_and_lifetime() -> void:
 	var start_x := 17000.0
 	for example in ENEMY_EXAMPLES:
 		var enemy := harness.instantiate_enemy(

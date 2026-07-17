@@ -120,7 +120,7 @@ func change_state(new_state: int) -> void:
 			remove_from_group("enemies")
 			body_collision_shape.set_deferred("disabled", true)
 			hurt_box_collision_shape.set_deferred("disabled", true)
-			if _starts_death_presentation_on_defeat():
+			if _starts_death_presentation_automatically():
 				_start_death_presentation()
 
 
@@ -266,7 +266,7 @@ func _start_death_presentation() -> void:
 	animation_state.start(DEAD_ANIMATION)
 
 
-func _starts_death_presentation_on_defeat() -> bool:
+func _starts_death_presentation_automatically() -> bool:
 	return true
 
 
