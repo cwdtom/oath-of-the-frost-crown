@@ -71,8 +71,20 @@ The five-second interval, beginning when an earthquake cast starts, during which
 _Avoid_: Elk King Thunder Cooldown, shared skill cooldown
 
 **Elk King Defeat**:
-The Boss combat outcome reached as soon as the Elk King's health is depleted; its body immediately enters its death presentation while previously started thunder and earthquake casts may still complete and cause damage without revoking the defeat. The defeated Elk King remains until both its death presentation and every pre-defeat cast have finished, then leaves combat; Elk King Defeat is distinct from Level Completion.
+The Boss combat outcome reached as soon as the Elk King's health is depleted. Thunder and earthquake casts that started before defeat may finish their visual presentation but can no longer damage the Player; the defeated Elk King remains part of Level 03 until that Level session is disposed, and Elk King Defeat is distinct from Level Completion.
 _Avoid_: Level Completion, skill cancellation, Elk King cleanup
+
+**Elk King Death Staging**:
+The non-interactive transition between Elk King Defeat and its death presentation: the HUD is hidden, the Elk King faces left, and the damage-immune Player retains terrain physics, landing if necessary before running at normal speed to a point with an actual horizontal separation of 470 pixels on its left. The Player Camera follows this movement; once precisely aligned, the Player faces the Elk King, leaves physical interaction, and is seamlessly replaced by the matching Aila shown in the death presentation.
+_Avoid_: Player input, teleport, airborne handoff, scaled local offset, visible character swap
+
+**Elk King Death Tableau**:
+The terminal Level 03 presentation held on the final frame of the Elk King's death presentation, with the Player Camera holding the final composition and the HUD remaining hidden. It does not cause Level Completion or dispose the Level; the Player remains hidden, unavailable, and absent from physical interaction until the whole Level 03 session is disposed externally.
+_Avoid_: Level Completion, automatic Level disposal, restored Player control
+
+**Level 03 Terminal Outcome Lock**:
+The first confirmed health depletion between the Player and the Elk King fixes Level 03's terminal presentation. Elk King Defeat prevents any later Player Defeat, while an already confirmed Player Defeat prevents Elk King Death Staging from starting; neither result can replace the other afterward.
+_Avoid_: Simultaneous terminal presentations, late outcome replacement
 
 **Elk Shield**:
 A passive, rechargeable protection possessed by an Elk or Elk King that negates one incoming damage event, regardless of the damage source, while the protection is available. It then becomes unavailable for five seconds without causing a hit reaction or interrupting the protected Enemy's current behavior.

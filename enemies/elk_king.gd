@@ -17,6 +17,7 @@ const EARTHQUAKE_CAST_ANIMATION := &"cast"
 var _thunder_cast_active := false
 var _earthquake_cast_active := false
 var _earthquake_presentation_active := false
+var _death_presentation_started := false
 
 
 func _ready() -> void:
@@ -42,6 +43,18 @@ func _prepare_death_presentation() -> void:
 	died.emit()
 
 
+func _starts_death_presentation_automatically() -> bool:
+	return false
+
+
+func request_death_presentation() -> void:
+	if state != DEAD or _death_presentation_started:
+		return
+
+	_death_presentation_started = true
+	_start_death_presentation()
+
+
 func _stop_species_skill_presentation() -> void:
 	if state == DEAD:
 		return
@@ -54,11 +67,9 @@ func die() -> void:
 		return
 
 	change_state(DEAD)
+	move_direction = -1.0
+	face_move_direction()
 	_prepare_death_presentation()
-	await get_tree().create_timer(_get_animation_length(DEAD_ANIMATION)).timeout
-	while _thunder_cast_active or _earthquake_cast_active:
-		await get_tree().process_frame
-	queue_free()
 
 
 func _play_skill_presentations() -> void:

@@ -27,7 +27,7 @@ func _run() -> void:
 	await test_elk_resumes_patrol_and_keeps_its_cast_cooldown()
 	await test_elk_shield_recovers_without_extending_its_cooldown()
 	await test_elk_king_health_bar_follows_authoritative_health()
-	await test_elk_king_defeat_publishes_one_boss_notification()
+	await test_elk_king_defeat_publishes_one_notification_and_remains_level_owned()
 	await test_elk_king_scene_reuses_elk_thunder()
 	await test_elk_king_scene_reuses_elk_shield()
 
@@ -64,7 +64,7 @@ func test_elk_king_health_bar_follows_authoritative_health() -> void:
 	await fixture.process_frames(1)
 
 
-func test_elk_king_defeat_publishes_one_boss_notification() -> void:
+func test_elk_king_defeat_publishes_one_notification_and_remains_level_owned() -> void:
 	var elk_king := harness.instantiate_enemy(
 		ELK_KING_SCENE,
 		Vector2(16500.0, 0.0),
@@ -84,11 +84,16 @@ func test_elk_king_defeat_publishes_one_boss_notification() -> void:
 	fixture.expect(death_notification_count[0] == 1, "Elk King defeat publishes one notification")
 
 	await fixture.wait_seconds(0.9)
-	fixture.expect(not is_instance_valid(elk_king), "Elk King leaves after its death presentation")
+	fixture.expect(
+		is_instance_valid(elk_king) and not harness.is_playing(elk_king, &"dead"),
+		"Elk King remains Level-owned without starting its death presentation"
+	)
 	fixture.expect(
 		death_notification_count[0] == 1,
-		"Elk King defeat notification remains singular after cleanup"
+		"Elk King Defeat notification remains singular while it is retained"
 	)
+	elk_king.queue_free()
+	await fixture.process_frames(1)
 
 
 func test_elk_king_scene_reuses_elk_thunder() -> void:

@@ -16,18 +16,39 @@
 [ext_resource type="Texture2D" uid="uid://12crjwcxeus7" path="res://assets/enemies/elk_king/idle/west/frame_000.png" id="13_y10uj"]
 [ext_resource type="Texture2D" uid="uid://c71i88h01ujpg" path="res://assets/enemies/elk_king/idle/west/frame_001.png" id="14_y3ab4"]
 [ext_resource type="Texture2D" uid="uid://i0vc4viio1b0" path="res://assets/enemies/elk_king/idle/west/frame_002.png" id="15_22lat"]
+[ext_resource type="Texture2D" uid="uid://bxvedli1wb1rt" path="res://assets/player/running/east/frame_000.png" id="15_75roe"]
 [ext_resource type="Texture2D" uid="uid://bm0gbhvpv4bpd" path="res://assets/enemies/elk_king/idle/west/frame_003.png" id="16_8wvig"]
+[ext_resource type="Texture2D" uid="uid://bjk3efchkim0d" path="res://assets/player/running/east/frame_001.png" id="16_ed6r6"]
 [ext_resource type="Texture2D" uid="uid://dqfb2jle8qrv8" path="res://assets/enemies/elk_king/idle/west/frame_004.png" id="17_3tkqc"]
+[ext_resource type="Texture2D" uid="uid://csuuhcwqlpv3g" path="res://assets/player/running/east/frame_002.png" id="17_5f4oy"]
 [ext_resource type="Texture2D" uid="uid://bvu6mnvwuaex" path="res://assets/enemies/elk_king/idle/west/frame_005.png" id="18_nwdt0"]
+[ext_resource type="Texture2D" uid="uid://b7a5s4bq8llot" path="res://assets/player/running/east/frame_003.png" id="18_w6lgy"]
+[ext_resource type="Texture2D" uid="uid://cc24e08iub227" path="res://assets/player/running/east/frame_004.png" id="19_d5gbj"]
 [ext_resource type="Texture2D" uid="uid://px2tqhcy7bn1" path="res://assets/enemies/elk_king/idle/west/frame_006.png" id="19_igckk"]
 [ext_resource type="Texture2D" uid="uid://bhqhu2onm55jb" path="res://assets/enemies/elk_king/idle/west/frame_007.png" id="20_1bewa"]
+[ext_resource type="Texture2D" uid="uid://dars8m3b6t2ta" path="res://assets/NPCs/leif/dead/south-east/frame_000.png" id="20_cvwf7"]
+[ext_resource type="Texture2D" uid="uid://c1nmdbvbetiwr" path="res://assets/player/on_knees/south-east/frame_000.png" id="20_s4ipx"]
+[ext_resource type="Texture2D" uid="uid://brt5k6l7kbjun" path="res://assets/player/on_knees/south-east/frame_001.png" id="21_mbwn6"]
+[ext_resource type="Texture2D" uid="uid://c488uhby6vlh6" path="res://assets/NPCs/leif/dead/south-east/frame_001.png" id="21_vxq2a"]
 [ext_resource type="Texture2D" uid="uid://cigwcy7f2xw7n" path="res://assets/enemies/elk_king/idle/west/frame_008.png" id="21_x3n6p"]
 [ext_resource type="Texture2D" uid="uid://ckoknh5qb3jai" path="res://assets/enemies/elk_king/run/west/frame_000.png" id="22_75roe"]
+[ext_resource type="Texture2D" uid="uid://bs44s18nbkgrn" path="res://assets/player/on_knees/south-east/frame_002.png" id="22_ehumw"]
+[ext_resource type="Texture2D" uid="uid://b6m3pfqmx3kdt" path="res://assets/NPCs/leif/dead/south-east/frame_002.png" id="22_i3t83"]
+[ext_resource type="Texture2D" uid="uid://c3jdmk2pblajf" path="res://assets/player/on_knees/south-east/frame_003.png" id="23_5m5vb"]
+[ext_resource type="Texture2D" uid="uid://d17oeak7ykc7d" path="res://assets/NPCs/leif/dead/south-east/frame_003.png" id="23_7ar12"]
 [ext_resource type="Texture2D" uid="uid://cigd2b0c7ygbc" path="res://assets/enemies/elk_king/run/west/frame_001.png" id="23_ed6r6"]
 [ext_resource type="Texture2D" uid="uid://do1eu00bjhrmp" path="res://assets/enemies/elk_king/run/west/frame_002.png" id="24_5f4oy"]
+[ext_resource type="Texture2D" uid="uid://dh5nrwo841p3s" path="res://assets/player/on_knees/south-east/frame_004.png" id="24_l6yaq"]
+[ext_resource type="Texture2D" uid="uid://ci0gsc5xaadfs" path="res://assets/NPCs/leif/dead/south-east/frame_004.png" id="24_s4ipx"]
+[ext_resource type="Texture2D" uid="uid://5x0s8bc2fqns" path="res://assets/player/on_knees/south-east/frame_005.png" id="25_53o4n"]
+[ext_resource type="Texture2D" uid="uid://dyrjb163b7pk0" path="res://assets/NPCs/leif/dead/south-east/frame_005.png" id="25_mbwn6"]
 [ext_resource type="Texture2D" uid="uid://cuq677rlxwlt8" path="res://assets/enemies/elk_king/run/west/frame_003.png" id="25_w6lgy"]
+[ext_resource type="Texture2D" uid="uid://gpk0fb4tfix" path="res://assets/player/on_knees/south-east/frame_006.png" id="26_3xwhe"]
 [ext_resource type="Texture2D" uid="uid://c1i7083q6nb64" path="res://assets/enemies/elk_king/run/west/frame_004.png" id="26_d5gbj"]
+[ext_resource type="Texture2D" uid="uid://b77ppmnvokna3" path="res://assets/NPCs/leif/dead/south-east/frame_006.png" id="26_ehumw"]
+[ext_resource type="Texture2D" uid="uid://crieoadtj3ayk" path="res://assets/NPCs/leif/dead/south-east/frame_007.png" id="27_5m5vb"]
 [ext_resource type="Texture2D" uid="uid://bysaquk3spws8" path="res://assets/enemies/elk_king/run/west/frame_005.png" id="27_cvwf7"]
+[ext_resource type="Texture2D" uid="uid://cytdowp71dxpe" path="res://assets/NPCs/leif/dead/south-east/frame_008.png" id="28_l6yaq"]
 [ext_resource type="Texture2D" uid="uid://cddd4sr6njsiy" path="res://assets/enemies/elk_king/run/west/frame_006.png" id="28_vxq2a"]
 [ext_resource type="Texture2D" uid="uid://cscow002d4lxe" path="res://assets/enemies/elk_king/run/west/frame_007.png" id="29_i3t83"]
 [ext_resource type="Texture2D" uid="uid://bxs7xa1l5ipnf" path="res://assets/enemies/elk_king/run/west/frame_008.png" id="30_7ar12"]
@@ -42,6 +63,9 @@
 [ext_resource type="Texture2D" uid="uid://b51rk77my8c6" path="res://assets/enemies/elk_king/skill/west/frame_007.png" id="38_ad63n"]
 [ext_resource type="Texture2D" uid="uid://camprm041krkf" path="res://assets/enemies/elk_king/skill/west/frame_008.png" id="39_ikh7w"]
 [ext_resource type="PackedScene" uid="uid://ct14ct4xg2b04" path="res://enemies/health_bar.tscn" id="40_health_bar"]
+[ext_resource type="Texture2D" uid="uid://dkh1qcsa7r5cv" path="res://assets/player/south-east.png" id="43_b0qkx"]
+[ext_resource type="Texture2D" uid="uid://clvrxith6ynky" path="res://assets/NPCs/leif/protect.png" id="44_fuuvx"]
+[ext_resource type="Texture2D" uid="uid://id7ovxtxegv1" path="res://assets/NPCs/videl/south-west.png" id="59_53o4n"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1n5kv"]
 radius = 56.0
@@ -73,10 +97,118 @@ tracks/1/keys = {
 "update": 1,
 "values": [true]
 }
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("DeadAnimation/Blink/ColorRect:color:a")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0.0]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("DeadAnimation/Blink/ColorRect:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("DeadAnimation/Aila:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("DeadAnimation/Leif:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("DeadAnimation/Videl:visible")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("ShieldSkill:visible")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("DeadAnimation/Leif/Leif:texture")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("44_fuuvx")]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("DeadAnimation/Aila/Aila:texture")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("43_b0qkx")]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("HealthBar:visible")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 
 [sub_resource type="Animation" id="Animation_hb5s0"]
 resource_name = "dead"
-length = 0.8
+length = 6.0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -84,10 +216,142 @@ tracks/0/path = NodePath("Sprite2D:texture")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"times": PackedFloat32Array(0, 0.4, 0.8, 1.2, 1.6, 2, 2.4, 2.8, 3),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [ExtResource("4_svy8c"), ExtResource("5_oaa57"), ExtResource("6_b0qkx"), ExtResource("7_fuuvx"), ExtResource("8_yosha"), ExtResource("9_tdhq3"), ExtResource("10_fj23m"), ExtResource("11_7mjjq"), ExtResource("12_qnofw")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("DeadAnimation/Blink/ColorRect:color:a")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5, 1, 1.5, 1.75, 2, 2.5, 3),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.1, 0.2, 0.3, 0.6, 1.0, 0.5, 0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("DeadAnimation/Blink/ColorRect:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("DeadAnimation/Aila:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("DeadAnimation/Leif:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(1.0333333),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("DeadAnimation/Videl:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(3.5),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Sprite2D:visible")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(3.5),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("ShieldSkill:visible")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(3.5),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("DeadAnimation/Leif/Leif:texture")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(3.5, 3.6, 3.7, 3.8, 3.9, 4, 4.1, 4.2, 4.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("20_cvwf7"), ExtResource("21_vxq2a"), ExtResource("22_i3t83"), ExtResource("23_7ar12"), ExtResource("24_s4ipx"), ExtResource("25_mbwn6"), ExtResource("26_ehumw"), ExtResource("27_5m5vb"), ExtResource("28_l6yaq")]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("DeadAnimation/Aila/Aila:position:x")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(4.4, 4.5, 4.6, 4.7, 4.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [-470.0, -450.0, -430.0, -410.0, -400.0]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("DeadAnimation/Aila/Aila:texture")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5, 5.1, 5.2, 5.3, 5.4, 5.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("15_75roe"), ExtResource("16_ed6r6"), ExtResource("17_5f4oy"), ExtResource("18_w6lgy"), ExtResource("19_d5gbj"), ExtResource("20_s4ipx"), ExtResource("21_mbwn6"), ExtResource("22_ehumw"), ExtResource("23_5m5vb"), ExtResource("24_l6yaq"), ExtResource("25_53o4n"), ExtResource("26_3xwhe")]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("HealthBar:visible")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
 }
 
 [sub_resource type="Animation" id="Animation_xcn8e"]
@@ -202,7 +466,7 @@ switch_mode = 2
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_hnox4"]
 switch_mode = 2
-advance_mode = 2
+advance_mode = 0
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_oaa57"]
 
@@ -265,7 +529,7 @@ autoplay = &"idle"
 tree_root = SubResource("AnimationNodeStateMachine_1n5kv")
 anim_player = NodePath("../AnimationPlayer")
 
-[node name="HealthBar" parent="." instance=ExtResource("40_health_bar")]
+[node name="HealthBar" parent="." unique_id=1033360720 instance=ExtResource("40_health_bar")]
 position = Vector2(-59, -124)
 scale = Vector2(0.1, 0.1)
 
@@ -303,6 +567,43 @@ scale = Vector2(0.8, 0.8)
 [node name="Cooldown" type="Timer" parent="SkillDetect/ThunderSkill" unique_id=1420100054]
 wait_time = 3.0
 one_shot = true
+
+[node name="DeadAnimation" type="Node2D" parent="." unique_id=1645056720]
+
+[node name="Aila" type="Node2D" parent="DeadAnimation" unique_id=1704400219]
+visible = false
+
+[node name="Aila" type="Sprite2D" parent="DeadAnimation/Aila" unique_id=952496459]
+position = Vector2(-400, 21)
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("43_b0qkx")
+
+[node name="Leif" type="Node2D" parent="DeadAnimation" unique_id=1906736041]
+visible = false
+
+[node name="Leif" type="Sprite2D" parent="DeadAnimation/Leif" unique_id=95000781]
+position = Vector2(-359, 18)
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("44_fuuvx")
+
+[node name="Videl" type="Node2D" parent="DeadAnimation" unique_id=318115825]
+visible = false
+
+[node name="Videl" type="Sprite2D" parent="DeadAnimation/Videl" unique_id=200610031]
+position = Vector2(-2, 25)
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("59_53o4n")
+
+[node name="Blink" type="CanvasLayer" parent="DeadAnimation" unique_id=981968818]
+
+[node name="ColorRect" type="ColorRect" parent="DeadAnimation/Blink" unique_id=622314088]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0)
 
 [connection signal="area_entered" from="HurtBox" to="." method="_on_hurt_box_area_entered"]
 [connection signal="body_entered" from="SkillDetect" to="." method="_on_skill_detect_body_entered"]

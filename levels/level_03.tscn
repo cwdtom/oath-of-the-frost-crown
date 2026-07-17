@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://b8a2rnrf7fudi" path="res://objects/mark_2.tscn" id="5_wrb7r"]
 [ext_resource type="PackedScene" uid="uid://dl5eqe8erpo5s" path="res://ui/story.tscn" id="6_story"]
 [ext_resource type="PackedScene" uid="uid://g0ie5c3rg1oc" path="res://enemies/elk_king.tscn" id="13_wrb7r"]
+[ext_resource type="Script" uid="uid://bmt5ne31go2u8" path="res://levels/level_03.gd" id="14_level_03"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_mljax"]
 
@@ -300,6 +301,7 @@ physics_layer_0/physics_material = SubResource("PhysicsMaterial_mljax")
 sources/0 = SubResource("TileSetAtlasSource_p0vsl")
 
 [node name="Level03" unique_id=1993614508 instance=ExtResource("1_0mo0b")]
+script = ExtResource("14_level_03")
 campaign_id = &"level_03"
 supported_campaign_outcomes = Array[StringName]([&"defeat"])
 

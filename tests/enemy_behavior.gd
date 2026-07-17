@@ -98,10 +98,12 @@ const ENEMY_EXAMPLES := [
 		"run_speed": 80.0,
 		"scale": Vector2.ONE,
 		"health": 10,
-		"death_duration": 0.8,
+		"death_duration": 6.0,
 		"blocks_skill_damage": false,
 		"starts_with_shield": true,
 		"notifies_death": true,
+		"requests_death_presentation": true,
+		"retains_after_death_presentation": true,
 		"detector_offset": Vector2(-172.0, 0.0),
 		"skill_animation": &"skill",
 		"cooldown_path": NodePath("SkillDetect/ThunderSkill/Cooldown"),
@@ -132,7 +134,7 @@ func _run() -> void:
 	await test_persistent_skill_detection_retriggers_ready_skill()
 	await test_skill_ready_during_hurt_waits_for_hurt_completion()
 	await test_skill_damage_policy()
-	await test_death_presentation_and_cleanup()
+	await test_death_presentation_and_lifetime()
 
 	await fixture.process_frames(2)
 	fixture.complete()
@@ -455,7 +457,7 @@ func test_skill_damage_policy() -> void:
 		start_x += 1500.0
 
 
-func test_death_presentation_and_cleanup() -> void:
+func test_death_presentation_and_lifetime() -> void:
 	var start_x := 17000.0
 	for example in ENEMY_EXAMPLES:
 		var enemy := harness.instantiate_enemy(
@@ -481,6 +483,12 @@ func test_death_presentation_and_cleanup() -> void:
 				death_notification_count[0] == 1,
 				"%s publishes one boss death notification" % example.name
 			)
+		if example.get("requests_death_presentation", false):
+			fixture.expect(
+				not harness.is_playing(enemy, &"dead"),
+				"%s Defeat waits for a death-presentation request" % example.name
+			)
+			enemy.call("request_death_presentation")
 		var death_start_texture := harness.enemy_sprite_texture(enemy)
 		await fixture.physics_frames(1)
 		fixture.expect(
@@ -502,10 +510,17 @@ func test_death_presentation_and_cleanup() -> void:
 			"%s visibly advances its death presentation" % example.name
 		)
 		await fixture.wait_seconds(example.death_duration * 0.55)
-		fixture.expect(
-			not is_instance_valid(enemy),
-			"%s leaves after its death presentation" % example.name
-		)
+		if example.get("retains_after_death_presentation", false):
+			fixture.expect(
+				is_instance_valid(enemy),
+				"%s remains Level-owned after its death presentation" % example.name
+			)
+			enemy.queue_free()
+		else:
+			fixture.expect(
+				not is_instance_valid(enemy),
+				"%s leaves after its death presentation" % example.name
+			)
 		if example.notifies_death:
 			fixture.expect(
 				death_notification_count[0] == 1,
