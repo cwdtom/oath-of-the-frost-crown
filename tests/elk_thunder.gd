@@ -26,10 +26,69 @@ func _run() -> void:
 	await test_elk_death_cancels_pending_thunder()
 	await test_elk_resumes_patrol_and_keeps_its_cast_cooldown()
 	await test_elk_shield_recovers_without_extending_its_cooldown()
+	await test_elk_king_health_bar_follows_authoritative_health()
+	await test_elk_king_defeat_publishes_one_boss_notification()
 	await test_elk_king_scene_reuses_elk_thunder()
 	await test_elk_king_scene_reuses_elk_shield()
 
 	fixture.complete()
+
+
+func test_elk_king_health_bar_follows_authoritative_health() -> void:
+	var elk_king := harness.instantiate_enemy(
+		ELK_KING_SCENE,
+		Vector2(16000.0, 0.0),
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+	var health_bar := harness.enemy_health_bar(elk_king)
+
+	await fixture.physics_frames(1)
+	fixture.expect(elk_king.is_in_group("enemies"), "Elk King initializes as an active Enemy")
+	fixture.expect(harness.enemy_has_body_collision(elk_king), "Elk King has body collision")
+	fixture.expect(harness.enemy_has_hurt_collision(elk_king), "Elk King has hurt collision")
+	fixture.expect(elk_king.get_maximum_health() == 10, "Elk King has ten maximum health")
+	fixture.expect(elk_king.get_current_health() == 10, "Elk King starts at ten health")
+	fixture.expect(health_bar != null, "Elk King presents Boss health")
+	if health_bar != null:
+		fixture.expect(health_bar.max_value == 10.0, "Elk King health bar has a ten-health maximum")
+		fixture.expect(health_bar.value == 10.0, "Elk King health bar starts full")
+
+	# Consume the Shield, then deliver an authoritative health change.
+	elk_king.take_damage(1, Vector2.ZERO)
+	elk_king.take_damage(1, Vector2.ZERO)
+	fixture.expect(elk_king.get_current_health() == 9, "Elk King accepts damage after its Shield")
+	if health_bar != null:
+		fixture.expect(health_bar.value == 9.0, "Elk King health bar follows accepted damage")
+
+	elk_king.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_elk_king_defeat_publishes_one_boss_notification() -> void:
+	var elk_king := harness.instantiate_enemy(
+		ELK_KING_SCENE,
+		Vector2(16500.0, 0.0),
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+	fixture.expect(elk_king.has_signal(&"died"), "Elk King exposes the Boss defeat contract")
+	if not elk_king.has_signal(&"died"):
+		elk_king.queue_free()
+		await fixture.process_frames(1)
+		return
+
+	var death_notification_count := [0]
+	elk_king.connect(&"died", func() -> void: death_notification_count[0] += 1)
+	elk_king.take_damage(1, Vector2.ZERO)
+	elk_king.take_damage(10, Vector2.ZERO)
+	fixture.expect(elk_king.is_health_depleted(), "Elk King defeat follows authoritative health")
+	fixture.expect(death_notification_count[0] == 1, "Elk King defeat publishes one notification")
+
+	await fixture.wait_seconds(0.9)
+	fixture.expect(not is_instance_valid(elk_king), "Elk King leaves after its death presentation")
+	fixture.expect(
+		death_notification_count[0] == 1,
+		"Elk King defeat notification remains singular after cleanup"
+	)
 
 
 func test_elk_king_scene_reuses_elk_thunder() -> void:
@@ -58,8 +117,16 @@ func test_elk_king_scene_reuses_elk_thunder() -> void:
 		"Elk King reuses grounded random thunder inside its Skill Detection Area"
 	)
 	fixture.expect(
+		absf(thunder.global_position.y - 86.0) <= 0.1,
+		"Elk King grounds thunder against environment physics"
+	)
+	fixture.expect(
 		is_equal_approx(elk_king.global_position.x, start_position.x),
 		"Elk King reuses stationary Elk thunder casting"
+	)
+	fixture.expect(
+		harness.is_playing(elk_king, &"idle"),
+		"Elk King keeps its idle presentation during thunder"
 	)
 
 	await fixture.wait_seconds(3.1)
@@ -82,6 +149,12 @@ func test_elk_king_scene_reuses_elk_shield() -> void:
 	)
 	var shield := elk_king.get_node("ShieldSkill/Shield") as Area2D
 	var starting_health: int = elk_king.get_current_health()
+	var health_change_count := [0]
+	elk_king.health_changed.connect(
+		func(_current: int, _maximum: int) -> void: health_change_count[0] += 1
+	)
+	await fixture.process_frames(1)
+	var position_before_hit := elk_king.global_position
 
 	elk_king.take_damage(1, Vector2.RIGHT)
 	fixture.expect(not shield.visible, "Elk King reuses the initially available Elk Shield")
@@ -89,6 +162,21 @@ func test_elk_king_scene_reuses_elk_shield() -> void:
 		elk_king.get_current_health() == starting_health,
 		"Reused Elk Shield negates one positive damage event"
 	)
+	fixture.expect(elk_king.global_position == position_before_hit, "Elk King Shield prevents knockback")
+	fixture.expect(health_change_count[0] == 0, "Elk King Shield publishes no health change")
+	fixture.expect(
+		harness.is_playing(elk_king, &"idle"),
+		"Elk King Shield prevents a hurt presentation"
+	)
+
+	await fixture.wait_seconds(2.0)
+	elk_king.take_damage(1, Vector2.ZERO)
+	fixture.expect(elk_king.get_current_health() == 9, "Elk King takes damage during Shield cooldown")
+
+	await fixture.wait_seconds(2.8)
+	fixture.expect(not shield.visible, "Elk King Shield remains unavailable before five seconds")
+	await fixture.wait_seconds(0.3)
+	fixture.expect(shield.visible, "Elk King Shield recovers after five seconds")
 
 	elk_king.queue_free()
 	await fixture.process_frames(1)

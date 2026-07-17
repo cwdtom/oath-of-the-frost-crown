@@ -41,6 +41,7 @@
 [ext_resource type="Texture2D" uid="uid://dc1tpjy30huu2" path="res://assets/enemies/elk_king/skill/west/frame_006.png" id="37_3xwhe"]
 [ext_resource type="Texture2D" uid="uid://b51rk77my8c6" path="res://assets/enemies/elk_king/skill/west/frame_007.png" id="38_ad63n"]
 [ext_resource type="Texture2D" uid="uid://camprm041krkf" path="res://assets/enemies/elk_king/skill/west/frame_008.png" id="39_ikh7w"]
+[ext_resource type="PackedScene" uid="uid://ct14ct4xg2b04" path="res://enemies/health_bar.tscn" id="40_health_bar"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1n5kv"]
 radius = 56.0
@@ -263,6 +264,10 @@ autoplay = &"idle"
 [node name="AnimationTree" type="AnimationTree" parent="." unique_id=404662161]
 tree_root = SubResource("AnimationNodeStateMachine_1n5kv")
 anim_player = NodePath("../AnimationPlayer")
+
+[node name="HealthBar" parent="." instance=ExtResource("40_health_bar")]
+position = Vector2(-59, -124)
+scale = Vector2(0.1, 0.1)
 
 [node name="HurtBox" type="Area2D" parent="." unique_id=929490731]
 collision_layer = 4

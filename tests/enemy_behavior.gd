@@ -6,8 +6,10 @@ const WOLF_SCENE := preload("res://enemies/wolf.tscn")
 const ELK_SCENE := preload("res://enemies/elk.tscn")
 const BEAR_KING_SCENE := preload("res://enemies/bear_king.tscn")
 const WOLF_KING_SCENE := preload("res://enemies/wolf_king.tscn")
+const ELK_KING_SCENE := preload("res://enemies/elk_king.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
+const LEVEL_03_SCENE := preload("res://levels/level_03.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 
@@ -88,6 +90,24 @@ const ENEMY_EXAMPLES := [
 		"release_animation_player": NodePath("Thunder/AnimationPlayer"),
 		"release_animation": &"cast",
 	},
+	{
+		"name": "ElkKing",
+		"scene": ELK_KING_SCENE,
+		"initial_direction": -1.0,
+		"patrol_range": 160.0,
+		"run_speed": 80.0,
+		"scale": Vector2.ONE,
+		"health": 10,
+		"death_duration": 0.8,
+		"blocks_skill_damage": false,
+		"starts_with_shield": true,
+		"notifies_death": true,
+		"detector_offset": Vector2(-172.0, 0.0),
+		"skill_animation": &"idle",
+		"cooldown_path": NodePath("SkillDetect/ThunderSkill/Cooldown"),
+		"release_animation_player": NodePath("SkillDetect/ThunderSkill/Thunder/AnimationPlayer"),
+		"release_animation": &"cast",
+	},
 ]
 
 var fixture: HeadlessGameplayFixture
@@ -106,6 +126,7 @@ func _run() -> void:
 	harness = EnemyHarness.new(fixture, world)
 
 	test_levels_keep_their_enemy_encounters()
+	test_level_03_keeps_elk_king_defeat_disconnected()
 	await test_initialization_patrol_limits_and_facing()
 	await test_scaled_environment_wall_reversal()
 	await test_persistent_skill_detection_retriggers_ready_skill()
@@ -204,7 +225,9 @@ func test_persistent_skill_detection_retriggers_ready_skill() -> void:
 			Vector2(start_x, 0.0),
 			{"idle_duration": 10.0, "patrol_range": 1000.0}
 		)
-		var cooldown := enemy.get_node("SkillDetect/Cooldown") as Timer
+		var cooldown := enemy.get_node(
+			example.get("cooldown_path", NodePath("SkillDetect/Cooldown"))
+		) as Timer
 		cooldown.wait_time = 2.0
 		var player := harness.add_body(enemy.global_position + example.detector_offset)
 		enemies.append(enemy)
@@ -263,7 +286,9 @@ func test_skill_ready_during_hurt_waits_for_hurt_completion() -> void:
 			Vector2(start_x, 0.0),
 			{"idle_duration": 10.0, "patrol_range": 1000.0}
 		)
-		var cooldown := enemy.get_node("SkillDetect/Cooldown") as Timer
+		var cooldown := enemy.get_node(
+			example.get("cooldown_path", NodePath("SkillDetect/Cooldown"))
+		) as Timer
 		cooldown.wait_time = 0.1
 		cooldown.start()
 		if example.get("starts_with_shield", false):
@@ -314,6 +339,34 @@ func test_skill_ready_during_hurt_waits_for_hurt_completion() -> void:
 func test_levels_keep_their_enemy_encounters() -> void:
 	verify_level_enemy_encounters(LEVEL_01_SCENE, "Level 01", 5, 1)
 	verify_level_enemy_encounters(LEVEL_02_SCENE, "Level 02", 5, 1)
+	verify_level_enemy_encounters(LEVEL_03_SCENE, "Level 03", 5, 1)
+
+	var level_03 := LEVEL_03_SCENE.instantiate()
+	var ordinary_elk_count := 0
+	var elk_king_count := 0
+	for enemy in level_03.get_node("Enemies").get_children():
+		if enemy.scene_file_path == ELK_SCENE.resource_path:
+			ordinary_elk_count += 1
+		elif enemy.scene_file_path == ELK_KING_SCENE.resource_path:
+			elk_king_count += 1
+			fixture.expect(
+				enemy.scale == Vector2(1.5, 1.5),
+				"Level 03 keeps its scaled Elk King Boss"
+			)
+
+	fixture.expect(ordinary_elk_count == 4, "Level 03 contains four ordinary Elks")
+	fixture.expect(elk_king_count == 1, "Level 03 contains one Elk King Boss")
+	level_03.free()
+
+
+func test_level_03_keeps_elk_king_defeat_disconnected() -> void:
+	var level_03 := LEVEL_03_SCENE.instantiate()
+	var elk_king := level_03.get_node("Enemies/ElkKing")
+	fixture.expect(
+		elk_king.get_signal_connection_list(&"died").is_empty(),
+		"Level 03 keeps Elk King Defeat disconnected from Level Completion"
+	)
+	level_03.free()
 
 
 func verify_level_enemy_encounters(
