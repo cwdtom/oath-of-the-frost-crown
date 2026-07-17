@@ -12,6 +12,24 @@
 [ext_resource type="AudioStream" uid="uid://i1rstwn1q8nt" path="res://assets/enemies/skills/thunder/sounds/thunder.wav" id="10_xgq5j"]
 [ext_resource type="Texture2D" uid="uid://d36yo33x0rb4k" path="res://assets/enemies/skills/thunder/particle.png" id="11_e1cpd"]
 
+[sub_resource type="Shader" id="Shader_gold_thunder"]
+code = "shader_type canvas_item;
+
+uniform vec4 thunder_color : source_color = vec4(1.0, 0.83137256, 0.36078432, 1.0);
+
+void fragment() {
+	vec4 source = texture(TEXTURE, UV);
+	float brightness = dot(source.rgb, vec3(0.299, 0.587, 0.114));
+	float white_core = smoothstep(0.8, 1.0, brightness);
+	vec3 gold = thunder_color.rgb * brightness;
+	vec3 final_color = mix(gold, vec3(brightness), white_core);
+	COLOR = vec4(final_color, source.a * thunder_color.a);
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gold_thunder"]
+shader = SubResource("Shader_gold_thunder")
+shader_parameter/thunder_color = Color(1, 0.83137256, 0.36078432, 1)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
 size = Vector2(64, 510)
 
@@ -145,6 +163,7 @@ collision_mask = 4
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=372926966]
 visible = false
+material = SubResource("ShaderMaterial_gold_thunder")
 scale = Vector2(1, 8)
 texture = ExtResource("1_we3tt")
 
@@ -160,6 +179,7 @@ disabled = true
 libraries/ = SubResource("AnimationLibrary_1e67l")
 
 [node name="CPUParticles2D" type="CPUParticles2D" parent="." unique_id=1125491782]
+material = SubResource("ShaderMaterial_gold_thunder")
 position = Vector2(0, 249)
 scale = Vector2(0.2, 0.5)
 emitting = false

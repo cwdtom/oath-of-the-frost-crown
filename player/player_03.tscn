@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://dl7xaysdal1vl"]
+
+[ext_resource type="PackedScene" uid="uid://bn6tiig2vnj2g" path="res://player/player_02.tscn" id="1_y8p8p"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_y8p8p"]
+blend_mode = 1
+light_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_6hx46"]
+offsets = PackedFloat32Array(0, 0.31626505, 0.9789157)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.5882353, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_y8p8p"]
+gradient = SubResource("Gradient_6hx46")
+width = 32
+height = 32
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Curve" id="Curve_6hx46"]
+_data = [Vector2(0.007936507, 0.25438595), 0.0, 0.0, 0, 0, Vector2(0.1957672, 0.9736842), 0.0, 0.0, 0, 0, Vector2(1, 0.011695862), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Gradient" id="Gradient_3gf32"]
+offsets = PackedFloat32Array(0, 0.13271604, 0.54320985, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.87058824, 1, 1, 1, 0.53333336, 1, 1, 1, 0)
+
+[node name="Player_03" unique_id=1483695229 instance=ExtResource("1_y8p8p")]
+maximum_health = 8
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="." index="7" unique_id=690113400]
+material = SubResource("CanvasItemMaterial_y8p8p")
+position = Vector2(-1, 18)
+amount = 28
+texture = SubResource("GradientTexture2D_y8p8p")
+lifetime = 0.8
+preprocess = 0.8
+randomness = 0.35
+lifetime_randomness = 0.25
+emission_shape = 6
+emission_ring_inner_radius = 36.0
+emission_ring_radius = 24.0
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 8.0
+initial_velocity_max = 18.0
+radial_accel_min = 70.0
+radial_accel_max = 110.0
+damping_min = 12.0
+damping_max = 20.0
+scale_amount_min = 0.12
+scale_amount_max = 0.25
+scale_amount_curve = SubResource("Curve_6hx46")
+color_ramp = SubResource("Gradient_3gf32")

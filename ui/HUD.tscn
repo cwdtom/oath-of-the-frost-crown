@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bi4cujqbvf3h0"]
 
-[ext_resource type="Script" path="res://ui/hud.gd" id="1_pnr6q"]
 [ext_resource type="Texture2D" uid="uid://dqxsua366mwn0" path="res://assets/ui/heart.png" id="1_1x8ju"]
+[ext_resource type="Script" uid="uid://i1iokiwmhpi6" path="res://ui/hud.gd" id="1_pnr6q"]
 
 [node name="HUD" type="CanvasLayer" unique_id=1501471726]
 layer = 10
@@ -36,5 +36,17 @@ layout_mode = 2
 texture = ExtResource("1_1x8ju")
 
 [node name="L5" type="TextureRect" parent="MarginContainer/LifeCounter" unique_id=1291679889]
+layout_mode = 2
+texture = ExtResource("1_1x8ju")
+
+[node name="L6" type="TextureRect" parent="MarginContainer/LifeCounter" unique_id=1867347160]
+layout_mode = 2
+texture = ExtResource("1_1x8ju")
+
+[node name="L7" type="TextureRect" parent="MarginContainer/LifeCounter" unique_id=559296554]
+layout_mode = 2
+texture = ExtResource("1_1x8ju")
+
+[node name="L8" type="TextureRect" parent="MarginContainer/LifeCounter" unique_id=1714287555]
 layout_mode = 2
 texture = ExtResource("1_1x8ju")

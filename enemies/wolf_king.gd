@@ -66,7 +66,6 @@ func _start_species_skill() -> void:
 
 
 func _prepare_hurt(_knockback_direction: Vector2) -> void:
-	_reset_thunder()
 	move_direction = _get_player_side()
 	face_move_direction()
 

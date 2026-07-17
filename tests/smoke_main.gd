@@ -3,6 +3,7 @@ extends SceneTree
 
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const MAIN_SCENE := "res://main.tscn"
+const CAMERA_OPENING_STORY := &"opening_story"
 const CAMERA_PLAYER := &"player"
 const MAX_STORY_ADVANCE_INPUTS := 64
 
@@ -146,19 +147,43 @@ func _run() -> void:
 	)
 	await advance_story_phase(level_02, "Level02 final Story")
 
+	var level_03 := main.call("get_active_campaign_level") as CampaignLevel
 	fixture.expect(
-		main.call("get_active_campaign_level") == level_02,
-		"The production campaign retains Level02 at its endpoint"
+		level_03 != null and level_03.get_campaign_id() == &"level_03",
+		"Level02 final Story completion starts Level03"
 	)
-	fixture.expect(not paused, "The production campaign endpoint is unpaused")
+	fixture.expect(not is_instance_valid(level_02), "Level03 initialization disposes Level02")
+	if level_03 == null:
+		fixture.complete()
+		return
+	fixture.add_node(level_03)
 	fixture.expect(
-		level_02.is_campaign_control_available(),
-		"The production endpoint enables Player control"
+		find_player_event_source(level_03) != null,
+		"Level03 wires its production Player"
 	)
-	fixture.expect(level_02.is_campaign_hud_visible(), "The production endpoint presents its HUD")
+	fixture.expect(level_03.is_campaign_story_phase_active(), "Level03 starts its Opening Story")
+	fixture.expect(paused, "Level03 Opening Story pauses the campaign")
 	fixture.expect(
-		level_02.get_campaign_camera_role() == CAMERA_PLAYER,
-		"The production endpoint uses its Player Camera"
+		not level_03.is_campaign_control_available(),
+		"Level03 Opening Story keeps Player control unavailable"
+	)
+	fixture.expect(level_03.is_campaign_health_full(), "Level03 initializes at full health")
+	fixture.expect(not level_03.is_campaign_hud_visible(), "Level03 Opening Story hides its HUD")
+	fixture.expect(
+		level_03.get_campaign_camera_role() == CAMERA_OPENING_STORY,
+		"Level03 Opening Story uses its Story Camera"
+	)
+
+	await advance_story_phase(level_03, "Level03 opening Story")
+	fixture.expect(not paused, "Level03 starts gameplay after its Opening Story")
+	fixture.expect(
+		level_03.is_campaign_control_available(),
+		"Level03 enables Player control after its Opening Story"
+	)
+	fixture.expect(level_03.is_campaign_hud_visible(), "Level03 presents its HUD after its Story")
+	fixture.expect(
+		level_03.get_campaign_camera_role() == CAMERA_PLAYER,
+		"Level03 restores its Player Camera after its Story"
 	)
 
 	var exit_code := fixture.complete(false)

@@ -1,0 +1,64 @@
+[gd_scene format=3 uid="uid://8r01knpv8yqc"]
+
+[ext_resource type="Texture2D" uid="uid://c7t7u2cdg5l2f" path="res://assets/enemies/skills/shield/idle/frame_000.png" id="2_bqpwa"]
+[ext_resource type="Texture2D" uid="uid://dpdx2vcxux852" path="res://assets/enemies/skills/shield/idle/frame_001.png" id="3_hwb5r"]
+[ext_resource type="Texture2D" uid="uid://cycxqjq08x2ur" path="res://assets/enemies/skills/shield/idle/frame_002.png" id="4_yxb51"]
+[ext_resource type="Texture2D" uid="uid://d3u7umm0148f8" path="res://assets/enemies/skills/shield/idle/frame_003.png" id="5_5xxnb"]
+[ext_resource type="Texture2D" uid="uid://dhfhfmu8k1udj" path="res://assets/enemies/skills/shield/idle/frame_004.png" id="6_rhiw3"]
+[ext_resource type="Texture2D" uid="uid://5djrl1jlbbld" path="res://assets/enemies/skills/shield/idle/frame_005.png" id="7_nqnra"]
+[ext_resource type="Texture2D" uid="uid://jm58r4sijpr5" path="res://assets/enemies/skills/shield/idle/frame_006.png" id="8_nehxc"]
+[ext_resource type="Texture2D" uid="uid://bsmt0t3kqkxem" path="res://assets/enemies/skills/shield/idle/frame_007.png" id="9_vrf33"]
+[ext_resource type="Texture2D" uid="uid://bfemri260c58a" path="res://assets/enemies/skills/shield/idle/frame_008.png" id="10_rf8vb"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1n5kv"]
+radius = 60.0
+
+[sub_resource type="Animation" id="Animation_rhiw3"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_bqpwa")]
+}
+
+[sub_resource type="Animation" id="Animation_nqnra"]
+resource_name = "idle"
+length = 0.9
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("2_bqpwa"), ExtResource("3_hwb5r"), ExtResource("4_yxb51"), ExtResource("5_5xxnb"), ExtResource("6_rhiw3"), ExtResource("7_nqnra"), ExtResource("8_nehxc"), ExtResource("9_vrf33"), ExtResource("10_rf8vb")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_nehxc"]
+_data = {
+&"RESET": SubResource("Animation_rhiw3"),
+&"idle": SubResource("Animation_nqnra")
+}
+
+[node name="Shield" type="Area2D" unique_id=655684110]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1710600965]
+texture = ExtResource("2_bqpwa")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=868866063]
+shape = SubResource("CircleShape2D_1n5kv")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=622186899]
+libraries/ = SubResource("AnimationLibrary_nehxc")
+autoplay = &"idle"

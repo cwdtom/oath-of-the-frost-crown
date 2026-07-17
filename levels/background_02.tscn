@@ -1,0 +1,54 @@
+[gd_scene format=3 uid="uid://ba5hx7vi1off"]
+
+[ext_resource type="Script" uid="uid://bl6fc45pia6pw" path="res://levels/background.gd" id="1_y8m36"]
+[ext_resource type="AudioStream" uid="uid://c3mxeg5g3sixa" path="res://assets/bg/sounds/level03.ogg" id="2_y8m36"]
+[ext_resource type="Texture2D" uid="uid://do2go7u34drdy" path="res://assets/bg/sky_dark.png" id="3_y8m36"]
+[ext_resource type="Texture2D" uid="uid://dm8ykfaa13s2k" path="res://assets/bg/far_tree_ice.png" id="4_y8m36"]
+[ext_resource type="Texture2D" uid="uid://htofiukax2xi" path="res://assets/bg/fog.png" id="5_htxyl"]
+[ext_resource type="Texture2D" uid="uid://d2ty7cckdm7mc" path="res://assets/bg/near_tree_ice.png" id="6_ksv8q"]
+
+[node name="Background" type="Node2D" unique_id=226699892]
+script = ExtResource("1_y8m36")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=773777861]
+process_mode = 3
+stream = ExtResource("2_y8m36")
+volume_db = -8.0
+
+[node name="Sky" type="Parallax2D" parent="." unique_id=1183379537]
+scroll_scale = Vector2(0.05, 0)
+repeat_size = Vector2(1672, 0)
+repeat_times = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="Sky" unique_id=715279217]
+texture = ExtResource("3_y8m36")
+centered = false
+
+[node name="FarTree" type="Parallax2D" parent="." unique_id=1936564647]
+scroll_scale = Vector2(0.15, 0)
+repeat_size = Vector2(1672, 0)
+repeat_times = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="FarTree" unique_id=1819963225]
+texture = ExtResource("4_y8m36")
+centered = false
+
+[node name="Fog" type="Parallax2D" parent="." unique_id=1351191191]
+scroll_scale = Vector2(0.25, 0)
+repeat_size = Vector2(1672, 0)
+repeat_times = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="Fog" unique_id=360387575]
+position = Vector2(0, -300)
+texture = ExtResource("5_htxyl")
+centered = false
+
+[node name="NearTree" type="Parallax2D" parent="." unique_id=1526299463]
+scroll_scale = Vector2(0.65, 0)
+repeat_size = Vector2(1672, 0)
+repeat_times = 2
+
+[node name="Sprite2D" type="Sprite2D" parent="NearTree" unique_id=786926723]
+position = Vector2(0, -100)
+texture = ExtResource("6_ksv8q")
+centered = false

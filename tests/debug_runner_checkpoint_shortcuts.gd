@@ -41,8 +41,6 @@ const MAIN_SCENE := preload("res://main.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const MAX_STORY_ADVANCE_INPUTS := 64
 const RESERVED_SLOT_DIAGNOSTICS := [
-	"Debug Runner: checkpoint 5 is unassigned.",
-	"Debug Runner: checkpoint 6 is unassigned.",
 	"Debug Runner: checkpoint 7 is unassigned.",
 	"Debug Runner: checkpoint 8 is unassigned.",
 ]
@@ -143,8 +141,19 @@ func verify_runner_shortcuts(runner: Node) -> void:
 	if repeated_level_02_combat == null:
 		return
 
+	var level_03_story := await switch_checkpoint(
+		runner, repeated_level_02_combat, KEY_5, &"level_03", true, "Ctrl+5"
+	)
+	if level_03_story == null:
+		return
+	var level_03_combat := await switch_checkpoint(
+		runner, level_03_story, KEY_6, &"level_03", false, "Ctrl+6"
+	)
+	if level_03_combat == null:
+		return
+
 	var level_01_story := await switch_checkpoint(
-		runner, repeated_level_02_combat, KEY_1, &"level_01", true, "Ctrl+1"
+		runner, level_03_combat, KEY_1, &"level_01", true, "Ctrl+1"
 	)
 	if level_01_story == null:
 		return
@@ -312,7 +321,7 @@ func verify_reserved_slots(runner: Node) -> void:
 
 	var previous_diagnostic_count := diagnostic_logger.get_messages().size()
 	for _press in 2:
-		for keycode in [KEY_5, KEY_6, KEY_7, KEY_8]:
+		for keycode in [KEY_7, KEY_8]:
 			send_key(keycode, true)
 	await fixture.process_frames(1)
 	expect_new_diagnostics(
@@ -340,7 +349,7 @@ func verify_reserved_slots(runner: Node) -> void:
 	if combat_level == null:
 		return
 	previous_diagnostic_count = diagnostic_logger.get_messages().size()
-	for keycode in [KEY_5, KEY_6, KEY_7, KEY_8]:
+	for keycode in [KEY_7, KEY_8]:
 		send_key(keycode, true)
 		send_key(keycode, true, true, true)
 	await fixture.process_frames(1)
@@ -369,7 +378,7 @@ func verify_reserved_slots(runner: Node) -> void:
 		"Reserved-slot result test presents a defeat result"
 	)
 	previous_diagnostic_count = diagnostic_logger.get_messages().size()
-	for keycode in [KEY_5, KEY_6, KEY_7, KEY_8]:
+	for keycode in [KEY_7, KEY_8]:
 		send_key(keycode, true)
 	await fixture.process_frames(1)
 	expect_new_diagnostics(
@@ -410,7 +419,8 @@ func switch_checkpoint(
 	keycode: Key,
 	expected_campaign_id: StringName,
 	play_opening_story: bool,
-	shortcut: String
+	shortcut: String,
+	expect_enemies := true
 ) -> CampaignLevel:
 	send_key(keycode, true)
 	await fixture.process_frames(2)
@@ -439,7 +449,7 @@ func switch_checkpoint(
 		"%s uses the requested gameplay state" % shortcut
 	)
 	fixture.expect(paused == play_opening_story, "%s uses the requested pause state" % shortcut)
-	verify_debug_health_overrides(level, shortcut)
+	verify_debug_health_overrides(level, shortcut, expect_enemies)
 	return level
 
 
@@ -501,7 +511,11 @@ func advance_story_phase(level: CampaignLevel, description: String) -> void:
 	fixture.expect(finished[0], "%s completes through input" % description)
 
 
-func verify_debug_health_overrides(level: CampaignLevel, checkpoint: String) -> void:
+func verify_debug_health_overrides(
+	level: CampaignLevel,
+	checkpoint: String,
+	expect_enemies := true
+) -> void:
 	var player := level.get_node_or_null("Player")
 	fixture.expect(
 		player != null and player.call("get_current_health") == 999,
@@ -516,7 +530,10 @@ func verify_debug_health_overrides(level: CampaignLevel, checkpoint: String) -> 
 				node.call("get_current_health") == 1,
 				"%s gives %s 1 internal health" % [checkpoint, node.name]
 			)
-	fixture.expect(found_enemy, "%s contains compatible Enemies" % checkpoint)
+	fixture.expect(
+		found_enemy == expect_enemies,
+		"%s has the expected compatible-Enemy presence" % checkpoint
+	)
 
 
 func retire_runner(runner: Node) -> void:

@@ -3,10 +3,13 @@ extends SceneTree
 
 const BEAR_SCENE := preload("res://enemies/bear.tscn")
 const WOLF_SCENE := preload("res://enemies/wolf.tscn")
+const ELK_SCENE := preload("res://enemies/elk.tscn")
 const BEAR_KING_SCENE := preload("res://enemies/bear_king.tscn")
 const WOLF_KING_SCENE := preload("res://enemies/wolf_king.tscn")
+const ELK_KING_SCENE := preload("res://enemies/elk_king.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
+const LEVEL_03_SCENE := preload("res://levels/level_03.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 
@@ -23,6 +26,8 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": false,
 		"notifies_death": false,
 		"detector_offset": Vector2(-152.0, 42.5),
+		"release_animation_player": NodePath("Earthquake/AnimationPlayer"),
+		"release_animation": &"cast",
 	},
 	{
 		"name": "Wolf",
@@ -36,6 +41,24 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": true,
 		"notifies_death": false,
 		"detector_offset": Vector2(100.0, 0.0),
+		"release_animation": &"skill",
+	},
+	{
+		"name": "Elk",
+		"scene": ELK_SCENE,
+		"initial_direction": -1.0,
+		"patrol_range": 160.0,
+		"run_speed": 80.0,
+		"scale": Vector2.ONE,
+		"health": 3,
+		"death_duration": 0.7,
+		"blocks_skill_damage": false,
+		"starts_with_shield": true,
+		"notifies_death": false,
+		"detector_offset": Vector2(-172.0, 0.0),
+		"skill_animation": &"idle",
+		"release_animation_player": NodePath("SkillDetect/Thunder/AnimationPlayer"),
+		"release_animation": &"cast",
 	},
 	{
 		"name": "BearKing",
@@ -49,6 +72,8 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": false,
 		"notifies_death": true,
 		"detector_offset": Vector2(-228.0, 72.0),
+		"release_animation_player": NodePath("Earthquake/AnimationPlayer"),
+		"release_animation": &"cast",
 	},
 	{
 		"name": "WolfKing",
@@ -62,6 +87,26 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": true,
 		"notifies_death": true,
 		"detector_offset": Vector2(-150.0, 0.0),
+		"release_animation_player": NodePath("Thunder/AnimationPlayer"),
+		"release_animation": &"cast",
+	},
+	{
+		"name": "ElkKing",
+		"scene": ELK_KING_SCENE,
+		"initial_direction": -1.0,
+		"patrol_range": 160.0,
+		"run_speed": 80.0,
+		"scale": Vector2.ONE,
+		"health": 10,
+		"death_duration": 0.8,
+		"blocks_skill_damage": false,
+		"starts_with_shield": true,
+		"notifies_death": true,
+		"detector_offset": Vector2(-172.0, 0.0),
+		"skill_animation": &"skill",
+		"cooldown_path": NodePath("SkillDetect/ThunderSkill/Cooldown"),
+		"release_animation_player": NodePath("SkillDetect/ThunderSkill/Thunder/AnimationPlayer"),
+		"release_animation": &"cast",
 	},
 ]
 
@@ -81,9 +126,12 @@ func _run() -> void:
 	harness = EnemyHarness.new(fixture, world)
 
 	test_levels_keep_their_enemy_encounters()
+	test_level_03_keeps_elk_king_defeat_disconnected()
 	await test_initialization_patrol_limits_and_facing()
 	await test_scaled_environment_wall_reversal()
-	await test_skill_interruption_policy()
+	await test_persistent_skill_detection_retriggers_ready_skill()
+	await test_skill_ready_during_hurt_waits_for_hurt_completion()
+	await test_skill_damage_policy()
 	await test_death_presentation_and_cleanup()
 
 	await fixture.process_frames(2)
@@ -166,9 +214,159 @@ func test_initialization_patrol_limits_and_facing() -> void:
 		await fixture.process_frames(1)
 		start_x += 1000.0
 
+
+func test_persistent_skill_detection_retriggers_ready_skill() -> void:
+	var enemies: Array[CharacterBody2D] = []
+	var players: Array[CharacterBody2D] = []
+	var start_x := 30000.0
+	for example in ENEMY_EXAMPLES:
+		var enemy := harness.instantiate_enemy(
+			example.scene,
+			Vector2(start_x, 0.0),
+			{"idle_duration": 10.0, "patrol_range": 1000.0}
+		)
+		var cooldown := enemy.get_node(
+			example.get("cooldown_path", NodePath("SkillDetect/Cooldown"))
+		) as Timer
+		cooldown.wait_time = 2.0
+		var player := harness.add_body(enemy.global_position + example.detector_offset)
+		enemies.append(enemy)
+		players.append(player)
+		start_x += 1500.0
+
+	await fixture.physics_frames(3)
+	await fixture.wait_seconds(0.05)
+	for index in ENEMY_EXAMPLES.size():
+		fixture.expect(
+			is_species_skill_releasing(enemies[index], ENEMY_EXAMPLES[index]),
+			"%s releases its skill for Player presence" % ENEMY_EXAMPLES[index].name
+		)
+
+	for _frame in 132:
+		for index in ENEMY_EXAMPLES.size():
+			var detector_shape := enemies[index].get_node(
+				"SkillDetect/CollisionShape2D"
+			) as CollisionShape2D
+			players[index].global_position = detector_shape.global_position
+		await fixture.physics_frames(1)
+
+	for index in ENEMY_EXAMPLES.size():
+		fixture.expect(
+			is_species_skill_releasing(enemies[index], ENEMY_EXAMPLES[index]),
+			(
+				"%s releases its ready skill again while Player presence persists"
+				% ENEMY_EXAMPLES[index].name
+			)
+		)
+		enemies[index].queue_free()
+		players[index].queue_free()
+	await fixture.process_frames(1)
+
+
+func is_species_skill_releasing(enemy: CharacterBody2D, example: Dictionary) -> bool:
+	if example.has("release_animation_player"):
+		var release_player := enemy.get_node(
+			example.release_animation_player
+		) as AnimationPlayer
+		return (
+			release_player.is_playing()
+			and release_player.current_animation == example.release_animation
+		)
+
+	return harness.is_playing(enemy, example.release_animation)
+
+
+func test_skill_ready_during_hurt_waits_for_hurt_completion() -> void:
+	var enemies: Array[CharacterBody2D] = []
+	var players: Array[CharacterBody2D] = []
+	var start_x := 39000.0
+	for example in ENEMY_EXAMPLES:
+		var enemy := harness.instantiate_enemy(
+			example.scene,
+			Vector2(start_x, 0.0),
+			{"idle_duration": 10.0, "patrol_range": 1000.0}
+		)
+		var cooldown := enemy.get_node(
+			example.get("cooldown_path", NodePath("SkillDetect/Cooldown"))
+		) as Timer
+		cooldown.wait_time = 0.1
+		cooldown.start()
+		if example.get("starts_with_shield", false):
+			enemy.take_damage(1, Vector2.ZERO)
+		enemy.take_damage(1, Vector2.ZERO)
+		var player := harness.add_body(enemy.global_position + example.detector_offset)
+		enemies.append(enemy)
+		players.append(player)
+		start_x += 1500.0
+
+	await fixture.wait_seconds(0.17)
+	for index in ENEMY_EXAMPLES.size():
+		fixture.expect(
+			enemies[index].is_hurt_immune(),
+			"%s keeps hurt immunity after its skill becomes ready" % ENEMY_EXAMPLES[index].name
+		)
+		fixture.expect(
+			not is_species_skill_releasing(enemies[index], ENEMY_EXAMPLES[index]),
+			"%s waits for hurt completion before releasing its ready skill"
+			% ENEMY_EXAMPLES[index].name
+		)
+
+	for _frame in 90:
+		var all_recovered := true
+		for enemy in enemies:
+			if enemy.is_hurt_immune():
+				all_recovered = false
+				break
+		if all_recovered:
+			break
+		await fixture.physics_frames(1)
+	await fixture.process_frames(2)
+
+	for index in ENEMY_EXAMPLES.size():
+		fixture.expect(
+			not enemies[index].is_hurt_immune(),
+			"%s completes its hurt immunity" % ENEMY_EXAMPLES[index].name
+		)
+		fixture.expect(
+			is_species_skill_releasing(enemies[index], ENEMY_EXAMPLES[index]),
+			"%s immediately releases its ready skill after hurt completion"
+			% ENEMY_EXAMPLES[index].name
+		)
+		enemies[index].queue_free()
+		players[index].queue_free()
+	await fixture.process_frames(1)
+
 func test_levels_keep_their_enemy_encounters() -> void:
 	verify_level_enemy_encounters(LEVEL_01_SCENE, "Level 01", 5, 1)
 	verify_level_enemy_encounters(LEVEL_02_SCENE, "Level 02", 5, 1)
+	verify_level_enemy_encounters(LEVEL_03_SCENE, "Level 03", 5, 1)
+
+	var level_03 := LEVEL_03_SCENE.instantiate()
+	var ordinary_elk_count := 0
+	var elk_king_count := 0
+	for enemy in level_03.get_node("Enemies").get_children():
+		if enemy.scene_file_path == ELK_SCENE.resource_path:
+			ordinary_elk_count += 1
+		elif enemy.scene_file_path == ELK_KING_SCENE.resource_path:
+			elk_king_count += 1
+			fixture.expect(
+				enemy.scale == Vector2(1.5, 1.5),
+				"Level 03 keeps its scaled Elk King Boss"
+			)
+
+	fixture.expect(ordinary_elk_count == 4, "Level 03 contains four ordinary Elks")
+	fixture.expect(elk_king_count == 1, "Level 03 contains one Elk King Boss")
+	level_03.free()
+
+
+func test_level_03_keeps_elk_king_defeat_disconnected() -> void:
+	var level_03 := LEVEL_03_SCENE.instantiate()
+	var elk_king := level_03.get_node("Enemies/ElkKing")
+	fixture.expect(
+		elk_king.get_signal_connection_list(&"died").is_empty(),
+		"Level 03 keeps Elk King Defeat disconnected from Level Completion"
+	)
+	level_03.free()
 
 
 func verify_level_enemy_encounters(
@@ -200,7 +398,7 @@ func verify_level_enemy_encounters(
 	level.free()
 
 
-func test_skill_interruption_policy() -> void:
+func test_skill_damage_policy() -> void:
 	var start_x := 10000.0
 	for example in ENEMY_EXAMPLES:
 		var enemy := harness.instantiate_enemy(
@@ -234,12 +432,22 @@ func test_skill_interruption_policy() -> void:
 			)
 		else:
 			fixture.expect(
-				enemy.global_position.x > skill_x + 50.0,
-				"%s accepts weapon interruption during its stationary skill" % example.name
+				is_equal_approx(enemy.global_position.x, skill_x),
+				"%s stationary skill ignores hurt knockback" % example.name
 			)
+			if example.get("starts_with_shield", false):
+				fixture.expect(
+					enemy.call("get_current_health") == example.health,
+					"%s stationary skill consumes Shield before taking damage" % example.name
+				)
+			else:
+				fixture.expect(
+					enemy.call("get_current_health") == example.health - 1,
+					"%s stationary skill accepts weapon damage" % example.name
+				)
 			fixture.expect(
-				enemy.call("get_current_health") == example.health - 1,
-				"%s stationary skill accepts weapon damage" % example.name
+				harness.is_playing(enemy, example.get("skill_animation", &"skill")),
+				"%s keeps releasing its stationary skill after damage" % example.name
 			)
 
 		enemy.queue_free()
@@ -261,6 +469,8 @@ func test_death_presentation_and_cleanup() -> void:
 				&"died",
 				func() -> void: death_notification_count[0] += 1
 			)
+		if example.get("starts_with_shield", false):
+			enemy.take_damage(1, Vector2.ZERO)
 		enemy.take_damage(int(example.health), Vector2.ZERO)
 		fixture.expect(
 			not enemy.is_in_group("enemies"),

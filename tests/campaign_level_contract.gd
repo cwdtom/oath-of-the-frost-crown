@@ -8,18 +8,28 @@ const LEVEL_SPECS := [
 		"campaign_id": &"level_00",
 		"outcomes": [],
 		"has_music": false,
+		"has_opening_story": true,
 	},
 	{
 		"scene": "res://levels/level_01.tscn",
 		"campaign_id": &"level_01",
 		"outcomes": [&"defeat", &"completion"],
 		"has_music": true,
+		"has_opening_story": true,
 	},
 	{
 		"scene": "res://levels/level_02.tscn",
 		"campaign_id": &"level_02",
 		"outcomes": [&"defeat", &"completion"],
 		"has_music": true,
+		"has_opening_story": true,
+	},
+	{
+		"scene": "res://levels/level_03.tscn",
+		"campaign_id": &"level_03",
+		"outcomes": [&"defeat"],
+		"has_music": true,
+		"has_opening_story": true,
 	},
 ]
 const MAX_STORY_ADVANCE_INPUTS := 64
@@ -73,6 +83,7 @@ func verify_story_phase_contract() -> void:
 	for spec in LEVEL_SPECS:
 		var scene_path := str(spec["scene"])
 		var has_gameplay := not (spec["outcomes"] as Array).is_empty()
+		var has_opening_story := bool(spec["has_opening_story"])
 		var level := (load(scene_path) as PackedScene).instantiate() as CampaignLevel
 		fixture.expect(level != null, "%s implements the Story-phase seam" % scene_path)
 		if level == null:
@@ -86,7 +97,7 @@ func verify_story_phase_contract() -> void:
 		fixture.add_node(level)
 		fixture.set_current_scene(level)
 		await fixture.process_frames(1)
-		if has_gameplay:
+		if has_gameplay and has_opening_story:
 			fixture.expect(
 				level.is_campaign_story_phase_active(),
 				"%s starts its opening Story phase" % scene_path
@@ -100,20 +111,26 @@ func verify_story_phase_contract() -> void:
 				"%s opening Story uses the Story Camera" % scene_path
 			)
 
-		for _input_index in MAX_STORY_ADVANCE_INPUTS:
-			if observed["story_phase_finished"]:
-				break
-			var input := InputEventKey.new()
-			input.keycode = KEY_ENTER
-			input.pressed = true
-			Input.parse_input_event(input)
-			await fixture.process_frames(1)
+		if has_opening_story:
+			for _input_index in MAX_STORY_ADVANCE_INPUTS:
+				if observed["story_phase_finished"]:
+					break
+				var input := InputEventKey.new()
+				input.keycode = KEY_ENTER
+				input.pressed = true
+				Input.parse_input_event(input)
+				await fixture.process_frames(1)
 
-		fixture.expect(
-			observed["story_phase_finished"],
-			"%s finishes its Story phase through input" % scene_path
-		)
-		if has_gameplay:
+			fixture.expect(
+				observed["story_phase_finished"],
+				"%s finishes its Story phase through input" % scene_path
+			)
+		else:
+			fixture.expect(
+				not level.is_campaign_story_phase_active(),
+				"%s starts without an Opening Story" % scene_path
+			)
+		if has_gameplay and has_opening_story:
 			fixture.expect(
 				not level.is_campaign_story_phase_active(),
 				"%s leaves its opening Story phase" % scene_path
@@ -125,6 +142,15 @@ func verify_story_phase_contract() -> void:
 			fixture.expect(
 				level.get_campaign_camera_role() == CampaignLevel.CAMERA_PLAYER,
 				"%s restores the Player Camera after its opening Story" % scene_path
+			)
+		elif has_gameplay:
+			fixture.expect(
+				level.is_campaign_control_available(),
+				"%s starts with controls available" % scene_path
+			)
+			fixture.expect(
+				level.get_campaign_camera_role() == CampaignLevel.CAMERA_PLAYER,
+				"%s starts with the Player Camera" % scene_path
 			)
 		fixture.set_current_scene(null)
 		root.remove_child(level)

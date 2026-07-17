@@ -4,7 +4,6 @@ extends SceneTree
 const BEAR_KING_SCENE := preload("res://enemies/bear_king.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
-const HURT_ANIMATION := &"hurt"
 const SKILL_ANIMATION := &"skill"
 const EARTHQUAKE_CAST_ANIMATION := &"cast"
 const EXPECTED_HEALTH := 15
@@ -26,7 +25,7 @@ func _run() -> void:
 	harness = EnemyHarness.new(fixture, world)
 
 	await test_earthquake_damage_and_cooldown()
-	await test_damage_faces_attacker_and_interrupts_earthquake()
+	await test_damage_faces_attacker_without_interrupting_earthquake()
 
 	fixture.complete(false)
 	await fixture.process_frames(3)
@@ -90,7 +89,7 @@ func test_earthquake_damage_and_cooldown() -> void:
 	)
 
 
-func test_damage_faces_attacker_and_interrupts_earthquake() -> void:
+func test_damage_faces_attacker_without_interrupting_earthquake() -> void:
 	var bear_king_position := Vector2(5500.0, 0.0)
 	var bear_king := harness.instantiate_enemy(
 		BEAR_KING_SCENE,
@@ -115,20 +114,20 @@ func test_damage_faces_attacker_and_interrupts_earthquake() -> void:
 		"Weapon contact damages a vulnerable BearKing"
 	)
 	fixture.expect(
-		harness.is_playing(bear_king, HURT_ANIMATION),
-		"Accepted damage starts BearKing hurt presentation"
+		harness.is_playing(bear_king, SKILL_ANIMATION),
+		"Accepted damage keeps BearKing in its earthquake skill"
 	)
 	fixture.expect(
 		not harness.enemy_sprite_is_flipped(bear_king),
 		"BearKing faces an attacker on its left"
 	)
 	fixture.expect(
-		is_equal_approx(bear_king.global_position.x, bear_king_position.x + 100.0),
-		"BearKing keeps its 100 pixel hurt knockback"
+		is_equal_approx(bear_king.global_position.x, bear_king_position.x),
+		"BearKing earthquake ignores hurt knockback"
 	)
 	fixture.expect(
-		not harness.is_playing(bear_king, EARTHQUAKE_CAST_ANIMATION),
-		"Accepted damage interrupts BearKing earthquake"
+		harness.is_playing(bear_king, EARTHQUAKE_CAST_ANIMATION),
+		"Accepted damage does not interrupt BearKing earthquake"
 	)
 
 	await fixture.wait_seconds(0.45)
@@ -142,4 +141,4 @@ func test_damage_faces_attacker_and_interrupts_earthquake() -> void:
 		"BearKing faces an attacker on its right"
 	)
 	await fixture.wait_seconds(0.3)
-	fixture.expect(hurt_event_count[0] == 0, "Interrupted BearKing earthquake never reaches impact")
+	fixture.expect(hurt_event_count[0] == 1, "Damaged BearKing earthquake still reaches impact")

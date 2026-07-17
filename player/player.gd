@@ -17,6 +17,11 @@ const HURT_KNOCKBACK_DISTANCE = 100.0
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum {IDLE, RUN, JUMP, HURT, DEAD, ATTACK}
+@export_range(1, 100, 1) var maximum_health := MAX_HEALTH:
+	set(value):
+		maximum_health = value
+		if _health != null:
+			_initialize_health(maximum_health)
 var state = -1
 var controls_enabled := true
 var _health := DamageAndHealthModule.new(MAX_HEALTH)
@@ -26,10 +31,20 @@ var _health := DamageAndHealthModule.new(MAX_HEALTH)
 @onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
 @onready var visual_root: Node2D = $VisualRoot
 @onready var weapon_collision_shape: CollisionShape2D = $VisualRoot/WeaponMount/Area2D/CollisionShape2D
+@onready var thunder := get_node_or_null("Player_Thunder") as Area2D
 @onready var thunder_animation_player := get_node_or_null("Player_Thunder/AnimationPlayer") as AnimationPlayer
 
 
 func _init() -> void:
+	_connect_health_signals()
+
+
+func _initialize_health(value: int) -> void:
+	_health = DamageAndHealthModule.new(value)
+	_connect_health_signals()
+
+
+func _connect_health_signals() -> void:
 	_health.health_changed.connect(_on_health_changed)
 	_health.depleted.connect(_on_health_depleted)
 
@@ -69,6 +84,8 @@ func change_state(new_state: int) -> void:
 			animation_state.travel("jump")
 		ATTACK:
 			animation_state.travel("attack")
+			if thunder:
+				thunder.position.x = absf(thunder.position.x) * visual_root.scale.x
 			if thunder_animation_player:
 				thunder_animation_player.play("cast")
 		HURT:

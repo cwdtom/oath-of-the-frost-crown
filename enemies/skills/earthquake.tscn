@@ -127,3 +127,4 @@ disabled = true
 libraries/ = SubResource("AnimationLibrary_e3ujn")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="animation_started" from="AnimationPlayer" to="." method="_on_animation_player_animation_started"]
