@@ -574,7 +574,7 @@ one_shot = true
 visible = false
 
 [node name="Aila" type="Sprite2D" parent="DeadAnimation/Aila" unique_id=952496459]
-position = Vector2(0, 21)
+position = Vector2(-400, 21)
 scale = Vector2(0.75, 0.75)
 texture = ExtResource("43_b0qkx")
 

@@ -1,0 +1,98 @@
+[
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "莱夫！撑住，我带你回营地。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "来不及了……那道烙印已经穿过了盔甲。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "不许说这种话。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "麋鹿王胸口的符文，和王宫里的很像。回去以后，一定要查清楚。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "等你好起来，我们一起查。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "艾拉，我跟来不是因为王命……是因为你。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "莱夫",
+		"content": "别再只做王座的剑了。做你自己相信的骑士。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/leif.png",
+		"name": "艾拉",
+		"content": "莱夫……莱夫！"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/wiedel.png",
+		"name": "维德尔",
+		"content": "他替你挡下了兽灵烙印。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/wiedel.png",
+		"name": "艾拉",
+		"content": "你就是王宫所说的邪神？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/wiedel.png",
+		"name": "维德尔",
+		"content": "森林没有制造黑冬。瓦尔德玛背弃誓约，强行夺取了兽灵之力。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/wiedel.png",
+		"name": "艾拉",
+		"content": "父王……才是污染的源头？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/wiedel.png",
+		"name": "维德尔",
+		"content": "他的初衷是守护王国，但恐惧已经将他吞噬。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/wiedel.png",
+		"name": "维德尔",
+		"content": "我将白鹿的祝福交给你。它能帮助你击败国王。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/wiedel.png",
+		"name": "维德尔",
+		"content": "回到王都，亲眼确认真相，然后真正结束这一切。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/wiedel.png",
+		"name": "艾拉",
+		"content": "莱夫，我不会让你的牺牲白费。"
+	}
+]

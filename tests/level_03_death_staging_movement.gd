@@ -6,6 +6,7 @@ const LEVEL_03_SCENE := preload("res://levels/level_03.tscn")
 const MAIN_SCENE := preload("res://main.tscn")
 const PLAYER_RUN_SPEED := 300.0
 const STAGING_SEPARATION := 470.0
+const LEIF_STAGING_OFFSET := Vector2(100.0, 0.0)
 
 var fixture: HeadlessGameplayFixture
 
@@ -296,11 +297,13 @@ func test_player_handoff_holds_elk_king_death_tableau() -> void:
 	var leif_sprite := elk_king.get_node("DeadAnimation/Leif/Leif") as Sprite2D
 	fixture.expect(
 		leif_proxy.visible
-		and leif_sprite.global_position.is_equal_approx(aila_sprite.global_position),
-		"Leif appears at the crouched Player representation's world position "
-		+ "(Leif=%s, Player proxy=%s)" % [
+		and leif_sprite.global_position.is_equal_approx(
+			aila_sprite.global_position + LEIF_STAGING_OFFSET
+		),
+		"Leif appears at the authored offset from the crouched Player representation "
+		+ "(Leif=%s, expected=%s)" % [
 			leif_sprite.global_position,
-			aila_sprite.global_position,
+			aila_sprite.global_position + LEIF_STAGING_OFFSET,
 		]
 	)
 

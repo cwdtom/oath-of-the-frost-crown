@@ -68,7 +68,7 @@ func _handoff_to_aila() -> void:
 	aila_proxy.global_transform = (
 		player_sprite.global_transform * aila_sprite.transform.affine_inverse()
 	)
-	leif_proxy.global_position += player_sprite.global_position - leif_sprite.global_position
+	leif_proxy.global_position += (player_sprite.global_position - leif_sprite.global_position + Vector2(100.0, 0.0))
 	aila_proxy.visible = true
 	player.disable_for_cinematic_handoff()
 	elk_king.request_death_presentation()
