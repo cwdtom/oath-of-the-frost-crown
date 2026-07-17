@@ -4,10 +4,12 @@ extends "res://levels/level_base.gd"
 const TERMINAL_OUTCOME_NONE := &"none"
 const TERMINAL_OUTCOME_PLAYER_DEFEAT := &"player_defeat"
 const TERMINAL_OUTCOME_ELK_KING_DEFEAT := &"elk_king_defeat"
+const ELK_KING_DEATH_STAGING_SEPARATION := 470.0
 
 @onready var elk_king = $Enemies/ElkKing
 
 var _terminal_outcome := TERMINAL_OUTCOME_NONE
+var _elk_king_death_staging_complete := false
 
 
 func get_terminal_outcome() -> StringName:
@@ -23,6 +25,35 @@ func set_campaign_controls_enabled(enabled: bool) -> void:
 func _ready() -> void:
 	super._ready()
 	elk_king.connect("died", _on_elk_king_defeated)
+
+
+func _physics_process(delta: float) -> void:
+	if (
+		_terminal_outcome != TERMINAL_OUTCOME_ELK_KING_DEFEAT
+		or _elk_king_death_staging_complete
+	):
+		return
+
+	player.velocity.x = 0.0
+	if not player.is_on_floor():
+		return
+
+	var target_x: float = (
+		elk_king.global_position.x - ELK_KING_DEATH_STAGING_SEPARATION
+	)
+	var distance_to_target: float = target_x - player.global_position.x
+	var maximum_step: float = player.SPEED * delta
+	if absf(distance_to_target) <= maximum_step:
+		player.global_position.x = target_x
+		player.visual_root.scale.x = 1.0
+		player.change_state(player.IDLE)
+		_elk_king_death_staging_complete = true
+		return
+
+	var move_direction: float = signf(distance_to_target)
+	player.visual_root.scale.x = move_direction
+	player.velocity.x = move_direction * player.SPEED
+	player.change_state(player.RUN)
 
 
 func _on_campaign_defeated() -> void:
