@@ -103,7 +103,7 @@ const ENEMY_EXAMPLES := [
 		"starts_with_shield": true,
 		"notifies_death": true,
 		"detector_offset": Vector2(-172.0, 0.0),
-		"skill_animation": &"idle",
+		"skill_animation": &"skill",
 		"cooldown_path": NodePath("SkillDetect/ThunderSkill/Cooldown"),
 		"release_animation_player": NodePath("SkillDetect/ThunderSkill/Thunder/AnimationPlayer"),
 		"release_animation": &"cast",

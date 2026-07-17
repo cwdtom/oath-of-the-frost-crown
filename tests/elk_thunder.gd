@@ -103,6 +103,10 @@ func test_elk_king_scene_reuses_elk_thunder() -> void:
 		start_position,
 		{"idle_duration": 10.0, "patrol_range": 1000.0}
 	)
+	var earthquake_cooldown := elk_king.get_node(
+		"SkillDetect/EarthquakeSkill/Cooldown"
+	) as Timer
+	earthquake_cooldown.start()
 
 	await fixture.physics_frames(4)
 	await fixture.process_frames(1)

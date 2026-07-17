@@ -292,6 +292,7 @@ position = Vector2(-153, 50)
 
 [node name="Cooldown" type="Timer" parent="SkillDetect/EarthquakeSkill" unique_id=893363579]
 wait_time = 5.0
+one_shot = true
 
 [node name="ThunderSkill" type="Node2D" parent="SkillDetect" unique_id=828799171]
 
