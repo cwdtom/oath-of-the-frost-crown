@@ -193,6 +193,18 @@ tracks/9/keys = {
 "update": 1,
 "values": [ExtResource("43_b0qkx")]
 }
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("HealthBar:visible")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 
 [sub_resource type="Animation" id="Animation_hb5s0"]
 resource_name = "dead"
@@ -328,6 +340,18 @@ tracks/10/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [ExtResource("15_75roe"), ExtResource("16_ed6r6"), ExtResource("17_5f4oy"), ExtResource("18_w6lgy"), ExtResource("19_d5gbj"), ExtResource("20_s4ipx"), ExtResource("21_mbwn6"), ExtResource("22_ehumw"), ExtResource("23_5m5vb"), ExtResource("24_l6yaq"), ExtResource("25_53o4n"), ExtResource("26_3xwhe")]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("HealthBar:visible")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
 }
 
 [sub_resource type="Animation" id="Animation_xcn8e"]
