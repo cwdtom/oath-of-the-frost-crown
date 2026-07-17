@@ -24,6 +24,8 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": false,
 		"notifies_death": false,
 		"detector_offset": Vector2(-152.0, 42.5),
+		"release_animation_player": NodePath("Earthquake/AnimationPlayer"),
+		"release_animation": &"cast",
 	},
 	{
 		"name": "Wolf",
@@ -37,6 +39,7 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": true,
 		"notifies_death": false,
 		"detector_offset": Vector2(100.0, 0.0),
+		"release_animation": &"skill",
 	},
 	{
 		"name": "Elk",
@@ -52,6 +55,8 @@ const ENEMY_EXAMPLES := [
 		"notifies_death": false,
 		"detector_offset": Vector2(-172.0, 0.0),
 		"skill_animation": &"idle",
+		"release_animation_player": NodePath("SkillDetect/Thunder/AnimationPlayer"),
+		"release_animation": &"cast",
 	},
 	{
 		"name": "BearKing",
@@ -65,6 +70,8 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": false,
 		"notifies_death": true,
 		"detector_offset": Vector2(-228.0, 72.0),
+		"release_animation_player": NodePath("Earthquake/AnimationPlayer"),
+		"release_animation": &"cast",
 	},
 	{
 		"name": "WolfKing",
@@ -78,6 +85,8 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": true,
 		"notifies_death": true,
 		"detector_offset": Vector2(-150.0, 0.0),
+		"release_animation_player": NodePath("Thunder/AnimationPlayer"),
+		"release_animation": &"cast",
 	},
 ]
 
@@ -99,6 +108,8 @@ func _run() -> void:
 	test_levels_keep_their_enemy_encounters()
 	await test_initialization_patrol_limits_and_facing()
 	await test_scaled_environment_wall_reversal()
+	await test_persistent_skill_detection_retriggers_ready_skill()
+	await test_skill_ready_during_hurt_waits_for_hurt_completion()
 	await test_skill_damage_policy()
 	await test_death_presentation_and_cleanup()
 
@@ -181,6 +192,124 @@ func test_initialization_patrol_limits_and_facing() -> void:
 		enemy.queue_free()
 		await fixture.process_frames(1)
 		start_x += 1000.0
+
+
+func test_persistent_skill_detection_retriggers_ready_skill() -> void:
+	var enemies: Array[CharacterBody2D] = []
+	var players: Array[CharacterBody2D] = []
+	var start_x := 30000.0
+	for example in ENEMY_EXAMPLES:
+		var enemy := harness.instantiate_enemy(
+			example.scene,
+			Vector2(start_x, 0.0),
+			{"idle_duration": 10.0, "patrol_range": 1000.0}
+		)
+		var cooldown := enemy.get_node("SkillDetect/Cooldown") as Timer
+		cooldown.wait_time = 2.0
+		var player := harness.add_body(enemy.global_position + example.detector_offset)
+		enemies.append(enemy)
+		players.append(player)
+		start_x += 1500.0
+
+	await fixture.physics_frames(3)
+	await fixture.wait_seconds(0.05)
+	for index in ENEMY_EXAMPLES.size():
+		fixture.expect(
+			is_species_skill_releasing(enemies[index], ENEMY_EXAMPLES[index]),
+			"%s releases its skill for Player presence" % ENEMY_EXAMPLES[index].name
+		)
+
+	for _frame in 132:
+		for index in ENEMY_EXAMPLES.size():
+			var detector_shape := enemies[index].get_node(
+				"SkillDetect/CollisionShape2D"
+			) as CollisionShape2D
+			players[index].global_position = detector_shape.global_position
+		await fixture.physics_frames(1)
+
+	for index in ENEMY_EXAMPLES.size():
+		fixture.expect(
+			is_species_skill_releasing(enemies[index], ENEMY_EXAMPLES[index]),
+			(
+				"%s releases its ready skill again while Player presence persists"
+				% ENEMY_EXAMPLES[index].name
+			)
+		)
+		enemies[index].queue_free()
+		players[index].queue_free()
+	await fixture.process_frames(1)
+
+
+func is_species_skill_releasing(enemy: CharacterBody2D, example: Dictionary) -> bool:
+	if example.has("release_animation_player"):
+		var release_player := enemy.get_node(
+			example.release_animation_player
+		) as AnimationPlayer
+		return (
+			release_player.is_playing()
+			and release_player.current_animation == example.release_animation
+		)
+
+	return harness.is_playing(enemy, example.release_animation)
+
+
+func test_skill_ready_during_hurt_waits_for_hurt_completion() -> void:
+	var enemies: Array[CharacterBody2D] = []
+	var players: Array[CharacterBody2D] = []
+	var start_x := 39000.0
+	for example in ENEMY_EXAMPLES:
+		var enemy := harness.instantiate_enemy(
+			example.scene,
+			Vector2(start_x, 0.0),
+			{"idle_duration": 10.0, "patrol_range": 1000.0}
+		)
+		var cooldown := enemy.get_node("SkillDetect/Cooldown") as Timer
+		cooldown.wait_time = 0.1
+		cooldown.start()
+		if example.get("starts_with_shield", false):
+			enemy.take_damage(1, Vector2.ZERO)
+		enemy.take_damage(1, Vector2.ZERO)
+		var player := harness.add_body(enemy.global_position + example.detector_offset)
+		enemies.append(enemy)
+		players.append(player)
+		start_x += 1500.0
+
+	await fixture.wait_seconds(0.17)
+	for index in ENEMY_EXAMPLES.size():
+		fixture.expect(
+			enemies[index].is_hurt_immune(),
+			"%s keeps hurt immunity after its skill becomes ready" % ENEMY_EXAMPLES[index].name
+		)
+		fixture.expect(
+			not is_species_skill_releasing(enemies[index], ENEMY_EXAMPLES[index]),
+			"%s waits for hurt completion before releasing its ready skill"
+			% ENEMY_EXAMPLES[index].name
+		)
+
+	for _frame in 90:
+		var all_recovered := true
+		for enemy in enemies:
+			if enemy.is_hurt_immune():
+				all_recovered = false
+				break
+		if all_recovered:
+			break
+		await fixture.physics_frames(1)
+	await fixture.process_frames(2)
+
+	for index in ENEMY_EXAMPLES.size():
+		fixture.expect(
+			not enemies[index].is_hurt_immune(),
+			"%s completes its hurt immunity" % ENEMY_EXAMPLES[index].name
+		)
+		fixture.expect(
+			is_species_skill_releasing(enemies[index], ENEMY_EXAMPLES[index]),
+			"%s immediately releases its ready skill after hurt completion"
+			% ENEMY_EXAMPLES[index].name
+		)
+		enemies[index].queue_free()
+		players[index].queue_free()
+	await fixture.process_frames(1)
 
 func test_levels_keep_their_enemy_encounters() -> void:
 	verify_level_enemy_encounters(LEVEL_01_SCENE, "Level 01", 5, 1)

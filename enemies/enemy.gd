@@ -38,6 +38,7 @@ var _has_pending_depletion_outcome := false
 )
 @onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var hurt_box_collision_shape: CollisionShape2D = $HurtBox/CollisionShape2D
+@onready var skill_detect: Area2D = $SkillDetect
 @onready var skill_detect_collision_shape: CollisionShape2D = $SkillDetect/CollisionShape2D
 @onready var skill_cooldown_timer: Timer = $SkillDetect/Cooldown
 
@@ -50,6 +51,7 @@ func _ready() -> void:
 	start_x = global_position.x
 	move_direction = _get_initial_move_direction()
 	skill_detect_offset_x = absf(skill_detect_collision_shape.position.x)
+	skill_cooldown_timer.timeout.connect(_try_start_skill)
 	change_state(IDLE)
 	_update_health_presentation(
 		_health.get_current_health(),
@@ -348,6 +350,7 @@ func finish_skill() -> void:
 		velocity.x = 0.0
 		start_x = global_position.x
 	change_state(skill_return_state)
+	_try_start_skill()
 
 
 func _physics_process(delta: float) -> void:
@@ -392,11 +395,16 @@ func _on_hurt_box_area_entered(area: Area2D) -> void:
 
 
 func _on_skill_detect_body_entered(_body: Node2D) -> void:
+	_try_start_skill()
+
+
+func _try_start_skill() -> void:
 	if (
 		state == DEAD
 		or state == SKILL
 		or _health.is_hurt_immune()
 		or not skill_cooldown_timer.is_stopped()
+		or not skill_detect.has_overlapping_bodies()
 	):
 		return
 
@@ -416,6 +424,7 @@ func take_damage(amount: int, knockback_direction: Vector2) -> void:
 	if state == SKILL:
 		await get_tree().create_timer(_get_animation_length(HURT_ANIMATION)).timeout
 		_health.end_hurt_immunity()
+		_try_start_skill()
 		return
 
 	var return_state := _get_hurt_return_state()
@@ -424,6 +433,7 @@ func take_damage(amount: int, knockback_direction: Vector2) -> void:
 	await get_tree().create_timer(_get_animation_length(HURT_ANIMATION)).timeout
 	_health.end_hurt_immunity()
 	change_state(return_state)
+	_try_start_skill()
 
 
 func _on_health_changed(current_health: int, maximum_health: int) -> void:

@@ -8,11 +8,11 @@ const THUNDER_GROUND_RAY_DOWN_DISTANCE := 1400.0
 
 var _rng := RandomNumberGenerator.new()
 
-@onready var _thunder: Area2D = $Thunder
-@onready var _thunder_sprite: Sprite2D = $Thunder/Sprite2D
-@onready var _thunder_collision_shape: CollisionShape2D = $Thunder/CollisionShape2D
-@onready var _thunder_animation_player: AnimationPlayer = $Thunder/AnimationPlayer
-@onready var _thunder_particles: CPUParticles2D = $Thunder/CPUParticles2D
+@onready var _thunder: Area2D = $SkillDetect/Thunder
+@onready var _thunder_sprite: Sprite2D = $SkillDetect/Thunder/Sprite2D
+@onready var _thunder_collision_shape: CollisionShape2D = $SkillDetect/Thunder/CollisionShape2D
+@onready var _thunder_animation_player: AnimationPlayer = $SkillDetect/Thunder/AnimationPlayer
+@onready var _thunder_particles: CPUParticles2D = $SkillDetect/Thunder/CPUParticles2D
 @onready var _thunder_start_offset: Vector2 = _thunder.position
 @onready var _shield: Area2D = $ShieldSkill/Shield
 @onready var _shield_cooldown_timer: Timer = $ShieldSkill/Cooldown

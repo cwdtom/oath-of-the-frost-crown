@@ -44,7 +44,7 @@ func test_elk_casts_grounded_thunder_within_its_detection_area() -> void:
 
 	await fixture.physics_frames(4)
 	await fixture.process_frames(1)
-	var thunder := elk.get_node("Thunder") as Area2D
+	var thunder := elk.get_node("SkillDetect/Thunder") as Area2D
 	var strike_offset_x := thunder.global_position.x - start_position.x
 	fixture.expect(thunder.top_level, "Elk thunder keeps its selected world position")
 	fixture.expect(
@@ -86,7 +86,7 @@ func test_shielded_damage_does_not_interrupt_elk_thunder() -> void:
 
 	await fixture.physics_frames(3)
 	await fixture.process_frames(1)
-	var thunder := elk.get_node("Thunder") as Area2D
+	var thunder := elk.get_node("SkillDetect/Thunder") as Area2D
 	var shield := elk.get_node("ShieldSkill/Shield") as Area2D
 	player.global_position = thunder.global_position + Vector2(20.0, 0.0)
 	detector_body.queue_free()
@@ -132,7 +132,9 @@ func test_elk_resumes_patrol_and_keeps_its_cast_cooldown() -> void:
 	var ready_detector := harness.add_body(elk.global_position + Vector2(-172.0, 0.0))
 	await fixture.physics_frames(3)
 	await fixture.process_frames(1)
-	var thunder_animation_player := elk.get_node("Thunder/AnimationPlayer") as AnimationPlayer
+	var thunder_animation_player := elk.get_node(
+		"SkillDetect/Thunder/AnimationPlayer"
+	) as AnimationPlayer
 	fixture.expect(
 		thunder_animation_player.is_playing(),
 		"Elk can cast again after its five-second cooldown"
@@ -163,7 +165,7 @@ func test_elk_death_cancels_pending_thunder() -> void:
 
 	await fixture.physics_frames(3)
 	await fixture.process_frames(1)
-	var thunder := elk.get_node("Thunder") as Area2D
+	var thunder := elk.get_node("SkillDetect/Thunder") as Area2D
 	player.global_position = thunder.global_position + Vector2(20.0, 0.0)
 	detector_body.queue_free()
 	elk.take_damage(1, Vector2.ZERO)
