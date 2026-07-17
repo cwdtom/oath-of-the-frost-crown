@@ -48,12 +48,27 @@ func _physics_process(delta: float) -> void:
 		player.visual_root.scale.x = 1.0
 		player.change_state(player.IDLE)
 		_elk_king_death_staging_complete = true
+		_handoff_to_aila()
 		return
 
 	var move_direction: float = signf(distance_to_target)
 	player.visual_root.scale.x = move_direction
 	player.velocity.x = move_direction * player.SPEED
 	player.change_state(player.RUN)
+
+
+func _handoff_to_aila() -> void:
+	var player_sprite := player.get_node("VisualRoot/Sprite2D") as Sprite2D
+	var aila_proxy := elk_king.get_node("DeadAnimation/Aila") as Node2D
+	var aila_sprite := elk_king.get_node("DeadAnimation/Aila/Aila") as Sprite2D
+
+	aila_sprite.position.x = -ELK_KING_DEATH_STAGING_SEPARATION
+	aila_proxy.global_transform = (
+		player_sprite.global_transform * aila_sprite.transform.affine_inverse()
+	)
+	aila_proxy.visible = true
+	player.disable_for_cinematic_handoff()
+	elk_king.request_death_presentation()
 
 
 func _on_campaign_defeated() -> void:

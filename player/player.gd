@@ -113,6 +113,22 @@ func set_controls_enabled(enabled: bool) -> void:
 	change_state(IDLE)
 
 
+func disable_for_cinematic_handoff() -> void:
+	visible = false
+	collision_layer = 0
+	collision_mask = 0
+	$CollisionShape2D.set_deferred("disabled", true)
+	set_weapon_collision_enabled(false)
+	if thunder:
+		thunder.collision_layer = 0
+		thunder.collision_mask = 0
+		thunder.get_node("CollisionShape2D").set_deferred("disabled", true)
+	if thunder_animation_player:
+		thunder_animation_player.stop()
+	velocity = Vector2.ZERO
+	set_physics_process(false)
+
+
 func restore_full_health() -> void:
 	_health.restore_full_health()
 

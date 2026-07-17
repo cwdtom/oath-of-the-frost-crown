@@ -20,6 +20,7 @@ func _run() -> void:
 	await test_airborne_player_lands_before_elk_king_death_staging()
 	await test_player_crosses_defeated_elk_king_from_the_right()
 	await test_aligned_player_finishes_death_staging_without_running()
+	await test_player_handoff_holds_elk_king_death_tableau()
 
 	fixture.complete(false)
 	await fixture.process_frames(3)
@@ -166,13 +167,13 @@ func test_airborne_player_lands_before_elk_king_death_staging() -> void:
 		"parameters/playback"
 	) as AnimationNodeStateMachinePlayback
 	fixture.expect(
-		elk_animation_state.get_current_node() != &"dead"
-		and not elk_king.get_node("DeadAnimation/Aila").visible,
-		"Elk King dead presentation remains deferred at the staged endpoint"
+		elk_animation_state.get_current_node() == &"dead"
+		and elk_king.get_node("DeadAnimation/Aila").visible,
+		"Elk King dead presentation starts after the staged handoff"
 	)
 	fixture.expect(
-		player.is_visible_in_tree(),
-		"Player remains visible at the staged endpoint"
+		not player.visible,
+		"Player visuals remain hidden after the staged handoff"
 	)
 	player.call("take_damage", 1, Vector2.ZERO)
 	fixture.expect(
@@ -180,6 +181,170 @@ func test_airborne_player_lands_before_elk_king_death_staging() -> void:
 		"Player damage immunity remains active at the staged endpoint"
 	)
 	await retire_main(main)
+
+
+func test_player_handoff_holds_elk_king_death_tableau() -> void:
+	var main := await start_level_03()
+	var level := main.call("get_active_campaign_level") as CampaignLevel
+	fixture.expect(level != null, "Main starts Level 03 for the death tableau")
+	if level == null:
+		return
+	fixture.add_node(level)
+
+	var player := level.get_node("Player") as CharacterBody2D
+	var elk_king := level.get_node("Enemies/ElkKing") as CharacterBody2D
+	var player_visual := player.get_node("VisualRoot") as Node2D
+	var player_sprite := player.get_node("VisualRoot/Sprite2D") as Sprite2D
+	var player_body_shape := player.get_node("CollisionShape2D") as CollisionShape2D
+	var player_weapon_shape := player.get_node(
+		"VisualRoot/WeaponMount/Area2D/CollisionShape2D"
+	) as CollisionShape2D
+	var player_thunder := player.get_node("Player_Thunder") as Area2D
+	var player_thunder_shape := player.get_node(
+		"Player_Thunder/CollisionShape2D"
+	) as CollisionShape2D
+	var player_thunder_animation := player.get_node(
+		"Player_Thunder/AnimationPlayer"
+	) as AnimationPlayer
+	var player_camera := player.get_node("Camera2D") as Camera2D
+	var aila_proxy := elk_king.get_node("DeadAnimation/Aila") as Node2D
+	var aila_sprite := elk_king.get_node("DeadAnimation/Aila/Aila") as Sprite2D
+	var elk_animation_state := elk_king.get_node("AnimationTree").get(
+		"parameters/playback"
+	) as AnimationNodeStateMachinePlayback
+	var result_interface := main.get_node("GameResultPopup")
+	var campaign_outcomes: Array[StringName] = []
+	level.campaign_outcome_reached.connect(
+		func(outcome: StringName) -> void: campaign_outcomes.append(outcome)
+	)
+
+	await wait_until_grounded(player)
+	var target_x := elk_king.global_position.x - STAGING_SEPARATION
+	player.global_position.x = target_x
+	player_visual.scale.x = 1.0
+	await wait_until_grounded(player)
+	player.global_position.x = target_x
+	var staging_position := player.global_position
+	var represented_transform := player_sprite.global_transform
+	fixture.expect(
+		player.visible and not aila_proxy.visible,
+		"Only the real Player is visible before Elk King Defeat"
+	)
+	fixture.expect(
+		elk_animation_state.get_current_node() != &"dead",
+		"Elk King death presentation is deferred before handoff"
+	)
+	player_thunder_animation.play(&"cast")
+	player_thunder_animation.seek(0.35, true)
+	fixture.expect(
+		not player_thunder_shape.disabled,
+		"Death handoff begins while the production Player thunder weapon is active"
+	)
+
+	defeat_elk_king(elk_king)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		is_equal_approx(player.global_position.x, target_x)
+		and is_equal_approx(player_visual.scale.x, 1.0),
+		"Handoff begins only after exact staging with the Player facing the Elk King"
+	)
+	fixture.expect(
+		not player.visible and aila_proxy.visible,
+		"Aila becomes the only visible Player representation at handoff"
+	)
+	fixture.expect(
+		aila_sprite.global_transform.is_equal_approx(represented_transform),
+		"Aila preserves the Player's visible world position, facing, and apparent scale"
+	)
+	fixture.expect(
+		player.collision_layer == 0
+		and player.collision_mask == 0
+		and player_body_shape.disabled
+		and player_weapon_shape.disabled
+		and player_thunder.collision_layer == 0
+		and player_thunder.collision_mask == 0
+		and player_thunder_shape.disabled
+		and not player_thunder_animation.is_playing()
+		and not player.is_physics_processing(),
+		"Handoff disables Player body, melee, and thunder interaction"
+	)
+	fixture.expect(
+		level.get_campaign_camera_role() == CampaignLevel.CAMERA_PLAYER
+		and player_camera.is_current()
+		and is_equal_approx(player.global_position.x, target_x),
+		"The hidden Player remains the current Player Camera anchor at staging"
+	)
+	fixture.expect(
+		elk_animation_state.get_current_node() == &"dead"
+		and float(elk_king.call("_get_animation_position", &"dead")) > 0.0,
+		"Elk King death presentation starts only after handoff"
+	)
+
+	await fixture.wait_seconds(0.2)
+	var presentation_position := float(
+		elk_king.call("_get_animation_position", &"dead")
+	)
+	elk_king.call("request_death_presentation")
+	await fixture.process_frames(2)
+	fixture.expect(
+		float(elk_king.call("_get_animation_position", &"dead")) >= presentation_position,
+		"Duplicate presentation requests do not restart the Elk King death animation"
+	)
+
+	await fixture.wait_seconds(6.0)
+	fixture.expect(
+		is_instance_valid(elk_king)
+		and aila_proxy.visible
+		and elk_king.get_node("DeadAnimation/Leif").visible
+		and elk_king.get_node("DeadAnimation/Videl").visible
+		and not elk_king.get_node("Sprite2D").visible
+		and not elk_king.get_node("HealthBar").visible
+		and is_equal_approx(aila_sprite.position.x, -400.0),
+		"Elk King remains valid with the death presentation held on its final frame "
+		+ "(Aila=%s, Leif=%s, Videl=%s, Elk=%s, health=%s, Aila x=%.2f)" % [
+			aila_proxy.visible,
+			elk_king.get_node("DeadAnimation/Leif").visible,
+			elk_king.get_node("DeadAnimation/Videl").visible,
+			elk_king.get_node("Sprite2D").visible,
+			elk_king.get_node("HealthBar").visible,
+			aila_sprite.position.x,
+		]
+	)
+	fixture.expect(
+		not level.is_campaign_hud_visible()
+		and not level.is_campaign_control_available()
+		and not player.visible
+		and player.collision_layer == 0
+		and player.collision_mask == 0
+		and player_body_shape.disabled
+		and player_weapon_shape.disabled
+		and player_thunder.collision_layer == 0
+		and player_thunder.collision_mask == 0
+		and player_thunder_shape.disabled
+		and not player_thunder_animation.is_playing()
+		and not player.is_physics_processing()
+		and player.global_position.is_equal_approx(staging_position)
+		and player_camera.is_current(),
+		"The death tableau retains its hidden HUD, input lock, inactive Player, and Camera"
+	)
+	fixture.expect(
+		campaign_outcomes.is_empty()
+		and not bool(result_interface.call("is_result_visible"))
+		and level.get_node_or_null("VictoryStory") == null
+		and main.call("get_active_campaign_level") == level,
+		"The death tableau produces no campaign result, story, or Level replacement"
+	)
+
+	fixture.set_current_scene(null)
+	main.queue_free()
+	fixture.set_paused(false)
+	await fixture.process_frames(3)
+	fixture.expect(
+		not is_instance_valid(level)
+		and not is_instance_valid(elk_king)
+		and not is_instance_valid(player),
+		"External Level 03 disposal owns retained Elk King and hidden Player cleanup"
+	)
 
 
 func test_player_crosses_defeated_elk_king_from_the_right() -> void:
