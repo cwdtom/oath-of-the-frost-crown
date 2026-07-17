@@ -42,6 +42,25 @@ func _prepare_death_presentation() -> void:
 	died.emit()
 
 
+func _stop_species_skill_presentation() -> void:
+	if state == DEAD:
+		return
+
+	super._stop_species_skill_presentation()
+
+
+func die() -> void:
+	if state == DEAD:
+		return
+
+	change_state(DEAD)
+	_prepare_death_presentation()
+	await get_tree().create_timer(_get_animation_length(DEAD_ANIMATION)).timeout
+	while _thunder_cast_active or _earthquake_cast_active:
+		await get_tree().process_frame
+	queue_free()
+
+
 func _play_skill_presentations() -> void:
 	if state == SKILL:
 		_update_casting_presentation()
@@ -79,6 +98,16 @@ func _start_thunder_cast() -> void:
 	_thunder_cast_active = true
 	skill_cooldown_timer.start()
 	_cast_thunder()
+
+
+func _play_thunder_cast(thunder_x: float, thunder_y: float) -> void:
+	if state == DEAD and not _thunder_cast_active:
+		return
+
+	_thunder.global_position = Vector2(thunder_x, thunder_y)
+	_thunder_animation_player.stop()
+	_thunder_animation_player.play(THUNDER_CAST_ANIMATION)
+	_thunder.start_cast()
 
 
 func _start_earthquake_cast() -> void:

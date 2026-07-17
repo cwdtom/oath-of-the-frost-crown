@@ -38,6 +38,9 @@ func _run() -> void:
 	await test_packed_thunder_cast_delivers_one_damage()
 	await test_packed_earthquake_cast_delivers_one_damage()
 	await test_concurrent_casts_deliver_two_independent_damage_events()
+	await test_defeat_preserves_pending_thunder_until_impact_and_cleanup()
+	await test_defeat_preserves_thunder_committed_before_deferred_start()
+	await test_defeat_preserves_earthquake_without_starting_another_cast()
 
 	fixture.complete()
 
@@ -388,6 +391,221 @@ func test_concurrent_casts_deliver_two_independent_damage_events() -> void:
 	await fixture.wait_seconds(0.65)
 
 	elk_king.queue_free()
+	target.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_defeat_preserves_pending_thunder_until_impact_and_cleanup() -> void:
+	var start_position := Vector2(21000.0, 0.0)
+	var elk_king := harness.instantiate_enemy(
+		ELK_KING_SCENE,
+		start_position,
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+	var earthquake_cooldown := elk_king.get_node(
+		"SkillDetect/EarthquakeSkill/Cooldown"
+	) as Timer
+	earthquake_cooldown.start()
+	var detector_shape := elk_king.get_node(
+		"SkillDetect/CollisionShape2D"
+	) as CollisionShape2D
+	var detector_body := harness.add_body(detector_shape.global_position)
+	await fixture.physics_frames(3)
+	await fixture.process_frames(1)
+
+	var thunder := elk_king.get_node(
+		"SkillDetect/ThunderSkill/Thunder"
+	) as Area2D
+	var thunder_animation := thunder.get_node("AnimationPlayer") as AnimationPlayer
+	var target := add_damage_recorder(thunder.global_position)
+	var death_notification_count := [0]
+	elk_king.died.connect(
+		func() -> void: death_notification_count[0] += 1
+	)
+	fixture.expect(
+		thunder_animation.is_playing()
+		and thunder_animation.current_animation == &"cast",
+		"Elk King begins thunder before Defeat"
+	)
+
+	elk_king.take_damage(1, Vector2.ZERO)
+	elk_king.take_damage(elk_king.get_maximum_health(), Vector2.ZERO)
+	fixture.expect(
+		not elk_king.is_in_group("enemies"),
+		"Elk King Defeat immediately removes it from active Enemies"
+	)
+	fixture.expect(
+		death_notification_count[0] == 1,
+		"Elk King Defeat immediately publishes one notification"
+	)
+	await fixture.process_frames(1)
+	fixture.expect(
+		harness.is_playing(elk_king, &"dead"),
+		"Elk King body death presentation overrides its active cast presentation"
+	)
+	await fixture.physics_frames(1)
+	fixture.expect(
+		not harness.enemy_has_body_collision(elk_king)
+		and not harness.enemy_has_hurt_collision(elk_king),
+		"Elk King Defeat disables body and hurt collisions"
+	)
+
+	await fixture.wait_seconds(0.85)
+	fixture.expect(
+		is_instance_valid(elk_king),
+		"Pending thunder keeps the Elk King valid after its 0.8-second death presentation"
+	)
+	if is_instance_valid(elk_king):
+		fixture.expect(
+			thunder_animation.is_playing(),
+			"Pending thunder presentation continues independently after Elk King Defeat"
+		)
+	fixture.expect(
+		target.damage_event_count == 0,
+		"Pending thunder has not damaged its target before impact"
+	)
+
+	await fixture.wait_seconds(0.25)
+	fixture.expect(
+		target.damage_event_count == 1 and target.damage_total == 1,
+		"Pending thunder resolves one damage after the death presentation"
+	)
+	fixture.expect(
+		is_instance_valid(elk_king),
+		"Elk King remains valid until pending thunder finishes"
+	)
+	await fixture.wait_seconds(0.7)
+	fixture.expect(
+		not is_instance_valid(elk_king),
+		"Elk King leaves combat after death presentation and pending thunder finish"
+	)
+	fixture.expect(
+		death_notification_count[0] == 1,
+		"Delayed cleanup does not duplicate Elk King Defeat notification"
+	)
+
+	detector_body.queue_free()
+	target.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_defeat_preserves_thunder_committed_before_deferred_start() -> void:
+	var start_position := Vector2(22500.0, 0.0)
+	var elk_king := harness.instantiate_enemy(
+		ELK_KING_SCENE,
+		start_position,
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+	var thunder_cooldown := elk_king.get_node(
+		"SkillDetect/ThunderSkill/Cooldown"
+	) as Timer
+	var earthquake_cooldown := elk_king.get_node(
+		"SkillDetect/EarthquakeSkill/Cooldown"
+	) as Timer
+	thunder_cooldown.start()
+	earthquake_cooldown.start()
+	var detector_shape := elk_king.get_node(
+		"SkillDetect/CollisionShape2D"
+	) as CollisionShape2D
+	var detector_body := harness.add_body(detector_shape.global_position)
+	await fixture.physics_frames(2)
+	var thunder := elk_king.get_node(
+		"SkillDetect/ThunderSkill/Thunder"
+	) as Area2D
+	var thunder_animation := thunder.get_node("AnimationPlayer") as AnimationPlayer
+
+	thunder_cooldown.stop()
+	thunder_cooldown.timeout.emit()
+	fixture.expect(
+		not thunder_animation.is_playing(),
+		"Elk King commits thunder before its deferred effect presentation starts"
+	)
+	elk_king.take_damage(1, Vector2.ZERO)
+	elk_king.take_damage(elk_king.get_maximum_health(), Vector2.ZERO)
+	await fixture.process_frames(1)
+	fixture.expect(
+		thunder_animation.is_playing()
+		and thunder_animation.current_animation == &"cast",
+		"Committed thunder starts its effect presentation after Elk King Defeat"
+	)
+	var target := add_damage_recorder(thunder.global_position)
+
+	await fixture.wait_seconds(1.05)
+	fixture.expect(
+		target.damage_event_count == 1 and target.damage_total == 1,
+		"Thunder committed before deferred start still resolves after Defeat"
+	)
+	await fixture.wait_seconds(0.7)
+	fixture.expect(
+		not is_instance_valid(elk_king),
+		"Deferred-start thunder finishes and does not leak the defeated Elk King"
+	)
+
+	detector_body.queue_free()
+	target.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_defeat_preserves_earthquake_without_starting_another_cast() -> void:
+	var start_position := Vector2(24000.0, 0.0)
+	var elk_king := harness.instantiate_enemy(
+		ELK_KING_SCENE,
+		start_position,
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+	var thunder_cooldown := elk_king.get_node(
+		"SkillDetect/ThunderSkill/Cooldown"
+	) as Timer
+	thunder_cooldown.start()
+	var earthquake := elk_king.get_node(
+		"SkillDetect/EarthquakeSkill/Earthquake"
+	) as Area2D
+	var earthquake_animation := earthquake.get_node("AnimationPlayer") as AnimationPlayer
+	var earthquake_cast_count := [0]
+	earthquake_animation.animation_started.connect(
+		func(animation_name: StringName) -> void:
+			if animation_name == &"cast":
+				earthquake_cast_count[0] += 1
+	)
+	var detector_shape := elk_king.get_node(
+		"SkillDetect/CollisionShape2D"
+	) as CollisionShape2D
+	var detector_body := harness.add_body(detector_shape.global_position)
+	await fixture.physics_frames(3)
+	await fixture.process_frames(1)
+	var target := add_damage_recorder(earthquake.global_position)
+	fixture.expect(
+		earthquake_cast_count[0] == 1 and earthquake_animation.is_playing(),
+		"Elk King begins one earthquake before Defeat"
+	)
+
+	elk_king.take_damage(1, Vector2.ZERO)
+	elk_king.take_damage(elk_king.get_maximum_health(), Vector2.ZERO)
+	await fixture.wait_seconds(0.82)
+	fixture.expect(
+		is_instance_valid(elk_king),
+		"Pending earthquake keeps the Elk King valid after its death presentation"
+	)
+	fixture.expect(
+		target.damage_event_count == 1 and target.damage_total == 1,
+		"Pending earthquake still resolves one damage after Elk King Defeat"
+	)
+	if is_instance_valid(elk_king):
+		fixture.expect(
+			earthquake_animation.is_playing(),
+			"Pending earthquake presentation continues independently after Defeat"
+		)
+	await fixture.wait_seconds(0.2)
+	fixture.expect(
+		not is_instance_valid(elk_king),
+		"Elk King leaves combat after death presentation and earthquake finish"
+	)
+	fixture.expect(
+		earthquake_cast_count[0] == 1,
+		"Persistent presence starts no new earthquake after Elk King Defeat"
+	)
+
+	detector_body.queue_free()
 	target.queue_free()
 	await fixture.process_frames(1)
 
