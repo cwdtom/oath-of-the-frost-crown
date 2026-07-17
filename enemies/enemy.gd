@@ -120,7 +120,8 @@ func change_state(new_state: int) -> void:
 			remove_from_group("enemies")
 			body_collision_shape.set_deferred("disabled", true)
 			hurt_box_collision_shape.set_deferred("disabled", true)
-			animation_state.start(DEAD_ANIMATION)
+			if _starts_death_presentation_on_defeat():
+				_start_death_presentation()
 
 
 func face_move_direction() -> void:
@@ -259,6 +260,14 @@ func _update_health_presentation(_current_health: int, _maximum_health: int) -> 
 
 func _prepare_death_presentation() -> void:
 	pass
+
+
+func _start_death_presentation() -> void:
+	animation_state.start(DEAD_ANIMATION)
+
+
+func _starts_death_presentation_on_defeat() -> bool:
+	return true
 
 
 func turn_around() -> void:
