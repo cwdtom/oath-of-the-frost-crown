@@ -114,12 +114,17 @@ func _start_earthquake_cast() -> void:
 	_earthquake_cast_active = true
 	_earthquake_presentation_active = true
 	_earthquake_cooldown_timer.start()
-	_earthquake.global_position.x = (
+	var earthquake_x := (
 		global_position.x + move_direction * _earthquake_cast_offset_x
 	)
+	call_deferred("_play_earthquake_cast", earthquake_x)
+	_finish_earthquake_presentation()
+
+
+func _play_earthquake_cast(earthquake_x: float) -> void:
+	_earthquake.global_position.x = earthquake_x
 	_earthquake_animation_player.stop()
 	_earthquake_animation_player.play(EARTHQUAKE_CAST_ANIMATION)
-	_finish_earthquake_presentation()
 
 
 func _finish_earthquake_presentation() -> void:

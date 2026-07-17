@@ -203,8 +203,8 @@ func take_damage(amount: int, knockback_direction: Vector2) -> void:
 	_health.end_hurt_immunity()
 
 
-func _on_health_changed(current_health: int, maximum_health: int) -> void:
-	health_changed.emit(current_health, maximum_health)
+func _on_health_changed(current_health: int, observed_maximum_health: int) -> void:
+	health_changed.emit(current_health, observed_maximum_health)
 
 
 func _on_health_depleted() -> void:

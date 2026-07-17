@@ -32,6 +32,7 @@ func _run() -> void:
 	fixture.set_current_scene(world)
 	harness = EnemyHarness.new(fixture, world)
 
+	await test_reentry_restarts_completed_earthquake_safely()
 	await test_concurrent_casts_share_one_stationary_presentation_window()
 	await test_range_exit_and_damage_keep_concurrent_casts_stable()
 	await test_cooldowns_retrigger_independently_during_persistent_presence()
@@ -43,6 +44,55 @@ func _run() -> void:
 	await test_defeat_preserves_earthquake_without_starting_another_cast()
 
 	fixture.complete()
+
+
+func test_reentry_restarts_completed_earthquake_safely() -> void:
+	var elk_king := harness.instantiate_enemy(
+		ELK_KING_SCENE,
+		Vector2(1000.0, 0.0),
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+	var thunder_cooldown := elk_king.get_node(
+		"SkillDetect/ThunderSkill/Cooldown"
+	) as Timer
+	thunder_cooldown.start()
+	var detector_shape := elk_king.get_node(
+		"SkillDetect/CollisionShape2D"
+	) as CollisionShape2D
+	var earthquake_animation := elk_king.get_node(
+		"SkillDetect/EarthquakeSkill/Earthquake/AnimationPlayer"
+	) as AnimationPlayer
+	var detector_body := harness.add_body(detector_shape.global_position)
+	await fixture.physics_frames(3)
+	fixture.expect(
+		earthquake_animation.is_playing(),
+		"Elk King begins an earthquake before the Player exits"
+	)
+	detector_body.position += Vector2(400.0, 0.0)
+	await fixture.physics_frames(2)
+	await fixture.wait_seconds(1.05)
+	fixture.expect(
+		not earthquake_animation.is_playing(),
+		"The first earthquake finishes before the Player re-enters"
+	)
+
+	var earthquake_cooldown := elk_king.get_node(
+		"SkillDetect/EarthquakeSkill/Cooldown"
+	) as Timer
+	earthquake_cooldown.stop()
+	detector_body.position = detector_shape.global_position
+	await fixture.physics_frames(2)
+	await fixture.wait_seconds(0.05)
+	fixture.expect(
+		earthquake_animation.is_playing()
+		and earthquake_animation.current_animation == &"cast",
+		"Elk King safely restarts a completed earthquake when the Player re-enters"
+	)
+	await fixture.wait_seconds(1.05)
+
+	elk_king.queue_free()
+	detector_body.queue_free()
+	await fixture.process_frames(1)
 
 
 func add_damage_recorder(position: Vector2, size := Vector2(20.0, 20.0)) -> DamageRecorder:
