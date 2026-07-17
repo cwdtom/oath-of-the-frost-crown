@@ -291,7 +291,20 @@ func test_player_handoff_holds_elk_king_death_tableau() -> void:
 		"Duplicate presentation requests do not restart the Elk King death animation"
 	)
 
-	await fixture.wait_seconds(6.0)
+	await fixture.wait_seconds(0.9)
+	var leif_proxy := elk_king.get_node("DeadAnimation/Leif") as Node2D
+	var leif_sprite := elk_king.get_node("DeadAnimation/Leif/Leif") as Sprite2D
+	fixture.expect(
+		leif_proxy.visible
+		and leif_sprite.global_position.is_equal_approx(aila_sprite.global_position),
+		"Leif appears at the crouched Player representation's world position "
+		+ "(Leif=%s, Player proxy=%s)" % [
+			leif_sprite.global_position,
+			aila_sprite.global_position,
+		]
+	)
+
+	await fixture.wait_seconds(5.1)
 	fixture.expect(
 		is_instance_valid(elk_king)
 		and aila_proxy.visible

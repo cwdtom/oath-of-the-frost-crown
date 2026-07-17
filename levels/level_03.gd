@@ -61,11 +61,14 @@ func _handoff_to_aila() -> void:
 	var player_sprite := player.get_node("VisualRoot/Sprite2D") as Sprite2D
 	var aila_proxy := elk_king.get_node("DeadAnimation/Aila") as Node2D
 	var aila_sprite := elk_king.get_node("DeadAnimation/Aila/Aila") as Sprite2D
+	var leif_proxy := elk_king.get_node("DeadAnimation/Leif") as Node2D
+	var leif_sprite := elk_king.get_node("DeadAnimation/Leif/Leif") as Sprite2D
 
 	aila_sprite.position.x = -ELK_KING_DEATH_STAGING_SEPARATION
 	aila_proxy.global_transform = (
 		player_sprite.global_transform * aila_sprite.transform.affine_inverse()
 	)
+	leif_proxy.global_position += player_sprite.global_position - leif_sprite.global_position
 	aila_proxy.visible = true
 	player.disable_for_cinematic_handoff()
 	elk_king.request_death_presentation()
