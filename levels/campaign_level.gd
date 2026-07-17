@@ -2,7 +2,9 @@ class_name CampaignLevel
 extends Node2D
 
 
+@warning_ignore("unused_signal")
 signal campaign_outcome_reached(outcome: StringName)
+@warning_ignore("unused_signal")
 signal campaign_story_phase_finished
 
 const OUTCOME_DEFEAT := &"defeat"
