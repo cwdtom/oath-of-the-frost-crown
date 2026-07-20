@@ -2,7 +2,15 @@
 
 [ext_resource type="PackedScene" uid="uid://dl7xaysdal1vl" path="res://player/player_03.tscn" id="1_dp2iy"]
 [ext_resource type="PackedScene" uid="uid://dd3j1kv4juj2t" path="res://weapons/player_shield.tscn" id="2_0wd0u"]
+[ext_resource type="Script" uid="uid://brr4otic45lhn" path="res://player/player_04.gd" id="3_player04"]
 
 [node name="Player_04" unique_id=1483695229 instance=ExtResource("1_dp2iy")]
+script = ExtResource("3_player04")
 
-[node name="Shield" parent="VisualRoot" parent_id_path=PackedInt32Array(792037367) index="0" unique_id=655684110 instance=ExtResource("2_0wd0u")]
+[node name="ShieldSkill" type="Node2D" parent="VisualRoot" parent_id_path=PackedInt32Array(792037367) index="0" unique_id=1675081122]
+
+[node name="Shield" parent="VisualRoot/ShieldSkill" index="0" unique_id=655684110 instance=ExtResource("2_0wd0u")]
+
+[node name="Cooldown" type="Timer" parent="VisualRoot/ShieldSkill" index="1" unique_id=2083250404]
+wait_time = 5.0
+one_shot = true

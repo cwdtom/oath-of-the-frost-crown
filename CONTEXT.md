@@ -101,3 +101,15 @@ _Avoid_: Weapon block, damage immunity
 **Elk Shield Cooldown**:
 The fixed five-second interval after an Elk Shield negates damage and before it becomes available again. Damage received during this interval neither resets nor extends it.
 _Avoid_: Thunder cooldown, hurt immunity
+
+**Player Shield**:
+A passive, rechargeable protection possessed by Player 04 that begins each Level instance available and negates one otherwise applicable incoming damage event, regardless of the damage source. Damage already rejected by another immunity or invalid actor state does not consume it; negating damage does not change health, cause knockback, or begin a hurt presentation, and starts the Player Shield Break Window.
+_Avoid_: Elk Shield, damage immunity, weapon block
+
+**Player Shield Break Window**:
+The interval after the Player Shield negates damage during which its spent protection remains visible and Player 04 rejects further damage without interrupting actions, movement, or controls. It lasts exactly as long as ordinary non-lethal hurt immunity, is not restarted by further hits, and ends by hiding the protection and beginning the Player Shield Cooldown.
+_Avoid_: Player Shield Cooldown, hurt presentation, reusable protection
+
+**Player Shield Cooldown**:
+The fixed five-second interval after the Player Shield Break Window ends and before the Player Shield becomes visible and available again. Damage received during this interval is resolved normally and neither resets nor extends it.
+_Avoid_: Elk Shield Cooldown, hurt immunity
