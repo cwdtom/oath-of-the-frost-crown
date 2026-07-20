@@ -6,4 +6,4 @@ extends Node2D
 
 
 func _process(_delta: float) -> void:
-	sprite.flip_h = player.global_position.x < global_position.x
+	sprite.flip_h = player.global_position.x > global_position.x
