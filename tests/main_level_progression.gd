@@ -184,8 +184,8 @@ func _run() -> void:
 		"Level02 final Story completion starts Level03"
 	)
 	fixture.expect(
-		level_03.get_supported_campaign_outcomes() == [&"defeat"],
-		"Level03 supports defeat without declaring an unfinished completion outcome"
+		level_03.get_supported_campaign_outcomes() == [&"defeat", &"completion"],
+		"Level03 supports defeat and completion"
 	)
 	fixture.expect(level_03.is_campaign_story_phase_active(), "Level03 starts its opening Story")
 	fixture.expect(paused, "Level03 opening Story pauses gameplay")

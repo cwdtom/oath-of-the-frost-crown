@@ -4,6 +4,8 @@ extends SceneTree
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const LEVEL_03_SCENE := preload("res://levels/level_03.tscn")
 const MAIN_SCENE := preload("res://main.tscn")
+const LEVEL_03_VICTORY_STORY := "res://levels/level_03_a_story.json"
+const MAX_STORY_ADVANCE_INPUTS := 64
 const PLAYER_RUN_SPEED := 300.0
 const STAGING_SEPARATION := 470.0
 const LEIF_STAGING_OFFSET := Vector2(100.0, 0.0)
@@ -306,6 +308,12 @@ func test_player_handoff_holds_elk_king_death_tableau() -> void:
 			aila_sprite.global_position + LEIF_STAGING_OFFSET,
 		]
 	)
+	fixture.expect(
+		campaign_outcomes.is_empty()
+		and not level.is_campaign_story_phase_active()
+		and level.get_node_or_null("VictoryStory") == null,
+		"The Level 03 Victory Story waits for the death presentation to finish"
+	)
 
 	await fixture.wait_seconds(5.1)
 	fixture.expect(
@@ -343,12 +351,54 @@ func test_player_handoff_holds_elk_king_death_tableau() -> void:
 		and player_camera.is_current(),
 		"The death tableau retains its hidden HUD, input lock, inactive Player, and Camera"
 	)
+	var victory_story := level.get_node_or_null("VictoryStory") as CanvasLayer
 	fixture.expect(
-		campaign_outcomes.is_empty()
+		campaign_outcomes == [CampaignLevel.OUTCOME_COMPLETION]
 		and not bool(result_interface.call("is_result_visible"))
-		and level.get_node_or_null("VictoryStory") == null
+		and level.is_campaign_story_phase_active()
+		and victory_story != null
+		and str(victory_story.get("story_path")) == LEVEL_03_VICTORY_STORY
 		and main.call("get_active_campaign_level") == level,
-		"The death tableau produces no campaign result, story, or Level replacement"
+		"The death tableau completes Level 03 and immediately starts its Victory Story"
+	)
+
+	var victory_story_finished := [false]
+	level.campaign_story_phase_finished.connect(
+		func() -> void: victory_story_finished[0] = true,
+		CONNECT_ONE_SHOT
+	)
+	for _input_index in MAX_STORY_ADVANCE_INPUTS:
+		if victory_story_finished[0]:
+			break
+		var story_input := InputEventKey.new()
+		story_input.keycode = KEY_ENTER
+		story_input.pressed = true
+		Input.parse_input_event(story_input)
+		await fixture.process_frames(1)
+
+	fixture.expect(
+		victory_story_finished[0]
+		and not level.is_campaign_story_phase_active()
+		and not paused,
+		"The Level 03 Victory Story finishes through the existing Story interaction"
+	)
+	fixture.expect(
+		campaign_outcomes == [CampaignLevel.OUTCOME_COMPLETION]
+		and main.call("get_active_campaign_level") == level
+		and not bool(result_interface.call("is_result_visible"))
+		and is_instance_valid(elk_king)
+		and aila_proxy.visible
+		and elk_king.get_node("DeadAnimation/Leif").visible
+		and elk_king.get_node("DeadAnimation/Videl").visible
+		and not elk_king.get_node("Sprite2D").visible
+		and not elk_king.get_node("HealthBar").visible
+		and not level.is_campaign_hud_visible()
+		and not level.is_campaign_control_available()
+		and not player.visible
+		and not player.is_physics_processing()
+		and player.global_position.is_equal_approx(staging_position)
+		and player_camera.is_current(),
+		"Finishing the Level 03 Victory Story retains the Elk King Death Tableau"
 	)
 
 	fixture.set_current_scene(null)
