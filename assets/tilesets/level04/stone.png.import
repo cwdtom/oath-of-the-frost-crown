@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://k55g64pa3scx"
-path="res://.godot/imported/moss.png-eff532da5e8cc659675de335595c78db.ctex"
+uid="uid://cdcsuq26r7ukr"
+path="res://.godot/imported/stone.png-b06294467a45099859f0d798c5c593a2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/level01/moss.png"
-dest_files=["res://.godot/imported/moss.png-eff532da5e8cc659675de335595c78db.ctex"]
+source_file="res://assets/tilesets/level04/stone.png"
+dest_files=["res://.godot/imported/stone.png-b06294467a45099859f0d798c5c593a2.ctex"]
 
 [params]
 

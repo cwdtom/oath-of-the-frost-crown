@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bsx3lgnpy111l"]
+
+[ext_resource type="PackedScene" uid="uid://dl7xaysdal1vl" path="res://player/player_03.tscn" id="1_dp2iy"]
+[ext_resource type="PackedScene" uid="uid://dd3j1kv4juj2t" path="res://weapons/player_shield.tscn" id="2_0wd0u"]
+
+[node name="Player_04" unique_id=1483695229 instance=ExtResource("1_dp2iy")]
+
+[node name="Shield" parent="VisualRoot" parent_id_path=PackedInt32Array(792037367) index="0" unique_id=655684110 instance=ExtResource("2_0wd0u")]

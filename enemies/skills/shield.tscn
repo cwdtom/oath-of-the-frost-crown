@@ -51,7 +51,9 @@ _data = {
 &"idle": SubResource("Animation_nqnra")
 }
 
-[node name="Shield" type="Area2D" unique_id=655684110]
+[node name="Shield" type="Area2D" unique_id=655684110 groups=["enemies"]]
+collision_layer = 4
+collision_mask = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1710600965]
 texture = ExtResource("2_bqpwa")
