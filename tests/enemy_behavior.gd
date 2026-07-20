@@ -4,6 +4,7 @@ extends SceneTree
 const BEAR_SCENE := preload("res://enemies/bear.tscn")
 const WOLF_SCENE := preload("res://enemies/wolf.tscn")
 const ELK_SCENE := preload("res://enemies/elk.tscn")
+const GUARD_SCENE := preload("res://enemies/guard.tscn")
 const BEAR_KING_SCENE := preload("res://enemies/bear_king.tscn")
 const WOLF_KING_SCENE := preload("res://enemies/wolf_king.tscn")
 const ELK_KING_SCENE := preload("res://enemies/elk_king.tscn")
@@ -58,6 +59,21 @@ const ENEMY_EXAMPLES := [
 		"detector_offset": Vector2(-172.0, 0.0),
 		"skill_animation": &"idle",
 		"release_animation_player": NodePath("SkillDetect/Thunder/AnimationPlayer"),
+		"release_animation": &"cast",
+	},
+	{
+		"name": "Guard",
+		"scene": GUARD_SCENE,
+		"initial_direction": -1.0,
+		"patrol_range": 160.0,
+		"run_speed": 80.0,
+		"scale": Vector2.ONE,
+		"health": 3,
+		"death_duration": 0.7,
+		"blocks_skill_damage": false,
+		"notifies_death": false,
+		"detector_offset": Vector2(-92.5, 9.0),
+		"release_animation_player": NodePath("SkillDetect/SwordGleam/AnimationPlayer"),
 		"release_animation": &"cast",
 	},
 	{

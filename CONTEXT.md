@@ -34,6 +34,14 @@ _Avoid_: Aggro range, attack range
 The rule that an Enemy completes its non-lethal hurt presentation and associated hurt immunity before starting a ready skill. If the Player remains in the Skill Detection Area, the Enemy begins casting as soon as the hurt state finishes.
 _Avoid_: Skill-interrupted hurt, early hurt-immunity termination
 
+**Guard**:
+An Enemy with three maximum health that uses the standard Enemy patrol and Skill Detection Area behavior to release Sword Gleam.
+_Avoid_: Player-controlled guard, stationary sentry
+
+**Guard Sword Gleam**:
+A Guard skill whose synchronized attack motion, sword effect, and damage region are always presented on the side the Guard is facing. Each release deals one damage to a given target at most once and starts a five-second cooldown; non-lethal damage to the Guard does not interrupt a release already in progress, while Guard Defeat prevents any further damage from that release.
+_Avoid_: Guard contact damage, repeated damage from one release, hurt-interrupted Sword Gleam
+
 **Elk Thunder Strike Point**:
 A grounded location whose horizontal coordinate is randomly selected from an Elk's Skill Detection Area when its thunder skill begins.
 _Avoid_: Elk position, Player position
