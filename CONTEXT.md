@@ -79,8 +79,8 @@ The non-interactive transition between Elk King Defeat and its death presentatio
 _Avoid_: Player input, teleport, airborne handoff, scaled local offset, visible character swap
 
 **Elk King Death Tableau**:
-The terminal Level 03 presentation held on the final frame of the Elk King's death presentation, with the Player Camera holding the final composition and the HUD remaining hidden. It does not cause Level Completion or dispose the Level; the Player remains hidden, unavailable, and absent from physical interaction until the whole Level 03 session is disposed externally.
-_Avoid_: Level Completion, automatic Level disposal, restored Player control
+The terminal Level 03 presentation held on the final frame of the Elk King's death presentation, with the Player Camera holding the final composition and the HUD remaining hidden. Reaching it constitutes Level Completion and immediately begins the Level 03 Victory Story without an intervening transition or result interface; after that Story finishes, the tableau remains while the Player stays hidden, unavailable, and absent from physical interaction until the whole Level 03 session is disposed externally.
+_Avoid_: Automatic Level disposal, restored Player control
 
 **Level 03 Terminal Outcome Lock**:
 The first confirmed health depletion between the Player and the Elk King fixes Level 03's terminal presentation. Elk King Defeat prevents any later Player Defeat, while an already confirmed Player Defeat prevents Elk King Death Staging from starting; neither result can replace the other afterward.

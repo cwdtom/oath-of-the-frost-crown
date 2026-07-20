@@ -302,8 +302,9 @@ sources/0 = SubResource("TileSetAtlasSource_p0vsl")
 
 [node name="Level03" unique_id=1993614508 instance=ExtResource("1_0mo0b")]
 script = ExtResource("14_level_03")
+_campaign_victory_story_path = "res://levels/level_03_a_story.json"
 campaign_id = &"level_03"
-supported_campaign_outcomes = Array[StringName]([&"defeat"])
+supported_campaign_outcomes = Array[StringName]([&"defeat", &"completion"])
 
 [node name="Background" parent="." index="0" unique_id=226699892 instance=ExtResource("2_p0vsl")]
 

@@ -2,6 +2,7 @@ extends "res://enemies/elk.gd"
 
 
 signal died
+signal death_presentation_finished
 
 const ELK_KING_MAX_HEALTH := 10
 const EARTHQUAKE_CAST_ANIMATION := &"cast"
@@ -18,10 +19,12 @@ var _thunder_cast_active := false
 var _earthquake_cast_active := false
 var _earthquake_presentation_active := false
 var _death_presentation_started := false
+var _death_presentation_finished := false
 
 
 func _ready() -> void:
 	super._ready()
+	animation_tree.animation_finished.connect(_on_animation_finished)
 	_earthquake_cooldown_timer.timeout.connect(_try_start_skill)
 	_earthquake_animation_player.animation_finished.connect(
 		_on_earthquake_animation_finished
@@ -53,6 +56,18 @@ func request_death_presentation() -> void:
 
 	_death_presentation_started = true
 	_start_death_presentation()
+
+
+func _on_animation_finished(animation_name: StringName) -> void:
+	if (
+		animation_name != DEAD_ANIMATION
+		or not _death_presentation_started
+		or _death_presentation_finished
+	):
+		return
+
+	_death_presentation_finished = true
+	death_presentation_finished.emit()
 
 
 func _stop_species_skill_presentation() -> void:

@@ -10,6 +10,7 @@ const ELK_KING_DEATH_STAGING_SEPARATION := 470.0
 
 var _terminal_outcome := TERMINAL_OUTCOME_NONE
 var _elk_king_death_staging_complete := false
+var _elk_king_death_tableau_reached := false
 
 
 func get_terminal_outcome() -> StringName:
@@ -25,6 +26,9 @@ func set_campaign_controls_enabled(enabled: bool) -> void:
 func _ready() -> void:
 	super._ready()
 	elk_king.connect("died", _on_elk_king_defeated)
+	elk_king.death_presentation_finished.connect(
+		_on_elk_king_death_presentation_finished
+	)
 
 
 func _physics_process(delta: float) -> void:
@@ -93,3 +97,14 @@ func _on_elk_king_defeated() -> void:
 	hud.visible = false
 	set_campaign_controls_enabled(false)
 	player.set_damage_immune(true)
+
+
+func _on_elk_king_death_presentation_finished() -> void:
+	if (
+		_terminal_outcome != TERMINAL_OUTCOME_ELK_KING_DEFEAT
+		or _elk_king_death_tableau_reached
+	):
+		return
+
+	_elk_king_death_tableau_reached = true
+	super._on_campaign_completed()
