@@ -5,6 +5,7 @@ const LEVEL_00_SCENE := preload("res://levels/level_00.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
 const LEVEL_03_SCENE := preload("res://levels/level_03.tscn")
+const LEVEL_04_SCENE := preload("res://levels/level_04.tscn")
 const RESULT_DEAD := "DEAD"
 const CAMPAIGN_PHASE_TITLE := &"title"
 const CAMPAIGN_PHASE_GUIDE := &"guide"
@@ -136,6 +137,10 @@ func start_level_03() -> void:
 	start_level(LEVEL_03_SCENE, true)
 
 
+func start_level_04(play_intro: bool = true) -> void:
+	start_level(LEVEL_04_SCENE, play_intro)
+
+
 func play_level_00() -> void:
 	if _active_level == null or _active_level.get_campaign_id() != &"level_01":
 		return
@@ -223,6 +228,8 @@ func _on_level_victory_story_finished(source: CampaignLevel) -> void:
 			start_level_02()
 		&"level_02":
 			start_level_03()
+		&"level_03":
+			start_level_04()
 
 
 func retry_campaign() -> void:

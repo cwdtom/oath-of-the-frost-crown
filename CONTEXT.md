@@ -12,6 +12,10 @@ _Avoid_: Level ending, campaign completion
 The closing narrative phase that follows Level Completion. The campaign advances only after the Victory Story finishes.
 _Avoid_: Ending, result screen
 
+**Opening Story**:
+The introductory narrative phase of a newly active Level. Gameplay remains unavailable until it finishes, after which that same Level enters Level Initialization.
+_Avoid_: Victory Story, Level Initialization
+
 **Level Advancement**:
 The replacement of the completed Level with a newly initialized next Level after its Victory Story finishes.
 _Avoid_: Level Completion, scene jump
@@ -87,7 +91,7 @@ The non-interactive transition between Elk King Defeat and its death presentatio
 _Avoid_: Player input, teleport, airborne handoff, scaled local offset, visible character swap
 
 **Elk King Death Tableau**:
-The terminal Level 03 presentation held on the final frame of the Elk King's death presentation, with the Player Camera holding the final composition and the HUD remaining hidden. Reaching it constitutes Level Completion and immediately begins the Level 03 Victory Story without an intervening transition or result interface; after that Story finishes, the tableau remains while the Player stays hidden, unavailable, and absent from physical interaction until the whole Level 03 session is disposed externally.
+The terminal Level 03 presentation held on the final frame of the Elk King's death presentation, with the Player Camera holding the final composition and the HUD remaining hidden. Reaching it constitutes Level Completion and immediately begins the Level 03 Victory Story without an intervening transition or result interface; the tableau remains while that Story plays, with the Player hidden, unavailable, and absent from physical interaction, until Level Advancement disposes the whole Level 03 session.
 _Avoid_: Automatic Level disposal, restored Player control
 
 **Level 03 Terminal Outcome Lock**:

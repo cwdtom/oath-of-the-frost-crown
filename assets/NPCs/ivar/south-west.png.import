@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tom2eil735cf"
-path="res://.godot/imported/south-east.png-fbfb54b5bbf8d0709c0214c4d4f208a0.ctex"
+uid="uid://cocpaq4bybmhr"
+path="res://.godot/imported/south-west.png-89280a70cd96f359baf2b460412f4efa.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/NPCs/leif/south-east.png"
-dest_files=["res://.godot/imported/south-east.png-fbfb54b5bbf8d0709c0214c4d4f208a0.ctex"]
+source_file="res://assets/NPCs/ivar/south-west.png"
+dest_files=["res://.godot/imported/south-west.png-89280a70cd96f359baf2b460412f4efa.ctex"]
 
 [params]
 

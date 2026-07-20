@@ -259,6 +259,77 @@ func _run() -> void:
 		"Level03 retry hides the result interface"
 	)
 	fixture.expect(not paused, "Level03 retry leaves the scene tree unpaused")
+	if replacement != null:
+		replacement.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_COMPLETION)
+		fixture.expect(
+			main.call("get_active_campaign_level") == replacement,
+			"Level03 remains active during its Victory Story"
+		)
+		fixture.expect(
+			replacement.is_campaign_story_phase_active(),
+			"Level03 completion starts its Victory Story"
+		)
+		fixture.expect(paused, "Level03 Victory Story pauses gameplay")
+
+		for _input_index in MAX_STORY_ADVANCE_INPUTS:
+			if main.call("get_active_campaign_level") != replacement:
+				break
+			await send_story_input()
+		await fixture.process_frames(1)
+
+		var level_04 := main.call("get_active_campaign_level") as CampaignLevel
+		fixture.expect(level_04 != null, "Level03 Victory Story completion starts Level04")
+		fixture.expect(
+			level_04 != null and level_04.get_campaign_id() == &"level_04",
+			"Level03 Victory Story completion initializes Level04"
+		)
+		fixture.expect(
+			level_04 != null
+			and level_04.get_supported_campaign_outcomes() == [&"defeat"],
+			"Level04 supports defeat without a completion outcome"
+		)
+		if level_04 != null and level_04 != replacement:
+			fixture.add_node(level_04)
+			fixture.expect(
+				level_04.is_campaign_story_phase_active(),
+				"Level04 starts its Opening Story"
+			)
+			fixture.expect(paused, "Level04 Opening Story pauses gameplay")
+			fixture.expect(
+				not level_04.is_campaign_control_available(),
+				"Level04 Opening Story keeps controls unavailable"
+			)
+			fixture.expect(
+				not level_04.is_campaign_hud_visible(),
+				"Level04 Opening Story hides the HUD"
+			)
+			fixture.expect(
+				level_04.get_campaign_camera_role() == CAMERA_OPENING_STORY,
+				"Level04 Opening Story uses the Story Camera"
+			)
+
+			for _input_index in MAX_STORY_ADVANCE_INPUTS:
+				if not level_04.is_campaign_story_phase_active():
+					break
+				await send_story_input()
+
+			fixture.expect(
+				main.call("get_active_campaign_level") == level_04,
+				"Level04 Opening Story completion retains Level04"
+			)
+			fixture.expect(not paused, "Level04 starts gameplay after its Opening Story")
+			fixture.expect(
+				level_04.is_campaign_control_available(),
+				"Level04 enables controls after its Opening Story"
+			)
+			fixture.expect(
+				level_04.is_campaign_hud_visible(),
+				"Level04 shows its HUD after its Opening Story"
+			)
+			fixture.expect(
+				level_04.get_campaign_camera_role() == CAMERA_PLAYER,
+				"Level04 restores the Player Camera after its Opening Story"
+			)
 
 	fixture.complete(false)
 	await fixture.process_frames(3)

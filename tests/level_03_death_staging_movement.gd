@@ -376,29 +376,26 @@ func test_player_handoff_holds_elk_king_death_tableau() -> void:
 		Input.parse_input_event(story_input)
 		await fixture.process_frames(1)
 
+	var level_04 := main.call("get_active_campaign_level") as CampaignLevel
 	fixture.expect(
 		victory_story_finished[0]
-		and not level.is_campaign_story_phase_active()
-		and not paused,
-		"The Level 03 Victory Story finishes through the existing Story interaction"
+		and not is_instance_valid(level)
+		and level_04 != null
+		and level_04.get_campaign_id() == &"level_04",
+		"The Level 03 Victory Story finishes and advances the Campaign to Level04"
 	)
+	if level_04 != null:
+		fixture.add_node(level_04)
 	fixture.expect(
 		campaign_outcomes == [CampaignLevel.OUTCOME_COMPLETION]
-		and main.call("get_active_campaign_level") == level
 		and not bool(result_interface.call("is_result_visible"))
-		and is_instance_valid(elk_king)
-		and aila_proxy.visible
-		and elk_king.get_node("DeadAnimation/Leif").visible
-		and elk_king.get_node("DeadAnimation/Videl").visible
-		and not elk_king.get_node("Sprite2D").visible
-		and not elk_king.get_node("HealthBar").visible
-		and not level.is_campaign_hud_visible()
-		and not level.is_campaign_control_available()
-		and not player.visible
-		and not player.is_physics_processing()
-		and player.global_position.is_equal_approx(staging_position)
-		and player_camera.is_current(),
-		"Finishing the Level 03 Victory Story retains the Elk King Death Tableau"
+		and level_04 != null
+		and level_04.is_campaign_story_phase_active()
+		and not level_04.is_campaign_hud_visible()
+		and not level_04.is_campaign_control_available()
+		and level_04.get_campaign_camera_role() == CampaignLevel.CAMERA_OPENING_STORY
+		and paused,
+		"Level04 takes over with its Opening Story after the Level 03 session is disposed"
 	)
 
 	fixture.set_current_scene(null)
@@ -409,7 +406,7 @@ func test_player_handoff_holds_elk_king_death_tableau() -> void:
 		not is_instance_valid(level)
 		and not is_instance_valid(elk_king)
 		and not is_instance_valid(player),
-		"External Level 03 disposal owns retained Elk King and hidden Player cleanup"
+		"Level Advancement owns retained Elk King and hidden Player cleanup"
 	)
 
 
