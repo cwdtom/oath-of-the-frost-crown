@@ -1,14 +1,24 @@
 [gd_scene format=3 uid="uid://8r01knpv8yqc"]
 
+[ext_resource type="AudioStream" uid="uid://0nfyuds11lpw" path="res://assets/enemies/skills/shield/sounds/break.wav" id="2_38mgd"]
 [ext_resource type="Texture2D" uid="uid://c7t7u2cdg5l2f" path="res://assets/enemies/skills/shield/idle/frame_000.png" id="2_bqpwa"]
+[ext_resource type="Texture2D" uid="uid://drnag052heyqw" path="res://assets/enemies/skills/shield/break/frame_000.png" id="3_6j6nm"]
 [ext_resource type="Texture2D" uid="uid://dpdx2vcxux852" path="res://assets/enemies/skills/shield/idle/frame_001.png" id="3_hwb5r"]
+[ext_resource type="Texture2D" uid="uid://bjtj04t2nfbcx" path="res://assets/enemies/skills/shield/break/frame_001.png" id="4_jtaeg"]
 [ext_resource type="Texture2D" uid="uid://cycxqjq08x2ur" path="res://assets/enemies/skills/shield/idle/frame_002.png" id="4_yxb51"]
 [ext_resource type="Texture2D" uid="uid://d3u7umm0148f8" path="res://assets/enemies/skills/shield/idle/frame_003.png" id="5_5xxnb"]
+[ext_resource type="Texture2D" uid="uid://cuak4urgwmkjn" path="res://assets/enemies/skills/shield/break/frame_002.png" id="5_wmmpy"]
+[ext_resource type="Texture2D" uid="uid://bhv6j72qug5dk" path="res://assets/enemies/skills/shield/break/frame_003.png" id="6_f6roq"]
 [ext_resource type="Texture2D" uid="uid://dhfhfmu8k1udj" path="res://assets/enemies/skills/shield/idle/frame_004.png" id="6_rhiw3"]
 [ext_resource type="Texture2D" uid="uid://5djrl1jlbbld" path="res://assets/enemies/skills/shield/idle/frame_005.png" id="7_nqnra"]
+[ext_resource type="Texture2D" uid="uid://cndod4clk7fw" path="res://assets/enemies/skills/shield/break/frame_004.png" id="7_x4np8"]
+[ext_resource type="Texture2D" uid="uid://2et55fmhdyen" path="res://assets/enemies/skills/shield/break/frame_005.png" id="8_e8hdr"]
 [ext_resource type="Texture2D" uid="uid://jm58r4sijpr5" path="res://assets/enemies/skills/shield/idle/frame_006.png" id="8_nehxc"]
+[ext_resource type="Texture2D" uid="uid://d2oipj02jgi4l" path="res://assets/enemies/skills/shield/break/frame_006.png" id="9_ueb11"]
 [ext_resource type="Texture2D" uid="uid://bsmt0t3kqkxem" path="res://assets/enemies/skills/shield/idle/frame_007.png" id="9_vrf33"]
+[ext_resource type="Texture2D" uid="uid://dm8ra5v0sv0y7" path="res://assets/enemies/skills/shield/break/frame_007.png" id="10_egtmv"]
 [ext_resource type="Texture2D" uid="uid://bfemri260c58a" path="res://assets/enemies/skills/shield/idle/frame_008.png" id="10_rf8vb"]
+[ext_resource type="Texture2D" uid="uid://dasgct2vdvqdj" path="res://assets/enemies/skills/shield/break/frame_008.png" id="11_6eu4e"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1n5kv"]
 radius = 60.0
@@ -27,6 +37,61 @@ tracks/0/keys = {
 "update": 1,
 "values": [ExtResource("2_bqpwa")]
 }
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_wlf5a"]
+resource_name = "break"
+length = 0.45
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "audio"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AudioStreamPlayer2D")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("2_38mgd")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/1/use_blend = true
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Sprite2D:texture")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("3_6j6nm"), ExtResource("4_jtaeg"), ExtResource("5_wmmpy"), ExtResource("6_f6roq"), ExtResource("7_x4np8"), ExtResource("8_e8hdr"), ExtResource("9_ueb11"), ExtResource("10_egtmv"), ExtResource("11_6eu4e")]
+}
 
 [sub_resource type="Animation" id="Animation_nqnra"]
 resource_name = "idle"
@@ -44,10 +109,23 @@ tracks/0/keys = {
 "update": 0,
 "values": [ExtResource("2_bqpwa"), ExtResource("3_hwb5r"), ExtResource("4_yxb51"), ExtResource("5_5xxnb"), ExtResource("6_rhiw3"), ExtResource("7_nqnra"), ExtResource("8_nehxc"), ExtResource("9_vrf33"), ExtResource("10_rf8vb")]
 }
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite2D:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_nehxc"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_7hhm1"]
 _data = {
 &"RESET": SubResource("Animation_rhiw3"),
+&"break": SubResource("Animation_wlf5a"),
 &"idle": SubResource("Animation_nqnra")
 }
 
@@ -61,6 +139,8 @@ texture = ExtResource("2_bqpwa")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=868866063]
 shape = SubResource("CircleShape2D_1n5kv")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=622186899]
-libraries/ = SubResource("AnimationLibrary_nehxc")
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=523786212]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=595976652]
+libraries/ = SubResource("AnimationLibrary_7hhm1")
 autoplay = &"idle"

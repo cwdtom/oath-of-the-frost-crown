@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bkfgi253yr10q"]
 
 [ext_resource type="Texture2D" uid="uid://cv0g7lhh7l64x" path="res://assets/enemies/skills/sword_gleam/sword_gleam.png" id="1_mu7qo"]
-[ext_resource type="Script" path="res://enemies/skills/sword_gleam.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://imdrglmxhhx" path="res://enemies/skills/sword_gleam.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://drltc0gw56464" path="res://assets/enemies/skills/sword_gleam/cast/frame_000.png" id="2_cnona"]
 [ext_resource type="Texture2D" uid="uid://brsep44xv61os" path="res://assets/enemies/skills/sword_gleam/cast/frame_001.png" id="3_i8271"]
 [ext_resource type="Texture2D" uid="uid://cwtrhi78xhopd" path="res://assets/enemies/skills/sword_gleam/cast/frame_002.png" id="4_32h1y"]
@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://7ujdd58tmjdf" path="res://assets/enemies/skills/sword_gleam/cast/frame_004.png" id="6_e8hiu"]
 [ext_resource type="Texture2D" uid="uid://bg74krg70lwo3" path="res://assets/enemies/skills/sword_gleam/cast/frame_005.png" id="7_npi6g"]
 [ext_resource type="Texture2D" uid="uid://shfmhvxngoct" path="res://assets/enemies/skills/sword_gleam/cast/frame_006.png" id="8_jkj1u"]
+[ext_resource type="AudioStream" uid="uid://b44oawu8jw60n" path="res://assets/enemies/guard/sounds/sword_gleam.wav" id="10_32h1y"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
 size = Vector2(35, 42)
@@ -55,6 +56,17 @@ tracks/2/keys = {
 "update": 1,
 "values": [false]
 }
+tracks/3/type = "audio"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("AudioStreamPlayer2D")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"clips": [],
+"times": PackedFloat32Array()
+}
+tracks/3/use_blend = true
 
 [sub_resource type="Animation" id="Animation_di1iy"]
 resource_name = "cast"
@@ -102,8 +114,12 @@ tracks/3/path = NodePath("AudioStreamPlayer2D")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
-"clips": [],
-"times": PackedFloat32Array()
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("10_32h1y")
+}],
+"times": PackedFloat32Array(0)
 }
 tracks/3/use_blend = true
 
