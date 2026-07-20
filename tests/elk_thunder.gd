@@ -26,6 +26,7 @@ func _run() -> void:
 	await test_elk_death_cancels_pending_thunder()
 	await test_elk_resumes_patrol_and_keeps_its_cast_cooldown()
 	await test_elk_shield_recovers_without_extending_its_cooldown()
+	await test_hurt_immunity_preserves_recovered_elk_shield()
 	await test_elk_king_health_bar_follows_authoritative_health()
 	await test_elk_king_defeat_publishes_one_notification_and_remains_level_owned()
 	await test_elk_king_scene_reuses_elk_thunder()
@@ -41,6 +42,10 @@ func test_elk_king_health_bar_follows_authoritative_health() -> void:
 		{"idle_duration": 10.0, "patrol_range": 1000.0}
 	)
 	var health_bar := harness.enemy_health_bar(elk_king)
+	var shield_animation_player := elk_king.get_node(
+		"ShieldSkill/Shield/AnimationPlayer"
+	) as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
 
 	await fixture.physics_frames(1)
 	fixture.expect(elk_king.is_in_group("enemies"), "Elk King initializes as an active Enemy")
@@ -55,6 +60,7 @@ func test_elk_king_health_bar_follows_authoritative_health() -> void:
 
 	# Consume the Shield, then deliver an authoritative health change.
 	elk_king.take_damage(1, Vector2.ZERO)
+	await fixture.wait_seconds(break_duration + 0.1)
 	elk_king.take_damage(1, Vector2.ZERO)
 	fixture.expect(elk_king.get_current_health() == 9, "Elk King accepts damage after its Shield")
 	if health_bar != null:
@@ -78,7 +84,12 @@ func test_elk_king_defeat_publishes_one_notification_and_remains_level_owned() -
 
 	var death_notification_count := [0]
 	elk_king.connect(&"died", func() -> void: death_notification_count[0] += 1)
+	var shield_animation_player := elk_king.get_node(
+		"ShieldSkill/Shield/AnimationPlayer"
+	) as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
 	elk_king.take_damage(1, Vector2.ZERO)
+	await fixture.wait_seconds(break_duration + 0.1)
 	elk_king.take_damage(10, Vector2.ZERO)
 	fixture.expect(elk_king.is_health_depleted(), "Elk King defeat follows authoritative health")
 	fixture.expect(death_notification_count[0] == 1, "Elk King defeat publishes one notification")
@@ -157,6 +168,9 @@ func test_elk_king_scene_reuses_elk_shield() -> void:
 		{"idle_duration": 10.0, "patrol_range": 1000.0}
 	)
 	var shield := elk_king.get_node("ShieldSkill/Shield") as Area2D
+	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
+	var cooldown := elk_king.get_node("ShieldSkill/Cooldown") as Timer
 	var starting_health: int = elk_king.get_current_health()
 	var health_change_count := [0]
 	elk_king.health_changed.connect(
@@ -166,7 +180,10 @@ func test_elk_king_scene_reuses_elk_shield() -> void:
 	var position_before_hit := elk_king.global_position
 
 	elk_king.take_damage(1, Vector2.RIGHT)
-	fixture.expect(not shield.visible, "Elk King reuses the initially available Elk Shield")
+	fixture.expect(
+		shield.visible and shield_animation_player.current_animation == &"break",
+		"Elk King reuses the Elk Shield Break Window"
+	)
 	fixture.expect(
 		elk_king.get_current_health() == starting_health,
 		"Reused Elk Shield negates one positive damage event"
@@ -178,14 +195,18 @@ func test_elk_king_scene_reuses_elk_shield() -> void:
 		"Elk King Shield prevents a hurt presentation"
 	)
 
+	await fixture.wait_seconds(break_duration + 0.1)
 	await fixture.wait_seconds(2.0)
 	elk_king.take_damage(1, Vector2.ZERO)
 	fixture.expect(elk_king.get_current_health() == 9, "Elk King takes damage during Shield cooldown")
 
-	await fixture.wait_seconds(2.8)
+	await fixture.wait_seconds(cooldown.time_left - 0.1)
 	fixture.expect(not shield.visible, "Elk King Shield remains unavailable before five seconds")
-	await fixture.wait_seconds(0.3)
-	fixture.expect(shield.visible, "Elk King Shield recovers after five seconds")
+	await fixture.wait_seconds(0.2)
+	fixture.expect(
+		shield.visible and shield_animation_player.current_animation == &"idle",
+		"Elk King Shield recovers in its idle presentation after five seconds"
+	)
 
 	elk_king.queue_free()
 	await fixture.process_frames(1)
@@ -250,11 +271,20 @@ func test_shielded_damage_does_not_interrupt_elk_thunder() -> void:
 	await fixture.process_frames(1)
 	var thunder := elk.get_node("SkillDetect/Thunder") as Area2D
 	var shield := elk.get_node("ShieldSkill/Shield") as Area2D
+	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
 	player.global_position = thunder.global_position + Vector2(20.0, 0.0)
 	detector_body.queue_free()
 	await harness.deliver_hit(elk)
+	var break_position_before_repeat := shield_animation_player.current_animation_position
+	elk.take_damage(1, Vector2.ZERO)
+	await fixture.wait_seconds(0.05)
 	fixture.expect(elk.get_current_health() == 3, "Elk Shield negates damage during thunder")
-	fixture.expect(not shield.visible, "Negated damage consumes the Elk Shield")
+	fixture.expect(
+		shield.visible
+		and shield_animation_player.current_animation == &"break"
+		and shield_animation_player.current_animation_position > break_position_before_repeat,
+		"Repeated damage does not restart the Elk Shield break presentation"
+	)
 
 	await fixture.wait_seconds(0.95)
 	fixture.expect(hurt_event_count[0] == 1, "Shielded damage does not cancel Elk thunder")
@@ -331,6 +361,11 @@ func test_elk_death_cancels_pending_thunder() -> void:
 	player.global_position = thunder.global_position + Vector2(20.0, 0.0)
 	detector_body.queue_free()
 	elk.take_damage(1, Vector2.ZERO)
+	var shield_animation_player := elk.get_node(
+		"ShieldSkill/Shield/AnimationPlayer"
+	) as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
+	await fixture.wait_seconds(break_duration + 0.1)
 	elk.take_damage(3, Vector2.ZERO)
 	fixture.expect(
 		elk.is_health_depleted(),
@@ -352,6 +387,9 @@ func test_elk_shield_recovers_without_extending_its_cooldown() -> void:
 		{"idle_duration": 10.0, "patrol_range": 1000.0}
 	)
 	var shield := elk.get_node("ShieldSkill/Shield") as Area2D
+	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
+	var cooldown := elk.get_node("ShieldSkill/Cooldown") as Timer
 	var health_change_count := [0]
 	elk.health_changed.connect(
 		func(_current: int, _maximum: int) -> void:
@@ -360,22 +398,74 @@ func test_elk_shield_recovers_without_extending_its_cooldown() -> void:
 	var position_before_hit := elk.global_position
 
 	elk.take_damage(1, Vector2.RIGHT)
-	fixture.expect(not shield.visible, "Damage consumes the available Elk Shield")
+	fixture.expect(
+		shield.visible and shield_animation_player.current_animation == &"break",
+		"Damage starts the Elk Shield Break Window"
+	)
 	fixture.expect(elk.get_current_health() == 3, "Elk Shield negates the consumed hit")
 	fixture.expect(elk.global_position == position_before_hit, "Elk Shield prevents hit knockback")
 	fixture.expect(health_change_count[0] == 0, "Elk Shield publishes no health change")
 
+	await fixture.wait_seconds(break_duration + 0.1)
 	await fixture.wait_seconds(2.0)
 	elk.take_damage(1, Vector2.ZERO)
 	fixture.expect(elk.get_current_health() == 2, "Elk takes damage during Shield cooldown")
 
-	await fixture.wait_seconds(2.8)
+	await fixture.wait_seconds(cooldown.time_left - 0.1)
 	fixture.expect(not shield.visible, "Elk Shield remains unavailable before five seconds")
-	await fixture.wait_seconds(0.3)
-	fixture.expect(shield.visible, "Elk Shield recovers after five seconds")
+	await fixture.wait_seconds(0.2)
+	fixture.expect(
+		shield.visible and shield_animation_player.current_animation == &"idle",
+		"Elk Shield recovers in its idle presentation after five seconds"
+	)
 
 	elk.take_damage(1, Vector2.ZERO)
 	fixture.expect(elk.get_current_health() == 2, "Recovered Elk Shield negates damage again")
+
+	elk.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_hurt_immunity_preserves_recovered_elk_shield() -> void:
+	var elk := harness.instantiate_enemy(
+		ELK_SCENE,
+		Vector2(15000.0, 0.0),
+		{"idle_duration": 10.0, "patrol_range": 1000.0}
+	)
+	var shield := elk.get_node("ShieldSkill/Shield") as Area2D
+	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
+	var cooldown := elk.get_node("ShieldSkill/Cooldown") as Timer
+	var elk_animation_player := elk.get_node("AnimationPlayer") as AnimationPlayer
+	var hurt_duration := elk_animation_player.get_animation("hurt").length
+	var starting_health: int = elk.get_current_health()
+	cooldown.wait_time = 0.2
+
+	elk.take_damage(1, Vector2.ZERO)
+	await fixture.wait_seconds(break_duration + 0.1)
+	elk.take_damage(1, Vector2.ZERO)
+	await fixture.wait_seconds(0.2)
+	fixture.expect(
+		shield.visible and elk.is_hurt_immune(),
+		"Elk Shield can recover during ordinary hurt immunity"
+	)
+
+	elk.take_damage(1, Vector2.ZERO)
+	fixture.expect(
+		shield.visible
+		and cooldown.is_stopped()
+		and shield_animation_player.current_animation == &"idle"
+		and elk.get_current_health() == starting_health - 1,
+		"Ordinary hurt immunity preserves the recovered Elk Shield"
+	)
+
+	await fixture.wait_seconds(hurt_duration + 0.1)
+	elk.take_damage(1, Vector2.ZERO)
+	fixture.expect(
+		elk.get_current_health() == starting_health - 1
+		and shield_animation_player.current_animation == &"break",
+		"Preserved Elk Shield negates damage after ordinary immunity ends"
+	)
 
 	elk.queue_free()
 	await fixture.process_frames(1)

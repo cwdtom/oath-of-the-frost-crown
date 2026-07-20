@@ -55,8 +55,9 @@ func test_grounded_player_runs_to_elk_king_death_staging() -> void:
 		"Elk King Death Staging does not control Player movement before Defeat locks"
 	)
 
+	await defeat_elk_king(elk_king)
 	var target_x := elk_king.global_position.x - STAGING_SEPARATION
-	defeat_elk_king(elk_king)
+	await fixture.physics_frames(1)
 	var run_start_x := player.global_position.x
 	await fixture.physics_frames(6)
 	var animation_state := player.get_node("AnimationTree").get(
@@ -119,9 +120,9 @@ func test_airborne_player_lands_before_elk_king_death_staging() -> void:
 	await fixture.physics_frames(1)
 	fixture.expect(not player.is_on_floor(), "Airborne death staging starts above Level 03 terrain")
 
-	var target_x := elk_king.global_position.x - STAGING_SEPARATION
 	var locked_health: int = player.call("get_current_health")
-	defeat_elk_king(elk_king)
+	await defeat_elk_king(elk_king)
+	var target_x := elk_king.global_position.x - STAGING_SEPARATION
 	var airborne_x := player.global_position.x
 	var airborne_y := player.global_position.y
 	await fixture.physics_frames(8)
@@ -222,11 +223,10 @@ func test_player_handoff_holds_elk_king_death_tableau() -> void:
 	)
 
 	await wait_until_grounded(player)
+	await break_elk_shield(elk_king)
 	var target_x := elk_king.global_position.x - STAGING_SEPARATION
 	player.global_position.x = target_x
 	player_visual.scale.x = 1.0
-	await wait_until_grounded(player)
-	player.global_position.x = target_x
 	var staging_position := player.global_position
 	var represented_transform := player_sprite.global_transform
 	fixture.expect(
@@ -244,8 +244,8 @@ func test_player_handoff_holds_elk_king_death_tableau() -> void:
 		"Death handoff begins while the production Player thunder weapon is active"
 	)
 
-	defeat_elk_king(elk_king)
-	await fixture.physics_frames(2)
+	elk_king.call("take_damage", elk_king.call("get_maximum_health"), Vector2.ZERO)
+	await fixture.wait_seconds(0.05)
 	fixture.expect(
 		is_equal_approx(player.global_position.x, target_x)
 		and is_equal_approx(player_visual.scale.x, 1.0),
@@ -429,8 +429,9 @@ func test_player_crosses_defeated_elk_king_from_the_right() -> void:
 		elk_king.global_position.y - 100.0
 	)
 	await wait_until_grounded(player)
+	await defeat_elk_king(elk_king)
 	var target_x := elk_king.global_position.x - STAGING_SEPARATION
-	defeat_elk_king(elk_king)
+	await fixture.physics_frames(1)
 	var run_start_x := player.global_position.x
 	await fixture.physics_frames(6)
 	fixture.expect(
@@ -466,13 +467,12 @@ func test_aligned_player_finishes_death_staging_without_running() -> void:
 	var player := level.get_node("Player") as CharacterBody2D
 	var elk_king := level.get_node("Enemies/ElkKing") as CharacterBody2D
 	await wait_until_grounded(player)
-	player.global_position.x = elk_king.global_position.x - STAGING_SEPARATION
-	await wait_until_grounded(player)
+	await break_elk_shield(elk_king)
 	var target_x := elk_king.global_position.x - STAGING_SEPARATION
 	player.global_position.x = target_x
 	player.velocity.x = -PLAYER_RUN_SPEED
 	player.get_node("VisualRoot").scale.x = -1.0
-	defeat_elk_king(elk_king)
+	elk_king.call("take_damage", elk_king.call("get_maximum_health"), Vector2.ZERO)
 	await fixture.physics_frames(2)
 
 	var animation_state := player.get_node("AnimationTree").get(
@@ -492,8 +492,18 @@ func test_aligned_player_finishes_death_staging_without_running() -> void:
 
 
 func defeat_elk_king(elk_king: CharacterBody2D) -> void:
-	elk_king.call("take_damage", 1, Vector2.ZERO)
+	await break_elk_shield(elk_king)
 	elk_king.call("take_damage", elk_king.call("get_maximum_health"), Vector2.ZERO)
+
+
+func break_elk_shield(elk_king: CharacterBody2D) -> void:
+	var shield_animation_player := elk_king.get_node(
+		"ShieldSkill/Shield/AnimationPlayer"
+	) as AnimationPlayer
+	elk_king.call("take_damage", 1, Vector2.ZERO)
+	await fixture.wait_seconds(
+		shield_animation_player.get_animation("break").length + 0.1
+	)
 
 
 func wait_for_staged_position(player: CharacterBody2D, target_x: float) -> void:

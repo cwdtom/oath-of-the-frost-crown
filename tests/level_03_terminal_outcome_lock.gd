@@ -53,8 +53,7 @@ func test_elk_king_defeat_first_locks_level_03() -> void:
 		"Level 03 starts without a locked terminal outcome"
 	)
 	var starting_player_health: int = player.call("get_current_health")
-	elk_king.call("take_damage", 1, Vector2.ZERO)
-	elk_king.call("take_damage", elk_king.call("get_maximum_health"), Vector2.ZERO)
+	await deplete_elk_king(elk_king)
 
 	fixture.expect(
 		elk_king.call("get_current_health") == 0,
@@ -131,8 +130,7 @@ func test_player_defeat_first_remains_authoritative() -> void:
 	)
 
 	player.call("take_damage", player.call("get_maximum_health"), Vector2.ZERO)
-	elk_king.call("take_damage", 1, Vector2.ZERO)
-	elk_king.call("take_damage", elk_king.call("get_maximum_health"), Vector2.ZERO)
+	await deplete_elk_king(elk_king)
 
 	fixture.expect(
 		player.call("get_current_health") == 0,
@@ -141,7 +139,7 @@ func test_player_defeat_first_remains_authoritative() -> void:
 	fixture.expect(
 		elk_king.call("get_current_health") == 0
 		and elk_king_defeat_notifications[0] == 1,
-		"Same-frame Elk King health depletion still publishes one died notification"
+		"Later Elk King health depletion still publishes one died notification"
 	)
 	fixture.expect(
 		get_terminal_outcome(level) == TERMINAL_OUTCOME_PLAYER_DEFEAT,
@@ -223,8 +221,7 @@ func test_committed_elk_king_effects_finish_without_player_damage() -> void:
 	)
 
 	var locked_player_health: int = player.call("get_current_health")
-	elk_king.call("take_damage", 1, Vector2.ZERO)
-	elk_king.call("take_damage", elk_king.call("get_maximum_health"), Vector2.ZERO)
+	await deplete_elk_king(elk_king)
 	player.call("take_damage", 1, Vector2.ZERO)
 
 	fixture.expect(
@@ -261,6 +258,17 @@ func test_committed_elk_king_effects_finish_without_player_damage() -> void:
 		"Committed effects finishing do not replace or dispose Level 03"
 	)
 	await retire_main(main)
+
+
+func deplete_elk_king(elk_king: CharacterBody2D) -> void:
+	var shield_animation_player := elk_king.get_node(
+		"ShieldSkill/Shield/AnimationPlayer"
+	) as AnimationPlayer
+	elk_king.call("take_damage", 1, Vector2.ZERO)
+	await fixture.wait_seconds(
+		shield_animation_player.get_animation("break").length + 0.1
+	)
+	elk_king.call("take_damage", elk_king.call("get_maximum_health"), Vector2.ZERO)
 
 
 func get_terminal_outcome(level: CampaignLevel) -> StringName:

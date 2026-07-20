@@ -95,21 +95,21 @@ The first confirmed health depletion between the Player and the Elk King fixes L
 _Avoid_: Simultaneous terminal presentations, late outcome replacement
 
 **Elk Shield**:
-A passive, rechargeable protection possessed by an Elk or Elk King that negates one incoming damage event, regardless of the damage source, while the protection is available. It then becomes unavailable for five seconds without causing a hit reaction or interrupting the protected Enemy's current behavior.
+A passive, rechargeable protection possessed by an Elk or Elk King that negates one otherwise applicable incoming damage event, regardless of the damage source, while the protection is available. Damage already rejected by another immunity or invalid actor state does not consume it; negating damage starts a Shield Break Window without changing health or causing knockback.
 _Avoid_: Weapon block, damage immunity
 
 **Elk Shield Cooldown**:
-The fixed five-second interval after an Elk Shield negates damage and before it becomes available again. Damage received during this interval neither resets nor extends it.
+The fixed five-second interval after an Elk's Shield Break Window ends and before its shield becomes visible and available again. Damage received during this interval is resolved normally and neither resets nor extends it.
 _Avoid_: Thunder cooldown, hurt immunity
 
 **Player Shield**:
-A passive, rechargeable protection possessed by Player 04 that begins each Level instance available and negates one otherwise applicable incoming damage event, regardless of the damage source. Damage already rejected by another immunity or invalid actor state does not consume it; negating damage does not change health, cause knockback, or begin a hurt presentation, and starts the Player Shield Break Window.
+A passive, rechargeable protection possessed by Player 04 that begins each Level instance available and negates one otherwise applicable incoming damage event, regardless of the damage source. Damage already rejected by another immunity or invalid actor state does not consume it; negating damage starts a Shield Break Window without changing health or causing knockback.
 _Avoid_: Elk Shield, damage immunity, weapon block
 
-**Player Shield Break Window**:
-The interval after the Player Shield negates damage during which its spent protection remains visible and Player 04 rejects further damage without interrupting actions, movement, or controls. It lasts exactly as long as ordinary non-lethal hurt immunity, is not restarted by further hits, and ends by hiding the protection and beginning the Player Shield Cooldown.
-_Avoid_: Player Shield Cooldown, hurt presentation, reusable protection
+**Shield Break Window**:
+The interval in which a spent Player or Elk Shield presents its break and rejects every further damage event without causing a hit reaction, knockback, action interruption, or loss of Player control. It lasts until that presentation finishes; further hits do not repeat or change its presentation or timing, after which the shield's five-second cooldown begins.
+_Avoid_: Shield Cooldown, hurt immunity, reusable protection
 
 **Player Shield Cooldown**:
-The fixed five-second interval after the Player Shield Break Window ends and before the Player Shield becomes visible and available again. Damage received during this interval is resolved normally and neither resets nor extends it.
+The fixed five-second interval after Player 04's Shield Break Window ends and before the Player Shield becomes visible and available again. Damage received during this interval is resolved normally and neither resets nor extends it.
 _Avoid_: Elk Shield Cooldown, hurt immunity

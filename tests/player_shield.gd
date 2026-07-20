@@ -15,6 +15,7 @@ func _run() -> void:
 	fixture = HeadlessGameplayFixture.new(self)
 	await test_available_shield_negates_one_damage_event()
 	await test_shield_break_window_delays_cooldown_without_hurt()
+	await test_shield_break_window_preserves_player_attack()
 	await test_cooldown_damage_does_not_delay_shield_recovery()
 	await test_existing_damage_rejection_preserves_available_shield()
 	fixture.complete(false)
@@ -59,8 +60,8 @@ func test_shield_break_window_delays_cooldown_without_hurt() -> void:
 	await fixture.process_frames(1)
 	var shield := player.get_node("VisualRoot/ShieldSkill/Shield") as Area2D
 	var cooldown := player.get_node("VisualRoot/ShieldSkill/Cooldown") as Timer
-	var animation_player := player.get_node("AnimationPlayer") as AnimationPlayer
-	var break_duration := animation_player.get_animation("hurt").length
+	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
 	var initial_state := int(player.get("state"))
 	var hurt_event_count := [0]
 	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
@@ -70,7 +71,15 @@ func test_shield_break_window_delays_cooldown_without_hurt() -> void:
 		"Player Shield uses its one-shot five second Cooldown"
 	)
 	player.take_damage(1, Vector2.RIGHT)
+	await fixture.wait_seconds(0.15)
+	var break_position_before_repeat := shield_animation_player.current_animation_position
 	player.take_damage(1, Vector2.LEFT)
+	await fixture.wait_seconds(0.05)
+	fixture.expect(
+		shield_animation_player.current_animation == &"break"
+		and shield_animation_player.current_animation_position > break_position_before_repeat,
+		"Repeated damage does not restart the Player Shield break presentation"
+	)
 	fixture.expect(
 		player.call("get_current_health") == player.call("get_maximum_health"),
 		"Player Shield Break Window rejects repeated damage"
@@ -92,6 +101,38 @@ func test_shield_break_window_delays_cooldown_without_hurt() -> void:
 	)
 
 
+func test_shield_break_window_preserves_player_attack() -> void:
+	var player := fixture.instantiate_scene(PLAYER_04_SCENE) as DamageableActor
+	fixture.expect(player != null, "Player 04 loads for attack continuity")
+	if player == null:
+		return
+
+	await fixture.process_frames(1)
+	Input.action_press(&"attack")
+	await fixture.physics_frames(2)
+	Input.action_release(&"attack")
+	await fixture.physics_frames(1)
+	var animation_state := player.get_node("AnimationTree").get(
+		"parameters/playback"
+	) as AnimationNodeStateMachinePlayback
+	fixture.expect(
+		animation_state.get_current_node() == &"attack",
+		"Player begins attacking before its Shield breaks"
+	)
+
+	player.take_damage(1, Vector2.ZERO)
+	await fixture.wait_seconds(0.15)
+	var shield_animation_player := player.get_node(
+		"VisualRoot/ShieldSkill/Shield/AnimationPlayer"
+	) as AnimationPlayer
+	fixture.expect(
+		animation_state.get_current_node() == &"attack"
+		and bool(player.get("controls_enabled"))
+		and shield_animation_player.current_animation == &"break",
+		"Player Shield Break Window preserves attack and controls"
+	)
+
+
 func test_cooldown_damage_does_not_delay_shield_recovery() -> void:
 	var player := fixture.instantiate_scene(PLAYER_04_SCENE) as DamageableActor
 	fixture.expect(player != null, "Player 04 loads for its Shield Cooldown")
@@ -102,8 +143,10 @@ func test_cooldown_damage_does_not_delay_shield_recovery() -> void:
 	await fixture.process_frames(1)
 	var shield := player.get_node("VisualRoot/ShieldSkill/Shield") as Area2D
 	var cooldown := player.get_node("VisualRoot/ShieldSkill/Cooldown") as Timer
-	var animation_player := player.get_node("AnimationPlayer") as AnimationPlayer
-	var recovery_duration := animation_player.get_animation("hurt").length
+	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
+	var player_animation_player := player.get_node("AnimationPlayer") as AnimationPlayer
+	var hurt_duration := player_animation_player.get_animation("hurt").length
 	var maximum_health := int(player.call("get_maximum_health"))
 	fixture.expect(
 		is_equal_approx(cooldown.wait_time, 5.0),
@@ -112,7 +155,7 @@ func test_cooldown_damage_does_not_delay_shield_recovery() -> void:
 	cooldown.wait_time = 2.2
 
 	player.take_damage(1, Vector2.ZERO)
-	await fixture.wait_seconds(recovery_duration + 0.1)
+	await fixture.wait_seconds(break_duration + 0.1)
 	fixture.expect(not shield.visible, "Spent Player Shield is unavailable during Cooldown")
 
 	player.take_damage(1, Vector2.ZERO)
@@ -120,7 +163,7 @@ func test_cooldown_damage_does_not_delay_shield_recovery() -> void:
 		player.call("get_current_health") == maximum_health - 1,
 		"Player takes normal damage during Player Shield Cooldown"
 	)
-	await fixture.wait_seconds(recovery_duration + 0.1)
+	await fixture.wait_seconds(hurt_duration + 0.1)
 	player.take_damage(1, Vector2.ZERO)
 	fixture.expect(
 		player.call("get_current_health") == maximum_health - 2,
@@ -128,14 +171,17 @@ func test_cooldown_damage_does_not_delay_shield_recovery() -> void:
 	)
 
 	await fixture.wait_seconds(cooldown.time_left + 0.1)
-	fixture.expect(shield.visible, "Player Shield becomes available when Cooldown ends")
-	await fixture.wait_seconds(recovery_duration + 0.1)
+	fixture.expect(
+		shield.visible and shield_animation_player.current_animation == &"idle",
+		"Player Shield becomes available in its idle presentation when Cooldown ends"
+	)
+	await fixture.wait_seconds(break_duration + 0.1)
 	player.take_damage(1, Vector2.ZERO)
 	fixture.expect(
 		player.call("get_current_health") == maximum_health - 2,
 		"Recovered Player Shield negates the next damage event"
 	)
-	await fixture.wait_seconds(recovery_duration + 0.1)
+	await fixture.wait_seconds(break_duration + 0.1)
 
 
 func test_existing_damage_rejection_preserves_available_shield() -> void:
@@ -148,8 +194,10 @@ func test_existing_damage_rejection_preserves_available_shield() -> void:
 	await fixture.process_frames(1)
 	var shield := player.get_node("VisualRoot/ShieldSkill/Shield") as Area2D
 	var cooldown := player.get_node("VisualRoot/ShieldSkill/Cooldown") as Timer
-	var animation_player := player.get_node("AnimationPlayer") as AnimationPlayer
-	var recovery_duration := animation_player.get_animation("hurt").length
+	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
+	var player_animation_player := player.get_node("AnimationPlayer") as AnimationPlayer
+	var hurt_duration := player_animation_player.get_animation("hurt").length
 	var maximum_health := int(player.call("get_maximum_health"))
 
 	player.call("set_damage_immune", true)
@@ -163,7 +211,7 @@ func test_existing_damage_rejection_preserves_available_shield() -> void:
 
 	cooldown.wait_time = 0.2
 	player.take_damage(1, Vector2.ZERO)
-	await fixture.wait_seconds(recovery_duration + 0.1)
+	await fixture.wait_seconds(break_duration + 0.1)
 	player.take_damage(1, Vector2.ZERO)
 	fixture.expect(
 		player.call("get_current_health") == maximum_health - 1,
@@ -176,7 +224,7 @@ func test_existing_damage_rejection_preserves_available_shield() -> void:
 	)
 
 	player.take_damage(1, Vector2.ZERO)
-	await fixture.wait_seconds(recovery_duration + 0.1)
+	await fixture.wait_seconds(hurt_duration + 0.1)
 	fixture.expect(
 		shield.visible and cooldown.is_stopped(),
 		"Ordinary hurt immunity rejects damage before the recovered Shield"
@@ -186,4 +234,4 @@ func test_existing_damage_rejection_preserves_available_shield() -> void:
 		player.call("get_current_health") == maximum_health - 1,
 		"Preserved Player Shield negates damage after ordinary immunity ends"
 	)
-	await fixture.wait_seconds(recovery_duration + 0.1)
+	await fixture.wait_seconds(break_duration + 0.1)
