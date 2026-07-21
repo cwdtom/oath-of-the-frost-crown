@@ -26,6 +26,14 @@ _Avoid_: Scene instantiation, Level Advancement
 
 ### Combat
 
+**Player Hurt Immunity**:
+The temporary protection that follows accepted non-lethal damage to the Player and rejects otherwise applicable damage until the Player's hurt response finishes. It is distinct from explicit damage immunity granted for a cinematic or terminal outcome.
+_Avoid_: Invincibility, damage immunity, invincibility frames
+
+**Persistent Damage Contact**:
+The Player's uninterrupted physical contact with a passive damage source that remains able to deal damage over time, such as a living Enemy's body; separation, loss of the source's damage capability, explicit Player damage immunity, or a terminal outcome makes the contact invalid. If contact remains valid when Player Hurt Immunity ends, one contact immediately produces another complete accepted-damage response—including health loss, the hurt event and presentation, knockback, and renewed Player Hurt Immunity—without requiring contact re-entry; the contact need not be the source that started the immunity and remains applicable if it began or attempted damage during that immunity, while simultaneous contacts cannot produce additional accepted damage during the renewed immunity.
+_Avoid_: Skill hit, repeated hit from one skill release, contact re-entry, originating damage source
+
 **Boss Stability**:
 The rule that accepted damage never displaces a Boss, although it may still reduce health, grant hurt immunity, or cause a hurt presentation according to that Boss's current action. Every Boss retains its position instead of inheriting ordinary Enemy hurt knockback.
 _Avoid_: Damage immunity, skill immunity, ordinary Enemy knockback
@@ -159,7 +167,7 @@ A passive, rechargeable protection possessed by Player 04 that begins each Level
 _Avoid_: Elk Shield, damage immunity, weapon block
 
 **Shield Break Window**:
-The interval in which a spent Player or Elk Shield presents its break and rejects every further damage event without causing a hit reaction, knockback, action interruption, or loss of Player control. It lasts until that presentation finishes; further hits do not repeat or change its presentation or timing, after which the shield's five-second cooldown begins.
+The interval in which a spent Player or Elk Shield presents its break and rejects every further damage event without causing a hit reaction, knockback, action interruption, or loss of Player control. It lasts until that presentation finishes; further hits do not repeat or change its presentation or timing, after which the shield's five-second cooldown begins and a still-valid Persistent Damage Contact may immediately damage the Player without requiring contact re-entry.
 _Avoid_: Shield Cooldown, hurt immunity, reusable protection
 
 **Player Shield Cooldown**:

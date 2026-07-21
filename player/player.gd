@@ -14,6 +14,7 @@ const MAX_HEALTH = 5
 const DEAD_ANIMATION = "dead"
 const HURT_ANIMATION = "hurt"
 const HURT_KNOCKBACK_DISTANCE = 100.0
+const PERSISTENT_CONTACT_MARGIN = 1.0
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum {IDLE, RUN, JUMP, HURT, DEAD, ATTACK}
@@ -31,6 +32,7 @@ var _health := DamageAndHealthModule.new(MAX_HEALTH)
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var animation_state: AnimationNodeStateMachinePlayback = animation_tree.get("parameters/playback")
 @onready var visual_root: Node2D = $VisualRoot
+@onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var weapon_collision_shape: CollisionShape2D = $VisualRoot/WeaponMount/Area2D/CollisionShape2D
 @onready var thunder := get_node_or_null("Player_Thunder") as Area2D
 @onready var thunder_animation_player := get_node_or_null("Player_Thunder/AnimationPlayer") as AnimationPlayer
@@ -198,7 +200,9 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	if _health.is_hurt_immune():
+	if not _health.is_hurt_immune():
+		_try_take_persistent_contact_damage()
+	if _health.is_hurt_immune() or state == DEAD:
 		return
 
 	if wants_attack:
@@ -217,10 +221,28 @@ func _physics_process(delta: float) -> void:
 	else:
 		change_state(IDLE)
 
-	for i in get_slide_collision_count():
-		var collision = get_slide_collision(i)
+
+func _try_take_persistent_contact_damage() -> void:
+	for collision_index in get_slide_collision_count():
+		var collision := get_slide_collision(collision_index)
 		if collision.get_collider() is DamageableActor:
 			take_damage(1, collision.get_normal(), true)
+			return
+
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.shape = body_collision_shape.shape
+	query.transform = body_collision_shape.global_transform
+	query.margin = PERSISTENT_CONTACT_MARGIN
+	query.collision_mask = collision_mask
+	query.exclude = [get_rid()]
+	query.collide_with_areas = false
+	for result in get_world_2d().direct_space_state.intersect_shape(query):
+		var actor := result["collider"] as DamageableActor
+		if actor == null or not is_instance_valid(actor):
+			continue
+
+		take_damage(1, global_position - actor.global_position, true)
+		return
 
 
 func take_damage(

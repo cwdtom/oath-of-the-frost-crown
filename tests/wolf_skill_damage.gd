@@ -2,6 +2,7 @@ extends SceneTree
 
 
 const WOLF_SCENE := preload("res://enemies/wolf.tscn")
+const PLAYER_04_SCENE := preload("res://player/player_04.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const DASH_DISTANCE := 300.0
@@ -23,6 +24,9 @@ func _run() -> void:
 	harness = EnemyHarness.new(fixture, world)
 
 	await test_player_contact_damage()
+	await test_persistent_contact_retriggers_after_hurt_immunity()
+	await test_contact_started_during_hurt_immunity_damages_afterward()
+	await test_persistent_contact_damages_after_shield_break_window()
 	await test_dash_distance_reentry_and_cooldown()
 	await test_dash_collision_and_weapon_immunity()
 
@@ -60,6 +64,121 @@ func test_player_contact_damage() -> void:
 	)
 
 	wolf.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_persistent_contact_retriggers_after_hurt_immunity() -> void:
+	var wolf_position := Vector2(2500.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		wolf_position,
+		{"idle_duration": 10.0}
+	)
+	var wall := harness.add_environment_wall(
+		wolf_position + Vector2(-93.0, 0.0),
+		Vector2(20.0, 200.0)
+	)
+	var player := harness.instantiate_actor(
+		preload("res://player/player.tscn"),
+		wolf_position + Vector2(-65.0, 0.0)
+	)
+	var hurt_event_count: Array[int] = [0]
+	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
+	player.velocity = Vector2(600.0, 0.0)
+
+	await fixture.physics_frames(2)
+	fixture.expect(
+		hurt_event_count[0] == 1,
+		"Persistent Enemy contact first damages Player once"
+	)
+	await fixture.wait_seconds(0.95)
+	await fixture.physics_frames(1)
+	fixture.expect(
+		hurt_event_count[0] == 2 and player.get_current_health() == 3,
+		(
+			"Persistent Enemy contact immediately damages Player after hurt immunity; "
+			+ "hurt_events=%s health=%s player_x=%s wolf_x=%s"
+			% [
+				hurt_event_count[0],
+				player.get_current_health(),
+				player.global_position.x,
+				wolf.global_position.x,
+			]
+		)
+	)
+
+	wolf.queue_free()
+	wall.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_contact_started_during_hurt_immunity_damages_afterward() -> void:
+	var wolf_position := Vector2(3500.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		wolf_position,
+		{"idle_duration": 10.0}
+	)
+	var wall := harness.add_environment_wall(
+		wolf_position + Vector2(-93.0, 0.0),
+		Vector2(20.0, 200.0)
+	)
+	var player := harness.instantiate_actor(
+		preload("res://player/player.tscn"),
+		wolf_position + Vector2(-300.0, 0.0)
+	)
+	var hurt_event_count: Array[int] = [0]
+	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
+	player.take_damage(1, Vector2.ZERO)
+	player.global_position = wolf_position + Vector2(-65.0, 0.0)
+
+	await fixture.wait_seconds(0.95)
+	await fixture.physics_frames(1)
+	fixture.expect(
+		hurt_event_count[0] == 2 and player.get_current_health() == 3,
+		"Enemy contact started during hurt immunity damages Player afterward"
+	)
+
+	wolf.queue_free()
+	wall.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_persistent_contact_damages_after_shield_break_window() -> void:
+	var wolf_position := Vector2(4500.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		wolf_position,
+		{"idle_duration": 10.0}
+	)
+	var wall := harness.add_environment_wall(
+		wolf_position + Vector2(-93.0, 0.0),
+		Vector2(20.0, 200.0)
+	)
+	var player := harness.instantiate_actor(
+		PLAYER_04_SCENE,
+		wolf_position + Vector2(-65.0, 0.0)
+	)
+	var hurt_event_count: Array[int] = [0]
+	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
+
+	await fixture.physics_frames(2)
+	fixture.expect(
+		hurt_event_count[0] == 0 and player.get_current_health() == 8,
+		"Available Player Shield negates persistent Enemy contact"
+	)
+	await fixture.wait_seconds(0.5)
+	await fixture.physics_frames(1)
+	fixture.expect(
+		hurt_event_count[0] == 1 and player.get_current_health() == 7,
+		"Persistent Enemy contact damages Player after Shield Break Window"
+	)
+
+	wolf.queue_free()
+	wall.queue_free()
 	player.queue_free()
 	await fixture.process_frames(1)
 
