@@ -142,11 +142,24 @@ func set_attack_return_conditions(direction: float) -> void:
 	animation_tree.set(ATTACK_TO_IDLE, not should_jump and not should_run)
 
 
-func apply_knockback(knockback_direction: Vector2) -> void:
+func apply_knockback(
+	knockback_direction: Vector2,
+	complete_collision_motion := false
+) -> void:
 	if knockback_direction.is_zero_approx():
 		return
 
-	move_and_collide(knockback_direction.normalized() * HURT_KNOCKBACK_DISTANCE)
+	var remaining_motion := knockback_direction.normalized() * HURT_KNOCKBACK_DISTANCE
+	if not complete_collision_motion:
+		move_and_collide(remaining_motion)
+		return
+	for _collision_index in max_slides:
+		var collision := move_and_collide(remaining_motion)
+		if collision == null:
+			return
+		remaining_motion = collision.get_remainder().slide(collision.get_normal())
+		if remaining_motion.is_zero_approx():
+			return
 
 
 func _ready() -> void:
@@ -207,10 +220,14 @@ func _physics_process(delta: float) -> void:
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		if collision.get_collider() is DamageableActor:
-			take_damage(1, collision.get_normal())
+			take_damage(1, collision.get_normal(), true)
 
 
-func take_damage(amount: int, knockback_direction: Vector2) -> void:
+func take_damage(
+	amount: int,
+	knockback_direction: Vector2,
+	complete_knockback_collision_motion := false
+) -> void:
 	if _damage_immune:
 		return
 
@@ -221,7 +238,7 @@ func take_damage(amount: int, knockback_direction: Vector2) -> void:
 	if _health.is_depleted():
 		return
 
-	apply_knockback(knockback_direction)
+	apply_knockback(knockback_direction, complete_knockback_collision_motion)
 	change_state(HURT)
 	await get_tree().create_timer(animation_player.get_animation(HURT_ANIMATION).length).timeout
 	_health.end_hurt_immunity()

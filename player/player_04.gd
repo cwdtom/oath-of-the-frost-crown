@@ -16,7 +16,11 @@ func _ready() -> void:
 	super._ready()
 
 
-func take_damage(amount: int, knockback_direction: Vector2) -> void:
+func take_damage(
+	amount: int,
+	knockback_direction: Vector2,
+	complete_knockback_collision_motion := false
+) -> void:
 	if amount <= 0 or _damage_immune or is_health_depleted() or is_hurt_immune():
 		return
 
@@ -31,7 +35,11 @@ func take_damage(amount: int, knockback_direction: Vector2) -> void:
 		_shield_break_window_active = false
 		return
 
-	super.take_damage(amount, knockback_direction)
+	super.take_damage(
+		amount,
+		knockback_direction,
+		complete_knockback_collision_motion
+	)
 
 
 func _restore_shield() -> void:
