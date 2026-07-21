@@ -17,6 +17,7 @@ const IDLE_ANIMATION := &"idle"
 const RUN_ANIMATION := &"run"
 const SKILL_ANIMATION := &"skill"
 const SWORD_GLEAM_CAST_ANIMATION := &"cast"
+const BODY_PURSUIT_VERTICAL_DISTANCE := 10.0
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum Phase { NORMAL_FORM, AWAKENING, DARK_MODE, DEFEATED }
@@ -30,6 +31,9 @@ var _dark_action := DarkAction.PURSUIT
 var _health := DamageAndHealthModule.new(MAXIMUM_HEALTH)
 var _player: Node2D
 var _black_water_pending := false
+var _has_locked_sword_target := false
+var _locked_sword_target_x := 0.0
+var _locked_sword_facing := 0.0
 
 @onready var _normal: Sprite2D = $Normal
 @onready var _dark_mode: Sprite2D = $DarkMode
@@ -119,6 +123,7 @@ func take_damage(amount: int, _knockback_direction: Vector2) -> void:
 		return
 
 	if _dark_action == DarkAction.PURSUIT:
+		_clear_locked_sword_target()
 		_dark_action = DarkAction.HURT
 		velocity = Vector2.ZERO
 		_animation_state.start(HURT_ANIMATION)
@@ -195,35 +200,123 @@ func _physics_process(delta: float) -> void:
 
 func _update_sword_pursuit(delta: float) -> void:
 	if not is_instance_valid(_player):
+		_clear_locked_sword_target()
 		velocity.x = 0.0
 		_play_movement_animation(IDLE_ANIMATION)
 		return
 
-	_face_player()
-	var target_x := _player.global_position.x - _sword_gleam.position.x
-	var distance_to_target := target_x - global_position.x
 	var maximum_step := pursuit_speed * delta
+	if (
+		absf(_player.global_position.y - global_position.y)
+		< BODY_PURSUIT_VERTICAL_DISTANCE
+	):
+		_clear_locked_sword_target()
+		var body_distance := _player.global_position.x - global_position.x
+		var movement_direction := signf(body_distance)
+		var turned_before_movement := (
+			not is_zero_approx(movement_direction)
+			and movement_direction != signf(_sword_gleam.position.x)
+		)
+		_set_facing(movement_direction)
+		var movement_step := movement_direction * minf(
+			absf(body_distance),
+			maximum_step
+		)
+		if _try_start_sword_gleam(
+			movement_step,
+			not turned_before_movement
+		):
+			return
+		if is_zero_approx(body_distance):
+			velocity.x = 0.0
+			_play_movement_animation(IDLE_ANIMATION)
+			return
+		velocity.x = movement_direction * pursuit_speed
+		_play_movement_animation(RUN_ANIMATION)
+		return
+
+	var target_x: float
+	var turned_before_movement := false
+	if _has_locked_sword_target:
+		target_x = _locked_sword_target_x
+	else:
+		var initial_facing := signf(_sword_gleam.position.x)
+		target_x = _player.global_position.x - _sword_gleam.position.x
+		var initial_direction := signf(target_x - global_position.x)
+		if (
+			not is_zero_approx(initial_direction)
+			and initial_direction != initial_facing
+		):
+			_has_locked_sword_target = true
+			_locked_sword_target_x = target_x
+			_locked_sword_facing = initial_facing
+			turned_before_movement = true
+			_set_facing(initial_direction)
+
+	var distance_to_target := target_x - global_position.x
 	if absf(distance_to_target) <= maximum_step:
 		global_position.x = target_x
 		velocity.x = 0.0
-		if _sword_gleam_cooldown.is_stopped():
-			_start_sword_gleam()
-		else:
-			_play_movement_animation(IDLE_ANIMATION)
+		if _has_locked_sword_target:
+			_set_facing(_locked_sword_facing)
+			_clear_locked_sword_target()
+		if _try_start_sword_gleam(0.0):
+			return
+		_play_movement_animation(IDLE_ANIMATION)
 		return
 
-	velocity.x = signf(distance_to_target) * pursuit_speed
+	var movement_direction := signf(distance_to_target)
+	_set_facing(movement_direction)
+	var movement_step := movement_direction * maximum_step
+	if _try_start_sword_gleam(
+		movement_step,
+		not turned_before_movement
+	):
+		return
+	velocity.x = movement_direction * pursuit_speed
 	_play_movement_animation(RUN_ANIMATION)
 
 
 func _face_player() -> void:
 	var direction := signf(_player.global_position.x - global_position.x)
+	_set_facing(direction)
+
+
+func _set_facing(direction: float) -> void:
 	if is_zero_approx(direction):
 		return
-
 	_dark_mode.flip_h = direction > 0.0
 	_sword_gleam.position.x = _sword_gleam_offset_x * direction
 	_sword_gleam.scale.x = -_sword_gleam_scale_x * direction
+
+
+func _try_start_sword_gleam(
+	movement_step: float,
+	allow_stationary_alignment := true
+) -> bool:
+	if not _sword_gleam_cooldown.is_stopped():
+		return false
+
+	var gleam_distance := (
+		_player.global_position.x - _sword_gleam.global_position.x
+	)
+	if allow_stationary_alignment and is_equal_approx(gleam_distance, 0.0):
+		_start_sword_gleam()
+		return true
+	if (
+		not is_zero_approx(movement_step)
+		and signf(gleam_distance) == signf(movement_step)
+		and absf(gleam_distance) <= absf(movement_step)
+	):
+		global_position.x += gleam_distance
+		velocity.x = 0.0
+		_start_sword_gleam()
+		return true
+	return false
+
+
+func _clear_locked_sword_target() -> void:
+	_has_locked_sword_target = false
 
 
 func _play_movement_animation(animation_name: StringName) -> void:
@@ -232,6 +325,7 @@ func _play_movement_animation(animation_name: StringName) -> void:
 
 
 func _start_sword_gleam() -> void:
+	_clear_locked_sword_target()
 	_dark_action = DarkAction.SWORD_GLEAM
 	velocity = Vector2.ZERO
 	_sword_gleam_cooldown.start()
@@ -254,6 +348,7 @@ func _on_black_water_cooldown_timeout() -> void:
 
 
 func _start_black_water_cast() -> void:
+	_clear_locked_sword_target()
 	_black_water_pending = false
 	_dark_action = DarkAction.BLACK_WATER_CAST
 	velocity = Vector2.ZERO
@@ -284,6 +379,7 @@ func _begin_defeat() -> void:
 	_phase = Phase.DEFEATED
 	_dark_action = DarkAction.PURSUIT
 	_black_water_pending = false
+	_clear_locked_sword_target()
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 	remove_from_group("enemies")

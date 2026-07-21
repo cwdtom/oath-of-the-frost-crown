@@ -51,11 +51,15 @@ The one damage dealt through physical contact with Valdemar in Normal Form, duri
 _Avoid_: Sword Gleam, contact-safe form, repeated damage during Player hurt immunity
 
 **Valdemar Sword Pursuit**:
-Valdemar's unbounded Dark Mode movement at one hundred fifty pixels per second toward the Player's current horizontal position, independent of a Skill Detection Area. He continuously runs or maintains alignment until the center of the Sword Gleam on his facing side shares the Player's horizontal coordinate, without requiring them to share the same height.
-_Avoid_: Enemy patrol, bounded chase, proximity-gated chase, body-to-body alignment
+Valdemar's unbounded Dark Mode movement at one hundred fifty pixels per second, independent of a Skill Detection Area. When his and the Player's vertical coordinates differ by fewer than ten pixels, he pursues the Player's body; otherwise, he locks the position that would align his currently facing Sword Gleam with the Player, turns before running there when necessary, and then turns back to present that Sword Gleam at the Player, while Sword Gleam readiness never changes either target or makes him reverse solely to create or preserve alignment.
+_Avoid_: Enemy patrol, bounded chase, proximity-gated chase, physical floor contact
+
+**Valdemar Facing-Coherent Movement**:
+The rule that Valdemar always faces the direction of his horizontal movement. Before any pursuit movement whose direction differs from his facing, he turns to that direction first; he never slides or runs backward.
+_Avoid_: Backpedaling, backward run, movement-facing mismatch
 
 **Valdemar Sword Gleam**:
-A half-second Dark Mode attack that is immediately available upon entering Dark Mode and begins whenever Valdemar's Sword Gleam is horizontally aligned with the Player and ready. It pairs Valdemar's locked attack position and facing with the Guard Sword Gleam, deals one damage to a given target at most once, and starts an independent four-second cooldown that continues through pursuit, hurt, and Black Water Cast; non-lethal damage cannot interrupt a release, while Valdemar Defeat prevents any further damage from it.
+A half-second Dark Mode attack that is immediately available upon entering Dark Mode and begins whenever the ready Sword Gleam's horizontal center reaches or crosses the Player's horizontal coordinate through pursuit movement, or becomes exactly aligned when Valdemar turns back at a locked destination; changing facing anywhere else does not count as crossing or alignment. It pairs Valdemar's locked attack position and facing with the Guard Sword Gleam, deals one damage to a given target at most once, and starts an independent four-second cooldown that continues through pursuit, hurt, and Black Water Cast; non-lethal damage cannot interrupt a release, while Valdemar Defeat prevents any further damage from it.
 _Avoid_: Guard Sword Gleam cooldown, Valdemar skill presentation, contact damage
 
 **Valdemar Black Water Cycle**:
