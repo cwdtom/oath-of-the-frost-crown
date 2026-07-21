@@ -3,6 +3,8 @@ extends Area2D
 
 const CAST_ANIMATION := &"cast"
 
+@export var uses_horizontal_knockback := false
+
 var damaged_actors: Array[DamageableActor] = []
 var is_cast_active := false
 
@@ -22,7 +24,10 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 
 	damaged_actors.append(actor)
-	actor.take_damage(1, actor.global_position - global_position)
+	var knockback_direction := actor.global_position - global_position
+	if uses_horizontal_knockback:
+		knockback_direction = Vector2(signf(position.x), 0.0)
+	actor.take_damage(1, knockback_direction)
 
 
 func _on_animation_player_animation_started(animation_name: StringName) -> void:

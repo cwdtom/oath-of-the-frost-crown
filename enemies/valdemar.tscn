@@ -483,6 +483,7 @@ shape = SubResource("RectangleShape2D_awakening")
 visible = false
 position = Vector2(-162, -32)
 scale = Vector2(4, 4)
+uses_horizontal_knockback = true
 
 [node name="SwordGleamCooldown" type="Timer" parent="." unique_id=1716524174]
 wait_time = 4.0
