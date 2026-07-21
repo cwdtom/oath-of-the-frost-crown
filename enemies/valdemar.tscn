@@ -121,6 +121,18 @@ tracks/3/keys = {
 "update": 1,
 "values": [false]
 }
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("DarkMode:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
 
 [sub_resource type="Animation" id="Animation_awfbr"]
 resource_name = "attack"
@@ -148,6 +160,18 @@ tracks/1/keys = {
 "transitions": PackedFloat32Array(1, 1),
 "update": 1,
 "values": [true, false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("DarkMode:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
 }
 
 [sub_resource type="Animation" id="Animation_odbgp"]
@@ -192,7 +216,7 @@ tracks/2/keys = {
 
 [sub_resource type="Animation" id="Animation_prw4k"]
 resource_name = "hurt"
-length = 0.39999999999999997
+length = 0.4
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -200,10 +224,10 @@ tracks/0/path = NodePath("DarkMode:visible")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": [true, false, true, false, true, false, true, false]
+"values": [true, false, true, false, true, false, true, false, true]
 }
 
 [sub_resource type="Animation" id="Animation_ossbp"]
@@ -278,6 +302,18 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [ExtResource("31_y6d3e"), ExtResource("32_hwygf"), ExtResource("33_e44dv"), ExtResource("34_5un1i"), ExtResource("35_x3q8v"), ExtResource("36_w8rhe"), ExtResource("37_trmx3"), ExtResource("38_s7gr4"), ExtResource("39_satrt")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("DarkMode:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
 }
 
 [sub_resource type="Animation" id="Animation_dimv1"]
@@ -436,11 +472,11 @@ position = Vector2(-1, 5.5)
 shape = SubResource("RectangleShape2D_8w05w")
 disabled = true
 
-[node name="AwakeningBoundary" type="Area2D" parent="."]
+[node name="AwakeningBoundary" type="Area2D" parent="." unique_id=1681724218]
 collision_layer = 0
 collision_mask = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AwakeningBoundary"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AwakeningBoundary" unique_id=516866952]
 shape = SubResource("RectangleShape2D_awakening")
 
 [node name="SwordGleam" parent="." unique_id=2131474720 instance=ExtResource("2_8w05w")]

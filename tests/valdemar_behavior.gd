@@ -53,6 +53,7 @@ func _run() -> void:
 		await verify_production_configuration(valdemar)
 		await verify_activation_sequence(level, player, valdemar)
 		await verify_dark_mode_combat_interactions(player, valdemar)
+		await verify_pursuit_targeting_rules()
 		await verify_defeat_preempts_every_dark_action()
 
 	Input.action_release("right")
@@ -370,6 +371,8 @@ func verify_dark_mode_combat_interactions(
 	await recover_player(player)
 	(player.get_node("VisualRoot/ShieldSkill/Shield") as CanvasItem).hide()
 	player.set_physics_process(false)
+	player.global_position = valdemar.global_position + Vector2(-1500.0, 0.0)
+	await fixture.physics_frames(2)
 	player.global_position = valdemar.global_position + Vector2(-1500.0, -5000.0)
 	var pursuit_start_x := valdemar.global_position.x
 	var pursuit_frames := 6
@@ -379,7 +382,8 @@ func verify_dark_mode_combat_interactions(
 		- EXPECTED_PURSUIT_SPEED * (pursuit_frames - 1) / Engine.physics_ticks_per_second
 	)
 	fixture.expect(
-		is_equal_approx(valdemar.global_position.x, expected_pursuit_x),
+		absf(valdemar.global_position.x - expected_pursuit_x)
+		<= EXPECTED_PURSUIT_SPEED / Engine.physics_ticks_per_second,
 		"Dark Mode pursues an unbounded horizontal target at 150 pixels per second regardless of height"
 	)
 	fixture.expect(
@@ -496,45 +500,69 @@ func verify_dark_mode_combat_interactions(
 	)
 
 	await fixture.wait_seconds(0.15)
+	player.global_position = valdemar.global_position + Vector2(-1000.0, 0.0)
 	var pursuit_resume_x := valdemar.global_position.x
-	await fixture.physics_frames(3)
+	await fixture.physics_frames(2)
 	fixture.expect(
 		not valdemar.call("is_hurt_immune")
 		and animation_state.get_current_node() == &"run"
-		and valdemar.global_position.x > pursuit_resume_x
-		and dark_mode.flip_h
-		and sword_gleam.position.x > 0.0
-		and sword_gleam.scale.x < 0.0
+		and valdemar.global_position.x < pursuit_resume_x
+		and not dark_mode.flip_h
+		and sword_gleam.position.x < 0.0
+		and sword_gleam.scale.x > 0.0
 		and not sword_gleam.visible
 		and sword_collision.disabled
-		and sword_collision.global_position.x > valdemar.global_position.x,
-		"Pursuit resumes after 0.5 seconds and mirrors the complete Sword Gleam to the Player's right"
+		and sword_collision.global_position.x < valdemar.global_position.x,
+		"Ground-level Pursuit resumes after 0.5 seconds facing its movement direction"
 	)
 
+	player.global_position = valdemar.global_position + Vector2(1000.0, -5000.0)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		dark_mode.flip_h and animation_state.get_current_node() == &"run",
+		"Airborne Pursuit turns east before moving toward its locked pre-turn destination"
+	)
 	player.global_position = valdemar.global_position + Vector2(-1000.0, -5000.0)
 	var turn_start_x := valdemar.global_position.x
 	await fixture.physics_frames(3)
 	fixture.expect(
-		valdemar.global_position.x < turn_start_x
-		and not dark_mode.flip_h
-		and attack_start_frames.size() == 1,
-		"Sword cooldown pursuit keeps correcting alignment when the Player changes sides and height"
+		valdemar.global_position.x > turn_start_x,
+		"Airborne Pursuit keeps its locked pre-turn destination when the Player changes sides"
+	)
+	fixture.expect(
+		dark_mode.flip_h,
+		"Locked eastward Airborne Pursuit faces its movement direction"
+	)
+	fixture.expect(
+		attack_start_frames.size() == 1,
+		"A Player side change does not create a Sword Gleam release during locked pursuit"
 	)
 	await recover_player(player)
 	player.set_physics_process(true)
 	await verify_contact_damage(player, valdemar, "Dark Mode Pursuit")
 	player.set_physics_process(false)
 
+	var ground_alignment_position := valdemar.global_position
 	player.global_position = Vector2(
 		valdemar.global_position.x - sword_offset,
 		valdemar.global_position.y
 	)
 	await fixture.physics_frames(2)
 	fixture.expect(
-		is_equal_approx(sword_gleam.global_position.x, player.global_position.x)
-		and animation_state.get_current_node() == &"idle"
+		valdemar.global_position.x < ground_alignment_position.x
+		and animation_state.get_current_node() == &"run"
 		and attack_start_frames.size() == 1,
-		"Valdemar holds current alignment without attacking while Sword Gleam cools down"
+		"Ground-level Pursuit crosses a cooling Sword Gleam alignment toward the Player's body"
+	)
+	player.global_position = Vector2(
+		valdemar.global_position.x - sword_offset,
+		valdemar.global_position.y - 100.0
+	)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		is_equal_approx(sword_gleam.global_position.x, player.global_position.x)
+		and animation_state.get_current_node() == &"idle",
+		"Airborne Pursuit waits at its Sword Gleam alignment while the skill cools down"
 	)
 	await recover_player(player)
 	var valdemar_health_before_wait_damage := int(valdemar.call("get_current_health"))
@@ -562,6 +590,10 @@ func verify_dark_mode_combat_interactions(
 	player.set_physics_process(true)
 	await verify_contact_damage(player, valdemar, "Valdemar Hurt")
 	player.set_physics_process(false)
+	player.global_position = Vector2(
+		valdemar.global_position.x + sword_gleam.position.x,
+		valdemar.global_position.y - 100.0
+	)
 	fixture.expect(
 		animation_state.get_current_node() == &"hurt"
 		and sword_cooldown.time_left < cooldown_before_hurt - 0.05
@@ -609,6 +641,112 @@ func verify_dark_mode_combat_interactions(
 	)
 	player.set_physics_process(false)
 	await verify_black_water_cycle_and_cast(player, valdemar, attack_start_frames)
+
+
+func verify_pursuit_targeting_rules() -> void:
+	var actors := await instantiate_active_valdemar()
+	var level := actors["level"] as CampaignLevel
+	var player := actors["player"] as DamageableActor
+	var valdemar := actors["valdemar"] as DamageableActor
+	if level == null or player == null or valdemar == null:
+		fixture.expect(false, "Valdemar Pursuit rules load production actors")
+		return
+
+	var dark_mode := valdemar.get_node("DarkMode") as Sprite2D
+	var sword_gleam := valdemar.get_node("SwordGleam") as Area2D
+	var sword_cooldown := valdemar.get_node("SwordGleamCooldown") as Timer
+	var black_water_cooldown := valdemar.get_node("BlackWaterCooldown") as Timer
+	var animation_tree := valdemar.get_node("AnimationTree") as AnimationTree
+	var animation_state := animation_tree.get(
+		"parameters/playback"
+	) as AnimationNodeStateMachinePlayback
+	var attack_start_count := [0]
+	animation_tree.animation_started.connect(
+		func(animation_name: StringName) -> void:
+			if animation_name == &"attack":
+				attack_start_count[0] += 1
+	)
+	black_water_cooldown.stop()
+	sword_cooldown.start(10.0)
+
+	player.global_position = valdemar.global_position + Vector2(-1000.0, 0.0)
+	await fixture.physics_frames(2)
+	var turn_only_start_x := valdemar.global_position.x
+	player.global_position = Vector2(
+		turn_only_start_x + absf(sword_gleam.position.x),
+		valdemar.global_position.y
+	)
+	sword_cooldown.stop()
+	await fixture.physics_frames(2)
+	fixture.expect(
+		valdemar.global_position.x > turn_only_start_x
+		and dark_mode.flip_h
+		and animation_state.get_current_node() == &"run"
+		and attack_start_count[0] == 0,
+		"An ordinary turn that places Sword Gleam on the Player does not count as movement overlap"
+	)
+	sword_cooldown.start(10.0)
+
+	player.global_position = valdemar.global_position + Vector2(1000.0, 9.99)
+	var ground_start_x := valdemar.global_position.x
+	await fixture.physics_frames(2)
+	fixture.expect(
+		valdemar.global_position.x > ground_start_x
+		and dark_mode.flip_h
+		and animation_state.get_current_node() == &"run",
+		"A vertical difference below ten pixels pursues the Player's body while facing movement"
+	)
+
+	player.global_position = Vector2(
+		valdemar.global_position.x + absf(sword_gleam.position.x),
+		valdemar.global_position.y + 10.0
+	)
+	var boundary_position := valdemar.global_position
+	await fixture.physics_frames(2)
+	fixture.expect(
+		valdemar.global_position == boundary_position
+		and animation_state.get_current_node() == &"idle",
+		"A vertical difference of exactly ten pixels uses Sword Gleam alignment"
+	)
+
+	var sword_offset := absf(sword_gleam.position.x)
+	var locked_start_x := valdemar.global_position.x
+	var airborne_player_x := locked_start_x + 100.0
+	player.global_position = Vector2(
+		airborne_player_x,
+		valdemar.global_position.y + 100.0
+	)
+	sword_cooldown.stop()
+	await fixture.physics_frames(2)
+	fixture.expect(
+		valdemar.global_position.x < locked_start_x
+		and not dark_mode.flip_h
+		and animation_state.get_current_node() == &"run"
+		and attack_start_count[0] == 0,
+		"Airborne Pursuit turns before moving toward its locked Sword Gleam destination without casting on the turn"
+	)
+
+	for _frame in 40:
+		await fixture.physics_frames(1)
+		if attack_start_count[0] == 1:
+			break
+	fixture.expect(
+		attack_start_count[0] == 1
+		and dark_mode.flip_h
+		and is_equal_approx(
+			sword_gleam.global_position.x,
+			airborne_player_x
+		)
+		and is_equal_approx(
+			valdemar.global_position.x,
+			airborne_player_x - sword_offset
+		),
+		"Airborne Pursuit reaches its locked destination before turning back to release Sword Gleam"
+	)
+
+	if current_scene == level:
+		current_scene = null
+	level.free()
 
 
 func verify_black_water_cycle_and_cast(
@@ -994,7 +1132,9 @@ func prepare_defeat_scenario(
 	black_water_notifications: Array
 ) -> void:
 	var sword_gleam := valdemar.get_node("SwordGleam") as Area2D
-	player.global_position = valdemar.global_position + Vector2(-1000.0, -5000.0)
+	player.global_position = valdemar.global_position + Vector2(-1000.0, 0.0)
+	await fixture.physics_frames(1)
+	player.global_position.y = valdemar.global_position.y - 5000.0
 	await fixture.physics_frames(2)
 	match scenario_name:
 		&"pursuit":
@@ -1005,7 +1145,7 @@ func prepare_defeat_scenario(
 		&"waiting":
 			player.global_position = Vector2(
 				valdemar.global_position.x - absf(sword_gleam.position.x),
-				valdemar.global_position.y
+				valdemar.global_position.y - 100.0
 			)
 			await fixture.physics_frames(2)
 			await fixture.wait_seconds(0.55)
