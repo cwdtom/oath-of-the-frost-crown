@@ -20,7 +20,7 @@ const EXPECTED_PURSUIT_SPEED := 150.0
 const EXPECTED_SWORD_GLEAM_COOLDOWN := 4.0
 const EXPECTED_HURT_DURATION := 0.4
 const EXPECTED_DEAD_DURATION := 0.9
-const DEFEAT_ACTIONS: Array[StringName] = [
+const DEFEAT_SCENARIOS: Array[StringName] = [
 	&"pursuit",
 	&"waiting",
 	&"hurt",
@@ -793,17 +793,20 @@ func make_black_water_due_twice(black_water_cooldown: Timer) -> void:
 
 
 func verify_defeat_preempts_every_dark_action() -> void:
-	for action in DEFEAT_ACTIONS:
-		await verify_defeat_preempts_action(action)
+	for scenario in DEFEAT_SCENARIOS:
+		await verify_defeat_preempts_scenario(scenario)
 
 
-func verify_defeat_preempts_action(action: StringName) -> void:
-	var scenario := await instantiate_active_valdemar()
-	var level := scenario["level"] as CampaignLevel
-	var player := scenario["player"] as DamageableActor
-	var valdemar := scenario["valdemar"] as DamageableActor
+func verify_defeat_preempts_scenario(scenario_name: StringName) -> void:
+	var actors := await instantiate_active_valdemar()
+	var level := actors["level"] as CampaignLevel
+	var player := actors["player"] as DamageableActor
+	var valdemar := actors["valdemar"] as DamageableActor
 	if level == null or player == null or valdemar == null:
-		fixture.expect(false, "Valdemar Defeat %s scenario loads production actors" % action)
+		fixture.expect(
+			false,
+			"Valdemar Defeat %s scenario loads production actors" % scenario_name
+		)
 		return
 
 	var dark_mode := valdemar.get_node("DarkMode") as Sprite2D
@@ -832,8 +835,8 @@ func verify_defeat_preempts_action(action: StringName) -> void:
 		func(outcome: StringName) -> void: campaign_outcomes.append(outcome)
 	)
 
-	await prepare_defeat_action(
-		action,
+	await prepare_defeat_scenario(
+		scenario_name,
 		player,
 		valdemar,
 		animation_state,
@@ -845,10 +848,15 @@ func verify_defeat_preempts_action(action: StringName) -> void:
 	var late_target := add_late_sword_target(sword_gleam.global_position, level)
 	var defeat_position := valdemar.global_position
 	var defeat_facing := dark_mode.flip_h
-	if action != &"hurt":
+	if scenario_name == &"active_black_water":
+		fixture.expect(
+			defeat_facing,
+			"Active Black Water Defeat scenario holds the non-default east facing"
+		)
+	if scenario_name != &"hurt":
 		fixture.expect(
 			bool(valdemar.call("apply_debug_health_override", 1)),
-			"Valdemar Defeat %s scenario sets one remaining health" % action
+			"Valdemar Defeat %s scenario sets one remaining health" % scenario_name
 		)
 
 	valdemar.take_damage(1, Vector2(1000.0, -1000.0))
@@ -859,7 +867,8 @@ func verify_defeat_preempts_action(action: StringName) -> void:
 		and valdemar.velocity == Vector2.ZERO
 		and valdemar.global_position == defeat_position
 		and not health_bar_root.visible,
-		"Lethal damage immediately ends movement and Health Presentation during %s" % action
+		"Lethal damage immediately ends movement and Health Presentation during %s"
+		% scenario_name
 	)
 	fixture.expect(
 		valdemar.collision_layer == 0
@@ -868,7 +877,7 @@ func verify_defeat_preempts_action(action: StringName) -> void:
 		and hurt_box.collision_mask == 0
 		and sword_gleam.collision_layer == 0
 		and sword_gleam.collision_mask == 0,
-		"Valdemar Defeat immediately removes combat collision during %s" % action
+		"Valdemar Defeat immediately removes combat collision during %s" % scenario_name
 	)
 	fixture.expect(
 		sword_cooldown.is_stopped()
@@ -880,7 +889,7 @@ func verify_defeat_preempts_action(action: StringName) -> void:
 		and dark_mode.flip_h == defeat_facing
 		and death_notifications[0] == 0,
 		"Valdemar Defeat immediately cancels attacks and begins direction-preserving death during %s"
-		% action
+		% scenario_name
 	)
 
 	await fixture.physics_frames(1)
@@ -888,7 +897,7 @@ func verify_defeat_preempts_action(action: StringName) -> void:
 		body_collision.disabled
 		and hurt_box_collision.disabled
 		and sword_collision.disabled,
-		"Valdemar Defeat disables every combat shape during %s" % action
+		"Valdemar Defeat disables every combat shape during %s" % scenario_name
 	)
 	var player_health_after_defeat := int(player.call("get_current_health"))
 	(player.get_node("VisualRoot/ShieldSkill/Shield") as CanvasItem).hide()
@@ -905,14 +914,14 @@ func verify_defeat_preempts_action(action: StringName) -> void:
 		and not dying.visible
 		and valdemar.global_position == defeat_position
 		and dark_mode.flip_h == defeat_facing,
-		"Valdemar plays the complete dead presentation during %s" % action
+		"Valdemar plays the complete dead presentation during %s" % scenario_name
 	)
 	fixture.expect(
 		player.call("get_current_health") == player_health_after_defeat
 		and late_target.damage_received == 0
 		and black_water_notifications[0] == notifications_before_defeat,
 		"Valdemar Defeat prevents late contact, Sword Gleam, and Black Water effects during %s"
-		% action
+		% scenario_name
 	)
 
 	await fixture.wait_seconds(EXPECTED_DEAD_DURATION - 0.55)
@@ -925,13 +934,15 @@ func verify_defeat_preempts_action(action: StringName) -> void:
 		and dying.visible
 		and dying.flip_h == defeat_facing
 		and valdemar.global_position == defeat_position,
-		"Valdemar retains the direction-preserving Dying presentation after %s" % action
+		"Valdemar retains the direction-preserving Dying presentation after %s"
+		% scenario_name
 	)
 	fixture.expect(
 		death_notifications[0] == 1
 		and campaign_outcomes.is_empty()
 		and level.get_node_or_null("VictoryStory") == null,
-		"Valdemar Dying emits one Defeat event without Level Completion during %s" % action
+		"Valdemar Dying emits one Defeat event without Level Completion during %s"
+		% scenario_name
 	)
 	await fixture.wait_seconds(0.60)
 	fixture.expect(
@@ -942,7 +953,7 @@ func verify_defeat_preempts_action(action: StringName) -> void:
 		and sword_cooldown.is_stopped()
 		and black_water_cooldown.is_stopped()
 		and black_water_notifications[0] == notifications_before_defeat,
-		"Valdemar remains owned, terminal, and non-interactive after %s" % action
+		"Valdemar remains owned, terminal, and non-interactive after %s" % scenario_name
 	)
 
 	if current_scene == level:
@@ -973,8 +984,8 @@ func instantiate_active_valdemar() -> Dictionary:
 	return {"level": level, "player": player, "valdemar": valdemar}
 
 
-func prepare_defeat_action(
-	action: StringName,
+func prepare_defeat_scenario(
+	scenario_name: StringName,
 	player: DamageableActor,
 	valdemar: DamageableActor,
 	animation_state: AnimationNodeStateMachinePlayback,
@@ -985,7 +996,7 @@ func prepare_defeat_action(
 	var sword_gleam := valdemar.get_node("SwordGleam") as Area2D
 	player.global_position = valdemar.global_position + Vector2(-1000.0, -5000.0)
 	await fixture.physics_frames(2)
-	match action:
+	match scenario_name:
 		&"pursuit":
 			fixture.expect(
 				animation_state.get_current_node() == &"run",
@@ -1027,7 +1038,7 @@ func prepare_defeat_action(
 				animation_state.get_current_node() == &"attack",
 				"Valdemar Defeat scenario begins during Sword Gleam"
 			)
-			if action == &"pending_black_water":
+			if scenario_name == &"pending_black_water":
 				black_water_cooldown.process_callback = Timer.TIMER_PROCESS_PHYSICS
 				black_water_cooldown.start(0.001)
 				await fixture.physics_frames(2)
@@ -1037,6 +1048,8 @@ func prepare_defeat_action(
 					"Valdemar Defeat scenario includes one pending Black Water Cast"
 				)
 		&"active_black_water":
+			player.global_position = valdemar.global_position + Vector2(1000.0, -5000.0)
+			await fixture.physics_frames(2)
 			black_water_cooldown.process_callback = Timer.TIMER_PROCESS_PHYSICS
 			black_water_cooldown.start(0.001)
 			await fixture.physics_frames(2)
@@ -1045,6 +1058,8 @@ func prepare_defeat_action(
 				and black_water_notifications[0] == 1,
 				"Valdemar Defeat scenario begins during an active Black Water Cast"
 			)
+		_:
+			fixture.expect(false, "Unknown Valdemar Defeat scenario: %s" % scenario_name)
 
 
 func add_late_sword_target(position: Vector2, parent: Node) -> CountingDamageableActor:

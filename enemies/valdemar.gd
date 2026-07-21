@@ -293,8 +293,6 @@ func _begin_defeat() -> void:
 	_sword_gleam.call("cancel_cast")
 	_sword_gleam_animation_player.stop()
 	_sword_gleam.hide()
-	_dark_mode.show()
-	_dying.hide()
 	_dying.flip_h = _dark_mode.flip_h
 
 	collision_layer = 0
@@ -313,15 +311,11 @@ func _begin_defeat() -> void:
 
 	_animation_state.start(DEAD_ANIMATION)
 	_animation_tree.advance(0.0)
-	await get_tree().create_timer(
-		_animation_player.get_animation(DEAD_ANIMATION).length
-	).timeout
-	if _phase != Phase.DEFEATED:
+	var finished_animation: StringName = await _animation_tree.animation_finished
+	if _phase != Phase.DEFEATED or finished_animation != DEAD_ANIMATION:
 		return
 
 	_animation_tree.active = false
-	_dark_mode.hide()
-	_dying.show()
 	died.emit()
 
 
