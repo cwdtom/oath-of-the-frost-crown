@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://btaesfd2x1pb8"]
+
+[ext_resource type="Texture2D" uid="uid://b2mfil0gdl4v3" path="res://assets/objects/armor_stand.png" id="1_m07nv"]
+
+[node name="ArmorStand" type="Node2D" unique_id=1220100609]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1654530317]
+texture = ExtResource("1_m07nv")

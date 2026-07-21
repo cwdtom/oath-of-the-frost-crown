@@ -1,0 +1,466 @@
+[gd_scene format=3 uid="uid://dv41qxt1l04xf"]
+
+[ext_resource type="Texture2D" uid="uid://cp64rexsakm6r" path="res://assets/enemies/valdemar/normal/west.png" id="1_8he0a"]
+[ext_resource type="PackedScene" uid="uid://bkfgi253yr10q" path="res://enemies/skills/sword_gleam.tscn" id="2_8w05w"]
+[ext_resource type="Texture2D" uid="uid://1pgpsanmmepl" path="res://assets/enemies/valdemar/dark_mode/west.png" id="2_dji1k"]
+[ext_resource type="Texture2D" uid="uid://bi8o40qh2af4q" path="res://assets/enemies/valdemar/dying/south-west.png" id="3_prw4k"]
+[ext_resource type="Texture2D" uid="uid://2xcoyhto1umm" path="res://assets/enemies/valdemar/dark_mode/attack/west/frame_000.png" id="4_tbmle"]
+[ext_resource type="PackedScene" uid="uid://ct14ct4xg2b04" path="res://enemies/health_bar.tscn" id="5_ocshj"]
+[ext_resource type="Texture2D" uid="uid://bawdxusbphc1u" path="res://assets/enemies/valdemar/dark_mode/attack/west/frame_001.png" id="5_qg6w8"]
+[ext_resource type="Texture2D" uid="uid://w53qvci4iikt" path="res://assets/enemies/valdemar/dark_mode/attack/west/frame_002.png" id="6_y58pf"]
+[ext_resource type="Texture2D" uid="uid://bml12o5nuflm8" path="res://assets/enemies/valdemar/dark_mode/attack/west/frame_003.png" id="7_251l6"]
+[ext_resource type="Texture2D" uid="uid://cyr6ko2abms5d" path="res://assets/enemies/valdemar/dark_mode/attack/west/frame_004.png" id="8_72b0s"]
+[ext_resource type="Texture2D" uid="uid://nmo3pwwoxtf8" path="res://assets/enemies/valdemar/dark_mode/attack/west/frame_005.png" id="9_134ua"]
+[ext_resource type="Texture2D" uid="uid://c53p6ni7i41mx" path="res://assets/enemies/valdemar/dark_mode/attack/west/frame_006.png" id="10_kqrb5"]
+[ext_resource type="Texture2D" uid="uid://ddciqa2boc1g5" path="res://assets/enemies/valdemar/dark_mode/attack/west/frame_007.png" id="11_5htho"]
+[ext_resource type="Texture2D" uid="uid://coxjrnxuc05hl" path="res://assets/enemies/valdemar/dark_mode/attack/west/frame_008.png" id="12_y6d3e"]
+[ext_resource type="Texture2D" uid="uid://e3xav2k3jxo2" path="res://assets/enemies/valdemar/dark_mode/idle/west/frame_000.png" id="13_hwygf"]
+[ext_resource type="Texture2D" uid="uid://bdtafmtymvt3v" path="res://assets/enemies/valdemar/dark_mode/idle/west/frame_001.png" id="14_e44dv"]
+[ext_resource type="Texture2D" uid="uid://dwb7d34mkky5p" path="res://assets/enemies/valdemar/dark_mode/dead/west/frame_000.png" id="14_im525"]
+[ext_resource type="Texture2D" uid="uid://cni4bigocd125" path="res://assets/enemies/valdemar/dark_mode/idle/west/frame_002.png" id="15_5un1i"]
+[ext_resource type="Texture2D" uid="uid://b7b24g4ly4ipe" path="res://assets/enemies/valdemar/dark_mode/dead/west/frame_001.png" id="15_ocshj"]
+[ext_resource type="Texture2D" uid="uid://bmy6wgwbet6px" path="res://assets/enemies/valdemar/dark_mode/dead/west/frame_002.png" id="16_fc2qg"]
+[ext_resource type="Texture2D" uid="uid://dd3ui68ojb2ky" path="res://assets/enemies/valdemar/dark_mode/idle/west/frame_003.png" id="16_x3q8v"]
+[ext_resource type="Texture2D" uid="uid://b1japup3j03p" path="res://assets/enemies/valdemar/dark_mode/dead/west/frame_003.png" id="17_j3o80"]
+[ext_resource type="Texture2D" uid="uid://dky4g5mhlvlee" path="res://assets/enemies/valdemar/dark_mode/idle/west/frame_004.png" id="17_w8rhe"]
+[ext_resource type="Texture2D" uid="uid://crbk3rqqv4eo3" path="res://assets/enemies/valdemar/dark_mode/dead/west/frame_004.png" id="18_th374"]
+[ext_resource type="Texture2D" uid="uid://bf0cu6f7tbojv" path="res://assets/enemies/valdemar/dark_mode/idle/west/frame_005.png" id="18_trmx3"]
+[ext_resource type="Texture2D" uid="uid://jlu2405u78x3" path="res://assets/enemies/valdemar/dark_mode/dead/west/frame_005.png" id="19_c2rep"]
+[ext_resource type="Texture2D" uid="uid://b3w5p75peysu1" path="res://assets/enemies/valdemar/dark_mode/idle/west/frame_006.png" id="19_s7gr4"]
+[ext_resource type="Texture2D" uid="uid://cx7ionfukedcu" path="res://assets/enemies/valdemar/dark_mode/dead/west/frame_006.png" id="20_7bwf5"]
+[ext_resource type="Texture2D" uid="uid://dogv3b4lbxdtd" path="res://assets/enemies/valdemar/dark_mode/idle/west/frame_007.png" id="20_satrt"]
+[ext_resource type="Texture2D" uid="uid://boyehs2nrdhh3" path="res://assets/enemies/valdemar/dark_mode/dead/west/frame_007.png" id="21_i8iee"]
+[ext_resource type="Texture2D" uid="uid://c5bgkrgaskhyh" path="res://assets/enemies/valdemar/dark_mode/idle/west/frame_008.png" id="21_no11j"]
+[ext_resource type="Texture2D" uid="uid://dn4hppirrbvlf" path="res://assets/enemies/valdemar/dark_mode/run/west/frame_000.png" id="22_prw4k"]
+[ext_resource type="Texture2D" uid="uid://p6300vvsyxnh" path="res://assets/enemies/valdemar/dark_mode/dead/west/frame_008.png" id="22_q3t22"]
+[ext_resource type="Texture2D" uid="uid://cilh8f8u2c7fj" path="res://assets/enemies/valdemar/dark_mode/run/west/frame_001.png" id="23_im525"]
+[ext_resource type="Texture2D" uid="uid://c3wv4xei4fopv" path="res://assets/enemies/valdemar/dark_mode/run/west/frame_002.png" id="24_ocshj"]
+[ext_resource type="Texture2D" uid="uid://b6wc0ere5xhrc" path="res://assets/enemies/valdemar/dark_mode/run/west/frame_003.png" id="25_fc2qg"]
+[ext_resource type="Texture2D" uid="uid://cadbrbuw7gajy" path="res://assets/enemies/valdemar/dark_mode/run/west/frame_004.png" id="26_j3o80"]
+[ext_resource type="Texture2D" uid="uid://bu0t2ucrs1s3p" path="res://assets/enemies/valdemar/dark_mode/run/west/frame_005.png" id="27_th374"]
+[ext_resource type="Texture2D" uid="uid://biy6fbc4emini" path="res://assets/enemies/valdemar/dark_mode/run/west/frame_006.png" id="28_c2rep"]
+[ext_resource type="Texture2D" uid="uid://cnn6w0c2pep66" path="res://assets/enemies/valdemar/dark_mode/run/west/frame_007.png" id="29_7bwf5"]
+[ext_resource type="Texture2D" uid="uid://7mxkbflgwbbh" path="res://assets/enemies/valdemar/dark_mode/run/west/frame_008.png" id="30_i8iee"]
+[ext_resource type="Texture2D" uid="uid://dxvraukxfhf76" path="res://assets/enemies/valdemar/normal/transformation/west/frame_000.png" id="31_q3t22"]
+[ext_resource type="Texture2D" uid="uid://cym0ja0ivxq2a" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_000.png" id="31_y6d3e"]
+[ext_resource type="Texture2D" uid="uid://cyqfarll0mwpp" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_001.png" id="32_hwygf"]
+[ext_resource type="Texture2D" uid="uid://dgwwb8t87w6p8" path="res://assets/enemies/valdemar/normal/transformation/west/frame_001.png" id="32_odbgp"]
+[ext_resource type="Texture2D" uid="uid://bv05ahgs0ooi2" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_002.png" id="33_e44dv"]
+[ext_resource type="Texture2D" uid="uid://duxxdn0otyn8u" path="res://assets/enemies/valdemar/normal/transformation/west/frame_002.png" id="33_nifxp"]
+[ext_resource type="Texture2D" uid="uid://cs0wmby00mon" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_003.png" id="34_5un1i"]
+[ext_resource type="Texture2D" uid="uid://bmexgpxxa5ada" path="res://assets/enemies/valdemar/normal/transformation/west/frame_003.png" id="34_b676p"]
+[ext_resource type="Texture2D" uid="uid://cyn2rssgh8dqi" path="res://assets/enemies/valdemar/normal/transformation/west/frame_004.png" id="35_vsokl"]
+[ext_resource type="Texture2D" uid="uid://3ha8ytc0wgse" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_004.png" id="35_x3q8v"]
+[ext_resource type="Texture2D" uid="uid://c00h0thto47qv" path="res://assets/enemies/valdemar/normal/transformation/west/frame_005.png" id="36_trok4"]
+[ext_resource type="Texture2D" uid="uid://bhda24xaibpes" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_005.png" id="36_w8rhe"]
+[ext_resource type="Texture2D" uid="uid://csbmo5oq5kgw3" path="res://assets/enemies/valdemar/normal/transformation/west/frame_006.png" id="37_gpv72"]
+[ext_resource type="Texture2D" uid="uid://ctq66nmhxggjs" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_006.png" id="37_trmx3"]
+[ext_resource type="Texture2D" uid="uid://c4gbjiflnl4hr" path="res://assets/enemies/valdemar/normal/transformation/west/frame_007.png" id="38_s3k13"]
+[ext_resource type="Texture2D" uid="uid://b01lnt4uw834e" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_007.png" id="38_s7gr4"]
+[ext_resource type="Texture2D" uid="uid://dos4vbdcv6w3t" path="res://assets/enemies/valdemar/normal/transformation/west/frame_008.png" id="39_7ufw0"]
+[ext_resource type="Texture2D" uid="uid://cass2yiym2wgx" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_008.png" id="39_satrt"]
+[ext_resource type="Script" uid="uid://bu6g3naufsj3u" path="res://enemies/valdemar.gd" id="40_valdemar"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_eof6p"]
+radius = 22.0
+height = 112.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8w05w"]
+size = Vector2(32, 99)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_awakening"]
+size = Vector2(1200, 100000)
+
+[sub_resource type="Animation" id="Animation_lpxcn"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Normal:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_8he0a")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("DarkMode:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("2_dji1k")]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("SwordGleam:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Dying:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_awfbr"]
+resource_name = "attack"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("DarkMode:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("4_tbmle"), ExtResource("5_qg6w8"), ExtResource("6_y58pf"), ExtResource("7_251l6"), ExtResource("8_72b0s"), ExtResource("9_134ua"), ExtResource("10_kqrb5"), ExtResource("11_5htho"), ExtResource("12_y6d3e")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("SwordGleam:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
+[sub_resource type="Animation" id="Animation_odbgp"]
+resource_name = "dead"
+length = 0.9
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("DarkMode:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("14_im525"), ExtResource("15_ocshj"), ExtResource("16_fc2qg"), ExtResource("17_j3o80"), ExtResource("18_th374"), ExtResource("19_c2rep"), ExtResource("20_7bwf5"), ExtResource("21_i8iee"), ExtResource("22_q3t22")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("DarkMode:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.9),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Dying:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.9),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
+[sub_resource type="Animation" id="Animation_prw4k"]
+resource_name = "hurt"
+length = 0.39999999999999997
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("DarkMode:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [true, false, true, false, true, false, true, false]
+}
+
+[sub_resource type="Animation" id="Animation_ossbp"]
+resource_name = "idle"
+length = 0.9
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("DarkMode:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("13_hwygf"), ExtResource("14_e44dv"), ExtResource("15_5un1i"), ExtResource("16_x3q8v"), ExtResource("17_w8rhe"), ExtResource("18_trmx3"), ExtResource("19_s7gr4"), ExtResource("20_satrt"), ExtResource("21_no11j")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("DarkMode:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_beamx"]
+resource_name = "run"
+length = 0.9
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("DarkMode:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("22_prw4k"), ExtResource("23_im525"), ExtResource("24_ocshj"), ExtResource("25_fc2qg"), ExtResource("26_j3o80"), ExtResource("27_th374"), ExtResource("28_c2rep"), ExtResource("29_7bwf5"), ExtResource("30_i8iee")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("DarkMode:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="Animation" id="Animation_no11j"]
+resource_name = "skill"
+length = 6.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("DarkMode:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("31_y6d3e"), ExtResource("32_hwygf"), ExtResource("33_e44dv"), ExtResource("34_5un1i"), ExtResource("35_x3q8v"), ExtResource("36_w8rhe"), ExtResource("37_trmx3"), ExtResource("38_s7gr4"), ExtResource("39_satrt")]
+}
+
+[sub_resource type="Animation" id="Animation_dimv1"]
+resource_name = "transformation"
+length = 0.9
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Normal:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("31_q3t22"), ExtResource("32_odbgp"), ExtResource("33_nifxp"), ExtResource("34_b676p"), ExtResource("35_vsokl"), ExtResource("36_trok4"), ExtResource("37_gpv72"), ExtResource("38_s3k13"), ExtResource("39_7ufw0")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_fkpj5"]
+_data = {
+&"RESET": SubResource("Animation_lpxcn"),
+&"attack": SubResource("Animation_awfbr"),
+&"dead": SubResource("Animation_odbgp"),
+&"hurt": SubResource("Animation_prw4k"),
+&"idle": SubResource("Animation_ossbp"),
+&"run": SubResource("Animation_beamx"),
+&"skill": SubResource("Animation_no11j"),
+&"transformation": SubResource("Animation_dimv1")
+}
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_im525"]
+animation = &"attack"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_ocshj"]
+animation = &"dead"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_fc2qg"]
+animation = &"hurt"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_j3o80"]
+animation = &"idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_th374"]
+animation = &"run"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_c2rep"]
+animation = &"skill"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_7bwf5"]
+animation = &"transformation"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_i8iee"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_q3t22"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_odbgp"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_nifxp"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_b676p"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_vsokl"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_trok4"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_gpv72"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_s3k13"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_7ufw0"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_lpxcn"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_awfbr"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_ossbp"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_beamx"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_dimv1"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_fkpj5"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_vtuk2"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_ni5wt"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_iberp"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_8xbek"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_1n5kv"]
+states/End/position = Vector2(906.5, -29.161255)
+states/attack/node = SubResource("AnimationNodeAnimation_im525")
+states/attack/position = Vector2(522.89, 253.8775)
+states/dead/node = SubResource("AnimationNodeAnimation_ocshj")
+states/dead/position = Vector2(761.39, -33.32251)
+states/hurt/node = SubResource("AnimationNodeAnimation_fc2qg")
+states/hurt/position = Vector2(599.39, -30.82251)
+states/idle/node = SubResource("AnimationNodeAnimation_j3o80")
+states/idle/position = Vector2(521.39, 100.06375)
+states/run/node = SubResource("AnimationNodeAnimation_th374")
+states/run/position = Vector2(675.89, 100.031876)
+states/skill/node = SubResource("AnimationNodeAnimation_c2rep")
+states/skill/position = Vector2(676.89, 254.1275)
+states/transformation/node = SubResource("AnimationNodeAnimation_7bwf5")
+states/transformation/position = Vector2(361.89, 98.56375)
+transitions = ["Start", "transformation", SubResource("AnimationNodeStateMachineTransition_i8iee"), "transformation", "idle", SubResource("AnimationNodeStateMachineTransition_q3t22"), "idle", "run", SubResource("AnimationNodeStateMachineTransition_odbgp"), "run", "idle", SubResource("AnimationNodeStateMachineTransition_nifxp"), "idle", "attack", SubResource("AnimationNodeStateMachineTransition_b676p"), "idle", "skill", SubResource("AnimationNodeStateMachineTransition_vsokl"), "run", "attack", SubResource("AnimationNodeStateMachineTransition_trok4"), "run", "skill", SubResource("AnimationNodeStateMachineTransition_gpv72"), "attack", "idle", SubResource("AnimationNodeStateMachineTransition_s3k13"), "attack", "run", SubResource("AnimationNodeStateMachineTransition_7ufw0"), "skill", "idle", SubResource("AnimationNodeStateMachineTransition_lpxcn"), "skill", "run", SubResource("AnimationNodeStateMachineTransition_awfbr"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_ossbp"), "run", "hurt", SubResource("AnimationNodeStateMachineTransition_beamx"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_dimv1"), "hurt", "run", SubResource("AnimationNodeStateMachineTransition_fkpj5"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_vtuk2"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_ni5wt"), "attack", "skill", SubResource("AnimationNodeStateMachineTransition_iberp"), "skill", "attack", SubResource("AnimationNodeStateMachineTransition_8xbek")]
+graph_offset = Vector2(-55.080082, -147.14249)
+
+[node name="Valdemar" type="CharacterBody2D" unique_id=422547625 groups=["enemies"]]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("40_valdemar")
+
+[node name="Normal" type="Sprite2D" parent="." unique_id=1379364740]
+texture = ExtResource("1_8he0a")
+
+[node name="DarkMode" type="Sprite2D" parent="." unique_id=1768865174]
+visible = false
+texture = ExtResource("2_dji1k")
+
+[node name="Dying" type="Sprite2D" parent="." unique_id=556508225]
+visible = false
+texture = ExtResource("3_prw4k")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1160743715]
+position = Vector2(4, 2)
+shape = SubResource("CapsuleShape2D_eof6p")
+
+[node name="HealthBar" parent="." unique_id=271847535 instance=ExtResource("5_ocshj")]
+visible = false
+position = Vector2(-118.99999, -161.99998)
+scale = Vector2(0.2, 0.2)
+
+[node name="HurtBox" type="Area2D" parent="." unique_id=282414144]
+position = Vector2(2, 0)
+collision_layer = 4
+collision_mask = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=1641945764]
+position = Vector2(-1, 5.5)
+shape = SubResource("RectangleShape2D_8w05w")
+disabled = true
+
+[node name="AwakeningBoundary" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AwakeningBoundary"]
+shape = SubResource("RectangleShape2D_awakening")
+
+[node name="SwordGleam" parent="." unique_id=2131474720 instance=ExtResource("2_8w05w")]
+visible = false
+position = Vector2(-162, -32)
+scale = Vector2(4, 4)
+
+[node name="SwordGleamCooldown" type="Timer" parent="." unique_id=1716524174]
+wait_time = 4.0
+one_shot = true
+
+[node name="BlackWaterCooldown" type="Timer" parent="." unique_id=855685707]
+wait_time = 16.0
+one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1530356484]
+libraries/ = SubResource("AnimationLibrary_fkpj5")
+
+[node name="AnimationTree" type="AnimationTree" parent="." unique_id=1680059287]
+tree_root = SubResource("AnimationNodeStateMachine_1n5kv")
+anim_player = NodePath("../AnimationPlayer")
+
+[connection signal="area_entered" from="HurtBox" to="." method="_on_hurt_box_area_entered"]

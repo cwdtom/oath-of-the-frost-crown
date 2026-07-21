@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://3w8f0wxerg73"]
 
-[ext_resource type="Script" uid="uid://by2yisitxpfs8" path="res://enemies/skills/thunder.gd" id="1_thunder"]
 [ext_resource type="Texture2D" uid="uid://c80n0jlq8ggx1" path="res://assets/enemies/skills/thunder/thunder.png" id="1_net7j"]
+[ext_resource type="Script" uid="uid://by2yisitxpfs8" path="res://enemies/skills/thunder.gd" id="1_thunder"]
 [ext_resource type="Texture2D" uid="uid://br8tafnlmrb4q" path="res://assets/enemies/skills/thunder/cast/cast_0001.png" id="2_ijmsb"]
 [ext_resource type="Texture2D" uid="uid://cpodcnltcfvgi" path="res://assets/enemies/skills/thunder/cast/cast_0002.png" id="3_5hrn4"]
 [ext_resource type="Texture2D" uid="uid://cg7ym0pcilko5" path="res://assets/enemies/skills/thunder/cast/cast_0003.png" id="4_7c52g"]
@@ -140,7 +140,7 @@ _data = {
 &"cast": SubResource("Animation_bd7nw")
 }
 
-[node name="Thunder" type="Area2D" unique_id=1983643422]
+[node name="Thunder" type="Area2D" unique_id=1983643422 groups=["enemies"]]
 collision_layer = 4
 collision_mask = 2
 script = ExtResource("1_thunder")

@@ -31,6 +31,14 @@ const LEVEL_SPECS := [
 		"has_music": true,
 		"has_opening_story": true,
 	},
+	{
+		"scene": "res://levels/level_04.tscn",
+		"campaign_id": &"level_04",
+		"outcomes": [&"defeat"],
+		"has_music": true,
+		"has_opening_story": true,
+		"opening_story_path": "res://levels/level_04_story.json",
+	},
 ]
 const MAX_STORY_ADVANCE_INPUTS := 64
 
@@ -76,6 +84,13 @@ func verify_level_contract(spec: Dictionary) -> void:
 		level.has_campaign_music() == spec["has_music"],
 		"%s declares its campaign music capability" % scene_path
 	)
+	if spec.has("opening_story_path"):
+		var opening_story := level.get_node_or_null("Story")
+		fixture.expect(
+			opening_story != null
+			and opening_story.get("story_path") == spec["opening_story_path"],
+			"%s uses its configured Opening Story" % scene_path
+		)
 	level.free()
 
 

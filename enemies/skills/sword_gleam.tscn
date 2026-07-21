@@ -1,0 +1,178 @@
+[gd_scene format=3 uid="uid://bkfgi253yr10q"]
+
+[ext_resource type="Texture2D" uid="uid://cv0g7lhh7l64x" path="res://assets/enemies/skills/sword_gleam/sword_gleam.png" id="1_mu7qo"]
+[ext_resource type="Script" uid="uid://imdrglmxhhx" path="res://enemies/skills/sword_gleam.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://drltc0gw56464" path="res://assets/enemies/skills/sword_gleam/cast/frame_000.png" id="2_cnona"]
+[ext_resource type="Texture2D" uid="uid://brsep44xv61os" path="res://assets/enemies/skills/sword_gleam/cast/frame_001.png" id="3_i8271"]
+[ext_resource type="Texture2D" uid="uid://cwtrhi78xhopd" path="res://assets/enemies/skills/sword_gleam/cast/frame_002.png" id="4_32h1y"]
+[ext_resource type="Texture2D" uid="uid://dldgpxa18udn6" path="res://assets/enemies/skills/sword_gleam/cast/frame_003.png" id="5_pjdpr"]
+[ext_resource type="Texture2D" uid="uid://7ujdd58tmjdf" path="res://assets/enemies/skills/sword_gleam/cast/frame_004.png" id="6_e8hiu"]
+[ext_resource type="Texture2D" uid="uid://bg74krg70lwo3" path="res://assets/enemies/skills/sword_gleam/cast/frame_005.png" id="7_npi6g"]
+[ext_resource type="Texture2D" uid="uid://shfmhvxngoct" path="res://assets/enemies/skills/sword_gleam/cast/frame_006.png" id="8_jkj1u"]
+[ext_resource type="AudioStream" uid="uid://b44oawu8jw60n" path="res://assets/enemies/guard/sounds/sword_gleam.wav" id="10_32h1y"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
+size = Vector2(35, 42)
+
+[sub_resource type="Curve" id="Curve_32h1y"]
+_data = [Vector2(0, 0.40350872), 0.0, 0.0, 0, 0, Vector2(0.25396824, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.15204674), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Animation" id="Animation_orw5f"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_mu7qo")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CollisionShape2D:disabled")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CPUParticles2D:emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "audio"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("AudioStreamPlayer2D")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"clips": [],
+"times": PackedFloat32Array()
+}
+tracks/3/use_blend = true
+
+[sub_resource type="Animation" id="Animation_di1iy"]
+resource_name = "cast"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("2_cnona"), ExtResource("3_i8271"), ExtResource("4_32h1y"), ExtResource("5_pjdpr"), ExtResource("6_e8hiu"), ExtResource("7_npi6g"), ExtResource("8_jkj1u")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CollisionShape2D:disabled")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.15, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("CPUParticles2D:emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/3/type = "audio"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("AudioStreamPlayer2D")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("10_32h1y")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/3/use_blend = true
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_m0mv5"]
+_data = {
+&"RESET": SubResource("Animation_orw5f"),
+&"cast": SubResource("Animation_di1iy")
+}
+
+[node name="SwordGleam" type="Area2D" unique_id=2131474720 groups=["enemies"]]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1791561939]
+scale = Vector2(1.5, 1)
+texture = ExtResource("1_mu7qo")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=327154535]
+position = Vector2(1.5, 1)
+shape = SubResource("RectangleShape2D_1n5kv")
+disabled = true
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="." unique_id=97272329]
+position = Vector2(2, 22)
+emitting = false
+amount = 48
+lifetime = 0.5
+one_shot = true
+explosiveness = 0.9
+randomness = 0.65
+emission_shape = 3
+emission_rect_extents = Vector2(20, 2)
+direction = Vector2(0, -1)
+spread = 10.0
+gravity = Vector2(0, 120)
+initial_velocity_min = 110.0
+initial_velocity_max = 220.0
+angular_velocity_min = -160.0
+angular_velocity_max = 160.0
+damping_min = 20.0
+damping_max = 60.0
+angle_min = -180.0
+angle_max = 180.0
+scale_amount_max = 2.0
+scale_amount_curve = SubResource("Curve_32h1y")
+color = Color(0.6117647, 0.8352941, 0.5176471, 1)
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=515618536]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=113472168]
+libraries/ = SubResource("AnimationLibrary_m0mv5")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_animation_player_animation_finished"]
+[connection signal="animation_started" from="AnimationPlayer" to="." method="_on_animation_player_animation_started"]

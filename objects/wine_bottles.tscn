@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dpow003euc4bh"]
+
+[ext_resource type="Texture2D" uid="uid://dr2cpqj2ihjtv" path="res://assets/objects/wine_bottles.png" id="1_fdp4a"]
+
+[node name="WineBottles" type="Node2D" unique_id=1220100609]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1654530317]
+texture = ExtResource("1_fdp4a")

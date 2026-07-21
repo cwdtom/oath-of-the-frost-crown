@@ -1,52 +1,13 @@
 extends SceneTree
 
 
-class DiagnosticLogger:
-	extends Logger
-
-	const MESSAGE_PREFIX := "Debug Runner: checkpoint "
-
-	var _messages: Array[String] = []
-	var _mutex := Mutex.new()
-
-	func _log_message(message: String, _error: bool) -> void:
-		if not message.begins_with(MESSAGE_PREFIX):
-			return
-		_mutex.lock()
-		_messages.append(message.trim_suffix("\n"))
-		_mutex.unlock()
-
-	func _log_error(
-		_function: String,
-		_file: String,
-		_line: int,
-		_code: String,
-		_rationale: String,
-		_editor_notify: bool,
-		_error_type: int,
-		_script_backtraces: Array[ScriptBacktrace]
-	) -> void:
-		pass
-
-	func get_messages() -> Array[String]:
-		_mutex.lock()
-		var messages := _messages.duplicate()
-		_mutex.unlock()
-		return messages
-
-
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const DEBUG_RUNNER_SCENE := preload("res://debug/debug_runner.tscn")
 const MAIN_SCENE := preload("res://main.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const MAX_STORY_ADVANCE_INPUTS := 64
-const RESERVED_SLOT_DIAGNOSTICS := [
-	"Debug Runner: checkpoint 7 is unassigned.",
-	"Debug Runner: checkpoint 8 is unassigned.",
-]
 
 var fixture: HeadlessGameplayFixture
-var diagnostic_logger := DiagnosticLogger.new()
 
 
 func _init() -> void:
@@ -55,7 +16,6 @@ func _init() -> void:
 
 func _run() -> void:
 	fixture = HeadlessGameplayFixture.new(self)
-	OS.add_logger(diagnostic_logger)
 	var runner := fixture.instantiate_scene(DEBUG_RUNNER_SCENE)
 	fixture.set_current_scene(runner)
 	await fixture.process_frames(1)
@@ -78,11 +38,10 @@ func _run() -> void:
 	runner = fixture.instantiate_scene(DEBUG_RUNNER_SCENE)
 	fixture.set_current_scene(runner)
 	await fixture.process_frames(1)
-	await verify_reserved_slots(runner)
+	await verify_level_04_shortcuts(runner)
 	await retire_runner(runner)
 
 	await verify_production_main_is_inert()
-	OS.remove_logger(diagnostic_logger)
 
 	fixture.complete(false)
 	await fixture.process_frames(3)
@@ -312,104 +271,31 @@ func verify_defeat_result_replacement(runner: Node) -> void:
 	)
 
 
-func verify_reserved_slots(runner: Node) -> void:
-	var opening_story := runner.call("get_active_campaign_level") as CampaignLevel
-	fixture.expect(opening_story != null, "Reserved-slot test starts checkpoint 1")
-	if opening_story == null:
+func verify_level_04_shortcuts(runner: Node) -> void:
+	var opening_level := runner.call("get_active_campaign_level") as CampaignLevel
+	fixture.expect(opening_level != null, "Level04 shortcut test starts checkpoint 1")
+	if opening_level == null:
 		return
-	fixture.add_node(opening_story)
+	fixture.add_node(opening_level)
 
-	var previous_diagnostic_count := diagnostic_logger.get_messages().size()
-	for _press in 2:
-		for keycode in [KEY_7, KEY_8]:
-			send_key(keycode, true)
-	await fixture.process_frames(1)
-	expect_new_diagnostics(
-		previous_diagnostic_count,
-		RESERVED_SLOT_DIAGNOSTICS + RESERVED_SLOT_DIAGNOSTICS,
-		"Reserved Story slots"
+	var level_04_story := await switch_checkpoint(
+		runner, opening_level, KEY_7, &"level_04", true, "Ctrl+7"
 	)
-	fixture.expect(
-		runner.call("get_active_campaign_level") == opening_story,
-		"Reserved slots cannot advance or replace an active opening Story"
-	)
-	fixture.expect(
-		opening_story.is_campaign_story_phase_active(),
-		"Reserved slots leave the opening Story active"
-	)
-	fixture.expect(paused, "Reserved slots leave the opening Story paused")
-	fixture.expect(
-		not bool(runner.call("is_campaign_result_visible")),
-		"Reserved slots do not present gameplay UI during a Story"
-	)
-
-	var combat_level := await switch_checkpoint(
-		runner, opening_story, KEY_2, &"level_01", false, "Reserved-slot test Ctrl+2"
-	)
-	if combat_level == null:
+	if level_04_story == null:
 		return
-	previous_diagnostic_count = diagnostic_logger.get_messages().size()
-	for keycode in [KEY_7, KEY_8]:
-		send_key(keycode, true)
-		send_key(keycode, true, true, true)
-	await fixture.process_frames(1)
-	expect_new_diagnostics(
-		previous_diagnostic_count,
-		RESERVED_SLOT_DIAGNOSTICS,
-		"Reserved combat slots and echo events"
-	)
-	fixture.expect(
-		runner.call("get_active_campaign_level") == combat_level,
-		"Reserved slots and their echo events cannot replace active combat"
-	)
-	fixture.expect(
-		combat_level.is_campaign_control_available(),
-		"Reserved slots leave active combat usable"
-	)
-	fixture.expect(not paused, "Reserved slots do not pause active combat")
-	fixture.expect(
-		not bool(runner.call("is_campaign_result_visible")),
-		"Reserved slots do not present gameplay UI during combat"
-	)
 
-	combat_level.campaign_outcome_reached.emit(CampaignLevel.OUTCOME_DEFEAT)
-	fixture.expect(
-		bool(runner.call("is_campaign_result_visible")),
-		"Reserved-slot result test presents a defeat result"
+	var level_04_playable := await switch_checkpoint(
+		runner, level_04_story, KEY_8, &"level_04", false, "Ctrl+8"
 	)
-	previous_diagnostic_count = diagnostic_logger.get_messages().size()
-	for keycode in [KEY_7, KEY_8]:
-		send_key(keycode, true)
-	await fixture.process_frames(1)
-	expect_new_diagnostics(
-		previous_diagnostic_count,
-		RESERVED_SLOT_DIAGNOSTICS,
-		"Reserved result slots"
+	if level_04_playable == null:
+		return
+	fixture.expect(
+		level_04_playable.is_campaign_hud_visible(),
+		"Ctrl+8 starts Level04 with its HUD visible"
 	)
 	fixture.expect(
-		runner.call("get_active_campaign_level") == combat_level,
-		"Reserved slots cannot replace a Level behind an active result"
-	)
-	fixture.expect(
-		bool(runner.call("is_campaign_result_visible")),
-		"Reserved slots leave the active result visible"
-	)
-	fixture.expect(
-		not combat_level.is_campaign_control_available(),
-		"Reserved slots leave result-state controls disabled"
-	)
-	fixture.expect(not paused, "Reserved slots do not pause an active result")
-
-
-func expect_new_diagnostics(
-	previous_count: int,
-	expected: Array,
-	description: String
-) -> void:
-	var messages := diagnostic_logger.get_messages()
-	fixture.expect(
-		messages.slice(previous_count) == expected,
-		"%s emit exactly one concise diagnostic per non-echo press" % description
+		level_04_playable.get_campaign_camera_role() == CampaignLevel.CAMERA_PLAYER,
+		"Ctrl+8 starts Level04 with the Player Camera"
 	)
 
 

@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://yehvq1rsfgta"]
+
+[ext_resource type="Script" uid="uid://bknu7johqg1kr" path="res://NPCs/npc.gd" id="1_l5g4m"]
+[ext_resource type="Texture2D" uid="uid://cocpaq4bybmhr" path="res://assets/NPCs/ivar/south-west.png" id="2_l5g4m"]
+
+[node name="Ivar" type="Node2D" unique_id=1488886398]
+script = ExtResource("1_l5g4m")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=500098340]
+texture = ExtResource("2_l5g4m")

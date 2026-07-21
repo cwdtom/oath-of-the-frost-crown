@@ -1,0 +1,92 @@
+[
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "伊瓦尔",
+		"content": "艾拉……你不该回来的。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "艾拉",
+		"content": "莱夫死了。杀死他的符文，和王宫里的符文一模一样。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "伊瓦尔",
+		"content": "那道诅咒原本是为了阻止白鹿说出真相。我没想到他会替你挡下。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "艾拉",
+		"content": "是你布下的？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "伊瓦尔",
+		"content": "符文出自我手，命令来自陛下。但这不能减轻我的罪。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "艾拉",
+		"content": "所以维德尔给我看到的都是真的。森林的污染来自王宫。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "伊瓦尔",
+		"content": "陛下违背了兽灵誓约。他想把兽灵的力量烙进军队和王冠，以此保护王国。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "艾拉",
+		"content": "结果他制造了黑冬，还把一切推给了森林。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "伊瓦尔",
+		"content": "仪式失控后，他已经无法停下。每一次抽取兽灵之力，都让他更强，也更不像人。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "艾拉",
+		"content": "你明明知道，为什么不阻止他？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "伊瓦尔",
+		"content": "因为我一直告诉自己，只要再修正一次，事情就能恢复原样。等我承认失败时，已经没有勇气面对代价了。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "艾拉",
+		"content": "父王现在在哪里？"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "伊瓦尔",
+		"content": "寒冠王座。他正在进行最后一次烙印，想把王宫和整片森林都变成自己力量的一部分。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "艾拉",
+		"content": "他救过我，养育了我，也教我用剑保护弱者。"
+	},
+	{
+		"left": "res://assets/ui/characters/aila.png",
+		"right": "res://assets/ui/characters/ivar.png",
+		"name": "伊瓦尔",
+		"content": "那么就去保护他曾经想保护的人。现在只有你能结束这一切。"
+	}
+]

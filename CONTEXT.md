@@ -12,6 +12,10 @@ _Avoid_: Level ending, campaign completion
 The closing narrative phase that follows Level Completion. The campaign advances only after the Victory Story finishes.
 _Avoid_: Ending, result screen
 
+**Opening Story**:
+The introductory narrative phase of a newly active Level. Gameplay remains unavailable until it finishes, after which that same Level enters Level Initialization.
+_Avoid_: Victory Story, Level Initialization
+
 **Level Advancement**:
 The replacement of the completed Level with a newly initialized next Level after its Victory Story finishes.
 _Avoid_: Level Completion, scene jump
@@ -21,6 +25,50 @@ The playable starting state of a newly active Level: full Player health, visible
 _Avoid_: Scene instantiation, Level Advancement
 
 ### Combat
+
+**Boss Stability**:
+The rule that accepted damage never displaces a Boss, although it may still reduce health, grant hurt immunity, or cause a hurt presentation according to that Boss's current action. Every Boss retains its position instead of inheriting ordinary Enemy hurt knockback.
+_Avoid_: Damage immunity, skill immunity, ordinary Enemy knockback
+
+**Valdemar**:
+The final Boss encountered in the Level 04 throne room. He has fifteen maximum health and remains in his Normal Form until the Valdemar Awakening turns him into Dark Mode.
+_Avoid_: King, Elk King, generic species King
+
+**Valdemar Awakening**:
+The one-time transition that begins when the Player enters the throne-room boundary extending six hundred horizontal pixels from Valdemar, regardless of height. Valdemar cannot pursue, perform active attacks, take damage, or progress his Black Water Cycle before this transition finishes; its completion enters Dark Mode, enables his active combat behavior, and begins the first Black Water Cycle.
+_Avoid_: Level initialization, Boss Door crossing, preloaded Dark Mode
+
+**Valdemar Health Presentation**:
+The Boss Health Bar representing Valdemar's fifteen health. It remains hidden throughout Normal Form and Valdemar Awakening, becomes visible when Dark Mode begins, reflects each accepted damage event, and disappears on Valdemar Defeat.
+_Avoid_: Player HUD health, pre-awakening health bar, Normal Form damage
+
+**Valdemar Hurt**:
+The four-tenths-second non-lethal damage response that stops Valdemar's pursuit or sword-cooldown waiting without displacing him, presents his full hurt motion, and then resumes pursuit when hurt immunity finishes. Damage accepted during a Sword Gleam or Black Water Cast still reduces health and grants the same hurt-immunity interval but does not change that cast's position, facing, or presentation.
+_Avoid_: Boss knockback, cast interruption, Awakening damage
+
+**Valdemar Contact Damage**:
+The one damage dealt through physical contact with Valdemar in Normal Form, during Valdemar Awakening, or throughout Dark Mode, followed by the Player's ordinary knockback and hurt immunity. It is passive rather than an active attack and ends only on Valdemar Defeat.
+_Avoid_: Sword Gleam, contact-safe form, repeated damage during Player hurt immunity
+
+**Valdemar Sword Pursuit**:
+Valdemar's unbounded Dark Mode movement at one hundred fifty pixels per second toward the Player's current horizontal position, independent of a Skill Detection Area. He continuously runs or maintains alignment until the center of the Sword Gleam on his facing side shares the Player's horizontal coordinate, without requiring them to share the same height.
+_Avoid_: Enemy patrol, bounded chase, proximity-gated chase, body-to-body alignment
+
+**Valdemar Sword Gleam**:
+A half-second Dark Mode attack that is immediately available upon entering Dark Mode and begins whenever Valdemar's Sword Gleam is horizontally aligned with the Player and ready. It pairs Valdemar's locked attack position and facing with the Guard Sword Gleam, deals one damage to a given target at most once, and starts an independent four-second cooldown that continues through pursuit, hurt, and Black Water Cast; non-lethal damage cannot interrupt a release, while Valdemar Defeat prevents any further damage from it.
+_Avoid_: Guard Sword Gleam cooldown, Valdemar skill presentation, contact damage
+
+**Valdemar Black Water Cycle**:
+The repeating sixteen-second interval that begins when Valdemar enters Dark Mode. A completed interval makes one Black Water Cast due and takes priority over a Sword Gleam that has not started; it remains as one pending cast while an active Sword Gleam or hurt presentation finishes, and restarts only when that cast actually begins.
+_Avoid_: Ten-second signal interval, immediate first request, Sword Gleam
+
+**Valdemar Black Water Cast**:
+A stationary six-second skill presentation that begins facing the Player, locks Valdemar's position and facing, presents nine frames over its first three seconds, and deliberately holds its final frame for the remaining three. It emits exactly one Black Water signal when it begins and prevents pursuit or Sword Gleam until it finishes; non-lethal damage does not interrupt it, while Valdemar Defeat clears any pending cast and stops both an active cast and all future Black Water Cycles, and the signal currently causes no further effect or damage.
+_Avoid_: Sword Gleam, interruptible cast, implemented Black Water effect
+
+**Valdemar Defeat**:
+The Boss combat outcome reached when Valdemar's health is depleted. It disables his pursuit, attacks, Black Water Cycle, and combat collisions, hides his Health Bar, preserves his position and facing through the dead motion into the retained Dying presentation, and emits one `died` event when that presentation is reached; it does not yet constitute Level 04 Completion.
+_Avoid_: Level 04 Completion, immediate cleanup, implemented final ending
 
 **Elk King**:
 A Boss variant of the Elk with ten maximum health that retains the Elk's thunder and passive shield while adding an independently triggered earthquake ability.
@@ -33,6 +81,14 @@ _Avoid_: Aggro range, attack range
 **Hurt Completion Before Skill**:
 The rule that an Enemy completes its non-lethal hurt presentation and associated hurt immunity before starting a ready skill. If the Player remains in the Skill Detection Area, the Enemy begins casting as soon as the hurt state finishes.
 _Avoid_: Skill-interrupted hurt, early hurt-immunity termination
+
+**Guard**:
+An Enemy with three maximum health that uses the standard Enemy patrol and Skill Detection Area behavior to release Sword Gleam.
+_Avoid_: Player-controlled guard, stationary sentry
+
+**Guard Sword Gleam**:
+A Guard skill whose synchronized attack motion, sword effect, and damage region are always presented on the side the Guard is facing. Each release deals one damage to a given target at most once and starts a five-second cooldown; non-lethal damage to the Guard does not interrupt a release already in progress, while Guard Defeat prevents any further damage from that release.
+_Avoid_: Guard contact damage, repeated damage from one release, hurt-interrupted Sword Gleam
 
 **Elk Thunder Strike Point**:
 A grounded location whose horizontal coordinate is randomly selected from an Elk's Skill Detection Area when its thunder skill begins.
@@ -79,7 +135,7 @@ The non-interactive transition between Elk King Defeat and its death presentatio
 _Avoid_: Player input, teleport, airborne handoff, scaled local offset, visible character swap
 
 **Elk King Death Tableau**:
-The terminal Level 03 presentation held on the final frame of the Elk King's death presentation, with the Player Camera holding the final composition and the HUD remaining hidden. Reaching it constitutes Level Completion and immediately begins the Level 03 Victory Story without an intervening transition or result interface; after that Story finishes, the tableau remains while the Player stays hidden, unavailable, and absent from physical interaction until the whole Level 03 session is disposed externally.
+The terminal Level 03 presentation held on the final frame of the Elk King's death presentation, with the Player Camera holding the final composition and the HUD remaining hidden. Reaching it constitutes Level Completion and immediately begins the Level 03 Victory Story without an intervening transition or result interface; the tableau remains while that Story plays, with the Player hidden, unavailable, and absent from physical interaction, until Level Advancement disposes the whole Level 03 session.
 _Avoid_: Automatic Level disposal, restored Player control
 
 **Level 03 Terminal Outcome Lock**:
@@ -87,9 +143,21 @@ The first confirmed health depletion between the Player and the Elk King fixes L
 _Avoid_: Simultaneous terminal presentations, late outcome replacement
 
 **Elk Shield**:
-A passive, rechargeable protection possessed by an Elk or Elk King that negates one incoming damage event, regardless of the damage source, while the protection is available. It then becomes unavailable for five seconds without causing a hit reaction or interrupting the protected Enemy's current behavior.
+A passive, rechargeable protection possessed by an Elk or Elk King that negates one otherwise applicable incoming damage event, regardless of the damage source, while the protection is available. Damage already rejected by another immunity or invalid actor state does not consume it; negating damage starts a Shield Break Window without changing health or causing knockback.
 _Avoid_: Weapon block, damage immunity
 
 **Elk Shield Cooldown**:
-The fixed five-second interval after an Elk Shield negates damage and before it becomes available again. Damage received during this interval neither resets nor extends it.
+The fixed five-second interval after an Elk's Shield Break Window ends and before its shield becomes visible and available again. Damage received during this interval is resolved normally and neither resets nor extends it.
 _Avoid_: Thunder cooldown, hurt immunity
+
+**Player Shield**:
+A passive, rechargeable protection possessed by Player 04 that begins each Level instance available and negates one otherwise applicable incoming damage event, regardless of the damage source. Damage already rejected by another immunity or invalid actor state does not consume it; negating damage starts a Shield Break Window without changing health or causing knockback.
+_Avoid_: Elk Shield, damage immunity, weapon block
+
+**Shield Break Window**:
+The interval in which a spent Player or Elk Shield presents its break and rejects every further damage event without causing a hit reaction, knockback, action interruption, or loss of Player control. It lasts until that presentation finishes; further hits do not repeat or change its presentation or timing, after which the shield's five-second cooldown begins.
+_Avoid_: Shield Cooldown, hurt immunity, reusable protection
+
+**Player Shield Cooldown**:
+The fixed five-second interval after Player 04's Shield Break Window ends and before the Player Shield becomes visible and available again. Damage received during this interval is resolved normally and neither resets nor extends it.
+_Avoid_: Elk Shield Cooldown, hurt immunity

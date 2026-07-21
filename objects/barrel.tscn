@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://d1qrowu4n6nvh"]
+
+[ext_resource type="Texture2D" uid="uid://dqux2aibdc1d8" path="res://assets/objects/barrel.png" id="1_hksn3"]
+
+[node name="Barrel" type="Node2D" unique_id=1220100609]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1654530317]
+texture = ExtResource("1_hksn3")

@@ -14,6 +14,11 @@ const LEVEL_SPECS := [
 		"campaign_id": &"level_02",
 		"start_method": &"start_level_02",
 	},
+	{
+		"campaign_id": &"level_04",
+		"start_method": &"start_level_04",
+		"has_player_shield": true,
+	},
 ]
 
 var fixture: HeadlessGameplayFixture
@@ -72,7 +77,11 @@ func verify_defeat_and_retry(spec: Dictionary) -> void:
 			if outcome == CampaignLevel.OUTCOME_DEFEAT:
 				defeat_outcomes[0] += 1
 	)
-	player.call("take_damage", player.call("get_maximum_health"), Vector2.ZERO)
+	if bool(spec.get("has_player_shield", false)):
+		await player.call("take_damage", player.call("get_maximum_health"), Vector2.ZERO)
+		player.call("take_damage", player.call("get_maximum_health"), Vector2.ZERO)
+	else:
+		player.call("take_damage", player.call("get_maximum_health"), Vector2.ZERO)
 	fixture.expect(player.call("get_current_health") == 0, "%s Player depletes through its actor seam" % campaign_id)
 	fixture.expect(
 		not defeated_level.is_campaign_health_full(),

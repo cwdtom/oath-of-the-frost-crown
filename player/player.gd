@@ -6,7 +6,7 @@ signal died
 signal health_changed(current_health: int, maximum_health: int)
 
 const SPEED = 300.0
-const JUMP_VELOCITY = -500.0
+const JUMP_VELOCITY = -550.0
 const ATTACK_TO_IDLE = "parameters/conditions/attack_to_idle"
 const ATTACK_TO_JUMP = "parameters/conditions/attack_to_jump"
 const ATTACK_TO_RUNNING = "parameters/conditions/attack_to_running"

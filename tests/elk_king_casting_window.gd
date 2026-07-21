@@ -214,6 +214,8 @@ func test_range_exit_and_damage_keep_concurrent_casts_stable() -> void:
 	) as Area2D
 	var earthquake_animation := earthquake.get_node("AnimationPlayer") as AnimationPlayer
 	var shield := elk_king.get_node("ShieldSkill/Shield") as Area2D
+	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
+	var break_duration := shield_animation_player.get_animation("break").length
 	var thunder_restarts := [0]
 	var earthquake_restarts := [0]
 	thunder_animation.animation_started.connect(
@@ -233,8 +235,11 @@ func test_range_exit_and_damage_keep_concurrent_casts_stable() -> void:
 
 	detector_body.queue_free()
 	await fixture.physics_frames(2)
-	await harness.deliver_hit(elk_king)
-	fixture.expect(not shield.visible, "Casting Elk Shield is consumed by one damage event")
+	elk_king.take_damage(1, Vector2.ZERO)
+	fixture.expect(
+		shield.visible and shield_animation_player.current_animation == &"break",
+		"Casting Elk Shield enters its Shield Break Window"
+	)
 	fixture.expect(
 		elk_king.get_current_health() == starting_health,
 		"Casting Elk Shield prevents an authoritative health change"
@@ -244,7 +249,16 @@ func test_range_exit_and_damage_keep_concurrent_casts_stable() -> void:
 		"Shielded damage preserves the earthquake body presentation"
 	)
 
-	await harness.deliver_hit(elk_king)
+	await fixture.wait_seconds(0.1)
+	elk_king.take_damage(1, Vector2.ZERO)
+	fixture.expect(
+		elk_king.get_current_health() == starting_health,
+		"Casting Elk Shield rejects damage during its Shield Break Window"
+	)
+	await fixture.wait_seconds(
+		break_duration - shield_animation_player.current_animation_position + 0.1
+	)
+	elk_king.take_damage(1, Vector2.ZERO)
 	fixture.expect(
 		elk_king.get_current_health() == starting_health - 1,
 		"Unshielded casting damage reduces authoritative health"
@@ -253,7 +267,6 @@ func test_range_exit_and_damage_keep_concurrent_casts_stable() -> void:
 		is_equal_approx(elk_king.global_position.x, cast_position.x),
 		"Unshielded casting damage applies no knockback"
 	)
-	await fixture.wait_seconds(0.25)
 	await fixture.process_frames(2)
 	fixture.expect(
 		thunder_animation.is_playing() and earthquake_animation.is_playing(),
@@ -483,8 +496,7 @@ func test_defeat_preserves_pending_thunder_until_explicit_presentation() -> void
 		"Elk King faces right before Defeat"
 	)
 
-	elk_king.take_damage(1, Vector2.ZERO)
-	elk_king.take_damage(elk_king.get_maximum_health(), Vector2.ZERO)
+	await deplete_elk_king(elk_king)
 	fixture.expect(
 		not elk_king.is_in_group("enemies"),
 		"Elk King Defeat immediately removes it from active Enemies"
@@ -503,7 +515,7 @@ func test_defeat_preserves_pending_thunder_until_explicit_presentation() -> void
 		not harness.is_playing(elk_king, &"dead"),
 		"Elk King Defeat waits for an explicit death-presentation request"
 	)
-	await fixture.physics_frames(1)
+	await fixture.physics_frames(2)
 	fixture.expect(
 		not harness.enemy_has_body_collision(elk_king)
 		and not harness.enemy_has_hurt_collision(elk_king),
@@ -515,7 +527,9 @@ func test_defeat_preserves_pending_thunder_until_explicit_presentation() -> void
 		"Repeated damage does not duplicate the Elk King Defeat notification"
 	)
 
-	await fixture.wait_seconds(0.85)
+	await fixture.wait_seconds(
+		maxf(0.95 - thunder_animation.current_animation_position, 0.01)
+	)
 	fixture.expect(
 		is_instance_valid(elk_king),
 		"Elk King remains Level-owned while its pending thunder continues"
@@ -530,7 +544,7 @@ func test_defeat_preserves_pending_thunder_until_explicit_presentation() -> void
 		"Pending thunder has not damaged its target before impact"
 	)
 
-	await fixture.wait_seconds(0.25)
+	await fixture.wait_seconds(0.15)
 	fixture.expect(
 		target.damage_event_count == 1 and target.damage_total == 1,
 		"Pending thunder resolves one damage after Elk King Defeat"
@@ -602,17 +616,18 @@ func test_defeat_preserves_thunder_committed_before_deferred_start() -> void:
 		not thunder_animation.is_playing(),
 		"Elk King commits thunder before its deferred effect presentation starts"
 	)
-	elk_king.take_damage(1, Vector2.ZERO)
-	elk_king.take_damage(elk_king.get_maximum_health(), Vector2.ZERO)
+	await deplete_elk_king(elk_king)
 	await fixture.process_frames(1)
 	fixture.expect(
 		thunder_animation.is_playing()
 		and thunder_animation.current_animation == &"cast",
-		"Committed thunder starts its effect presentation after Elk King Defeat"
+		"Committed thunder continues its effect presentation after Elk King Defeat"
 	)
 	var target := add_damage_recorder(thunder.global_position)
 
-	await fixture.wait_seconds(1.05)
+	await fixture.wait_seconds(
+		maxf(1.05 - thunder_animation.current_animation_position, 0.01)
+	)
 	fixture.expect(
 		target.damage_event_count == 1 and target.damage_total == 1,
 		"Thunder committed before deferred start still resolves after Defeat"
@@ -668,9 +683,10 @@ func test_defeat_preserves_earthquake_without_starting_another_cast() -> void:
 		"Elk King begins one earthquake before Defeat"
 	)
 
-	elk_king.take_damage(1, Vector2.ZERO)
-	elk_king.take_damage(elk_king.get_maximum_health(), Vector2.ZERO)
-	await fixture.wait_seconds(0.82)
+	await deplete_elk_king(elk_king)
+	await fixture.wait_seconds(
+		maxf(0.75 - earthquake_animation.current_animation_position, 0.01)
+	)
 	fixture.expect(
 		is_instance_valid(elk_king),
 		"Pending earthquake keeps the Elk King valid after its death presentation"
@@ -684,7 +700,13 @@ func test_defeat_preserves_earthquake_without_starting_another_cast() -> void:
 			earthquake_animation.is_playing(),
 			"Pending earthquake presentation continues independently after Defeat"
 		)
-	await fixture.wait_seconds(0.2)
+	await fixture.wait_seconds(
+		maxf(
+			earthquake_animation.get_animation(&"cast").length
+				- earthquake_animation.current_animation_position,
+			0.01
+		) + 0.1
+	)
 	fixture.expect(
 		is_instance_valid(elk_king),
 		"Elk King remains Level-owned after its committed earthquake finishes"
@@ -703,6 +725,17 @@ func test_defeat_preserves_earthquake_without_starting_another_cast() -> void:
 	detector_body.queue_free()
 	target.queue_free()
 	await fixture.process_frames(1)
+
+
+func deplete_elk_king(elk_king: CharacterBody2D) -> void:
+	var shield_animation_player := elk_king.get_node(
+		"ShieldSkill/Shield/AnimationPlayer"
+	) as AnimationPlayer
+	elk_king.take_damage(1, Vector2.ZERO)
+	await fixture.wait_seconds(
+		shield_animation_player.get_animation("break").length + 0.1
+	)
+	elk_king.take_damage(elk_king.get_maximum_health(), Vector2.ZERO)
 
 
 func test_cooldowns_retrigger_independently_during_persistent_presence() -> void:

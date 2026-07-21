@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://xj003pqnpari"]
+
+[ext_resource type="Texture2D" uid="uid://bjt6diqcyt2pr" path="res://assets/objects/throne/throne.png" id="1_r5lbq"]
+[ext_resource type="Texture2D" uid="uid://cq30vqmfvtfa8" path="res://assets/objects/throne/idle/frame_000.png" id="2_d5djq"]
+[ext_resource type="Texture2D" uid="uid://dfmoa4g0gbwh4" path="res://assets/objects/throne/idle/frame_001.png" id="3_66ydk"]
+[ext_resource type="Texture2D" uid="uid://bm4i4jq5jy3g0" path="res://assets/objects/throne/idle/frame_002.png" id="4_muuow"]
+[ext_resource type="Texture2D" uid="uid://fjn5ohdnra0n" path="res://assets/objects/throne/idle/frame_003.png" id="5_b46ks"]
+[ext_resource type="Texture2D" uid="uid://ildmmgjvknes" path="res://assets/objects/throne/idle/frame_004.png" id="6_lq353"]
+[ext_resource type="Texture2D" uid="uid://dy6ortllahfhy" path="res://assets/objects/throne/idle/frame_005.png" id="7_dd2ka"]
+[ext_resource type="Texture2D" uid="uid://dqm66yqrat6kb" path="res://assets/objects/throne/idle/frame_006.png" id="8_omdkl"]
+[ext_resource type="Texture2D" uid="uid://dxv41ab63a0fu" path="res://assets/objects/throne/idle/frame_007.png" id="9_igp12"]
+[ext_resource type="Texture2D" uid="uid://2q25bo550ygl" path="res://assets/objects/throne/idle/frame_008.png" id="10_pn522"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
+size = Vector2(90, 118)
+
+[sub_resource type="Animation" id="Animation_a612v"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_r5lbq")]
+}
+
+[sub_resource type="Animation" id="Animation_chcy3"]
+resource_name = "idle"
+length = 0.9
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [ExtResource("2_d5djq"), ExtResource("3_66ydk"), ExtResource("4_muuow"), ExtResource("5_b46ks"), ExtResource("6_lq353"), ExtResource("7_dd2ka"), ExtResource("8_omdkl"), ExtResource("9_igp12"), ExtResource("10_pn522")]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_76xnq"]
+_data = {
+&"RESET": SubResource("Animation_a612v"),
+&"idle": SubResource("Animation_chcy3")
+}
+
+[node name="Throne" type="StaticBody2D" unique_id=977464306]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1097752227]
+texture = ExtResource("1_r5lbq")
+flip_h = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=929730392]
+position = Vector2(1, -3)
+shape = SubResource("RectangleShape2D_1n5kv")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1256232220]
+libraries/ = SubResource("AnimationLibrary_76xnq")
+autoplay = &"idle"

@@ -4,6 +4,7 @@ extends SceneTree
 const BEAR_SCENE := preload("res://enemies/bear.tscn")
 const WOLF_SCENE := preload("res://enemies/wolf.tscn")
 const ELK_SCENE := preload("res://enemies/elk.tscn")
+const GUARD_SCENE := preload("res://enemies/guard.tscn")
 const BEAR_KING_SCENE := preload("res://enemies/bear_king.tscn")
 const WOLF_KING_SCENE := preload("res://enemies/wolf_king.tscn")
 const ELK_KING_SCENE := preload("res://enemies/elk_king.tscn")
@@ -58,6 +59,21 @@ const ENEMY_EXAMPLES := [
 		"detector_offset": Vector2(-172.0, 0.0),
 		"skill_animation": &"idle",
 		"release_animation_player": NodePath("SkillDetect/Thunder/AnimationPlayer"),
+		"release_animation": &"cast",
+	},
+	{
+		"name": "Guard",
+		"scene": GUARD_SCENE,
+		"initial_direction": -1.0,
+		"patrol_range": 160.0,
+		"run_speed": 80.0,
+		"scale": Vector2.ONE,
+		"health": 3,
+		"death_duration": 0.7,
+		"blocks_skill_damage": false,
+		"notifies_death": false,
+		"detector_offset": Vector2(-92.5, 9.0),
+		"release_animation_player": NodePath("SkillDetect/SwordGleam/AnimationPlayer"),
 		"release_animation": &"cast",
 	},
 	{
@@ -292,14 +308,20 @@ func test_skill_ready_during_hurt_waits_for_hurt_completion() -> void:
 			example.get("cooldown_path", NodePath("SkillDetect/Cooldown"))
 		) as Timer
 		cooldown.wait_time = 0.1
-		cooldown.start()
 		if example.get("starts_with_shield", false):
-			enemy.take_damage(1, Vector2.ZERO)
-		enemy.take_damage(1, Vector2.ZERO)
-		var player := harness.add_body(enemy.global_position + example.detector_offset)
+			await consume_shield(enemy)
 		enemies.append(enemy)
-		players.append(player)
 		start_x += 1500.0
+
+	for index in ENEMY_EXAMPLES.size():
+		var example: Dictionary = ENEMY_EXAMPLES[index]
+		var enemy := enemies[index]
+		var cooldown := enemy.get_node(
+			example.get("cooldown_path", NodePath("SkillDetect/Cooldown"))
+		) as Timer
+		cooldown.start()
+		enemy.take_damage(1, Vector2.ZERO)
+		players.append(harness.add_body(enemy.global_position + example.detector_offset))
 
 	await fixture.wait_seconds(0.17)
 	for index in ENEMY_EXAMPLES.size():
@@ -472,7 +494,7 @@ func test_death_presentation_and_lifetime() -> void:
 				func() -> void: death_notification_count[0] += 1
 			)
 		if example.get("starts_with_shield", false):
-			enemy.take_damage(1, Vector2.ZERO)
+			await consume_shield(enemy)
 		enemy.take_damage(int(example.health), Vector2.ZERO)
 		fixture.expect(
 			not enemy.is_in_group("enemies"),
@@ -527,6 +549,16 @@ func test_death_presentation_and_lifetime() -> void:
 				"%s boss death notification remains singular after cleanup" % example.name
 			)
 		start_x += 1500.0
+
+
+func consume_shield(enemy: CharacterBody2D) -> void:
+	var shield_animation_player := enemy.get_node(
+		"ShieldSkill/Shield/AnimationPlayer"
+	) as AnimationPlayer
+	enemy.take_damage(1, Vector2.ZERO)
+	await fixture.wait_seconds(
+		shield_animation_player.get_animation("break").length + 0.1
+	)
 
 
 func test_scaled_environment_wall_reversal() -> void:

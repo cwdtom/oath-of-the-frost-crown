@@ -79,7 +79,10 @@ func enemy_has_body_collision(enemy: CharacterBody2D) -> bool:
 
 
 func enemy_has_hurt_collision(enemy: CharacterBody2D) -> bool:
-	return _enemy_has_collision(enemy, true, false)
+	var hurt_box := enemy.get_node_or_null("HurtBox") as Area2D
+	if hurt_box == null:
+		return false
+	return _enemy_has_collision(enemy, true, false, hurt_box)
 
 
 func enemy_sprite_is_flipped(enemy: CharacterBody2D) -> bool:
@@ -144,7 +147,8 @@ func _enemy_sprite(enemy: CharacterBody2D) -> Sprite2D:
 func _enemy_has_collision(
 	enemy: CharacterBody2D,
 	collide_with_areas: bool,
-	collide_with_bodies: bool
+	collide_with_bodies: bool,
+	expected_collider: CollisionObject2D = null
 ) -> bool:
 	var query := PhysicsPointQueryParameters2D.new()
 	query.position = enemy.global_position
@@ -153,7 +157,11 @@ func _enemy_has_collision(
 	query.collide_with_bodies = collide_with_bodies
 	for result in world.get_world_2d().direct_space_state.intersect_point(query, 32):
 		var collider := result["collider"] as Node
-		if collider == enemy or (collider != null and enemy.is_ancestor_of(collider)):
+		if expected_collider != null and collider == expected_collider:
+			return true
+		if expected_collider == null and (
+			collider == enemy or (collider != null and enemy.is_ancestor_of(collider))
+		):
 			return true
 
 	return false
