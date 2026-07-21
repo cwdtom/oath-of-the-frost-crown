@@ -11,7 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://dpow003euc4bh" path="res://objects/wine_bottles.tscn" id="5_dmyuw"]
 [ext_resource type="PackedScene" uid="uid://d1qrowu4n6nvh" path="res://objects/barrel.tscn" id="6_b3fh1"]
 [ext_resource type="PackedScene" uid="uid://dl5eqe8erpo5s" path="res://ui/story.tscn" id="7_rpmp5"]
-[ext_resource type="PackedScene" uid="uid://dv41qxt1l04xf" path="res://enemies/king.tscn" id="10_vlrfo"]
+[ext_resource type="PackedScene" uid="uid://dv41qxt1l04xf" path="res://enemies/valdemar.tscn" id="10_vlrfo"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_mljax"]
 
@@ -362,7 +362,7 @@ tile_set = SubResource("TileSet_1n5kv")
 
 [node name="Enemies" type="Node2D" parent="." index="6" unique_id=325757313]
 
-[node name="King" parent="Enemies" index="0" unique_id=422547625 instance=ExtResource("10_vlrfo")]
+[node name="Valdemar" parent="Enemies" index="0" unique_id=422547625 instance=ExtResource("10_vlrfo")]
 position = Vector2(5323, 411)
 
 [node name="Guard" parent="Enemies" index="1" unique_id=1342963318 instance=ExtResource("4_5p57d")]

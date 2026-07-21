@@ -59,6 +59,7 @@
 [ext_resource type="Texture2D" uid="uid://b01lnt4uw834e" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_007.png" id="38_s7gr4"]
 [ext_resource type="Texture2D" uid="uid://dos4vbdcv6w3t" path="res://assets/enemies/valdemar/normal/transformation/west/frame_008.png" id="39_7ufw0"]
 [ext_resource type="Texture2D" uid="uid://cass2yiym2wgx" path="res://assets/enemies/valdemar/dark_mode/skill/west/frame_008.png" id="39_satrt"]
+[ext_resource type="Script" uid="uid://bu6g3naufsj3u" path="res://enemies/valdemar.gd" id="40_valdemar"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_eof6p"]
 radius = 22.0
@@ -66,6 +67,9 @@ height = 112.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8w05w"]
 size = Vector2(32, 99)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_awakening"]
+size = Vector2(1200, 100000)
 
 [sub_resource type="Animation" id="Animation_lpxcn"]
 length = 0.001
@@ -84,19 +88,19 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Normal:visible")
+tracks/1/path = NodePath("DarkMode:texture")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [true]
+"values": [ExtResource("2_dji1k")]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("DarkMode:visible")
+tracks/2/path = NodePath("SwordGleam:visible")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
@@ -108,46 +112,10 @@ tracks/2/keys = {
 tracks/3/type = "value"
 tracks/3/imported = false
 tracks/3/enabled = true
-tracks/3/path = NodePath("DarkMode:texture")
+tracks/3/path = NodePath("Dying:visible")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [ExtResource("2_dji1k")]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("SwordGleam:visible")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [false]
-}
-tracks/5/type = "value"
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/path = NodePath("Dying:visible")
-tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [false]
-}
-tracks/6/type = "value"
-tracks/6/imported = false
-tracks/6/enabled = true
-tracks/6/path = NodePath("HealthBar:visible")
-tracks/6/interp = 1
-tracks/6/loop_wrap = true
-tracks/6/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
@@ -221,18 +189,6 @@ tracks/2/keys = {
 "update": 1,
 "values": [true]
 }
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("HealthBar:visible")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0.9),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [false]
-}
 
 [sub_resource type="Animation" id="Animation_prw4k"]
 resource_name = "hurt"
@@ -265,6 +221,18 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [ExtResource("13_hwygf"), ExtResource("14_e44dv"), ExtResource("15_5un1i"), ExtResource("16_x3q8v"), ExtResource("17_w8rhe"), ExtResource("18_trmx3"), ExtResource("19_s7gr4"), ExtResource("20_satrt"), ExtResource("21_no11j")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("DarkMode:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
 }
 
 [sub_resource type="Animation" id="Animation_beamx"]
@@ -314,42 +282,6 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 0,
 "values": [ExtResource("31_q3t22"), ExtResource("32_odbgp"), ExtResource("33_nifxp"), ExtResource("34_b676p"), ExtResource("35_vsokl"), ExtResource("36_trok4"), ExtResource("37_gpv72"), ExtResource("38_s3k13"), ExtResource("39_7ufw0")]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Normal:visible")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0.9),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [false]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("DarkMode:visible")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0.9),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [true]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("HealthBar:visible")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0.9),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [true]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_fkpj5"]
@@ -457,9 +389,10 @@ states/transformation/position = Vector2(361.89, 98.56375)
 transitions = ["Start", "transformation", SubResource("AnimationNodeStateMachineTransition_i8iee"), "transformation", "idle", SubResource("AnimationNodeStateMachineTransition_q3t22"), "idle", "run", SubResource("AnimationNodeStateMachineTransition_odbgp"), "run", "idle", SubResource("AnimationNodeStateMachineTransition_nifxp"), "idle", "attack", SubResource("AnimationNodeStateMachineTransition_b676p"), "idle", "skill", SubResource("AnimationNodeStateMachineTransition_vsokl"), "run", "attack", SubResource("AnimationNodeStateMachineTransition_trok4"), "run", "skill", SubResource("AnimationNodeStateMachineTransition_gpv72"), "attack", "idle", SubResource("AnimationNodeStateMachineTransition_s3k13"), "attack", "run", SubResource("AnimationNodeStateMachineTransition_7ufw0"), "skill", "idle", SubResource("AnimationNodeStateMachineTransition_lpxcn"), "skill", "run", SubResource("AnimationNodeStateMachineTransition_awfbr"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_ossbp"), "run", "hurt", SubResource("AnimationNodeStateMachineTransition_beamx"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_dimv1"), "hurt", "run", SubResource("AnimationNodeStateMachineTransition_fkpj5"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_vtuk2"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_ni5wt"), "attack", "skill", SubResource("AnimationNodeStateMachineTransition_iberp"), "skill", "attack", SubResource("AnimationNodeStateMachineTransition_8xbek")]
 graph_offset = Vector2(-55.080082, -147.14249)
 
-[node name="King" type="CharacterBody2D" unique_id=422547625 groups=["enemies"]]
+[node name="Valdemar" type="CharacterBody2D" unique_id=422547625 groups=["enemies"]]
 collision_layer = 4
 collision_mask = 3
+script = ExtResource("40_valdemar")
 
 [node name="Normal" type="Sprite2D" parent="." unique_id=1379364740]
 texture = ExtResource("1_8he0a")
@@ -489,6 +422,14 @@ collision_mask = 3
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox" unique_id=1641945764]
 position = Vector2(-1, 5.5)
 shape = SubResource("RectangleShape2D_8w05w")
+disabled = true
+
+[node name="AwakeningBoundary" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AwakeningBoundary"]
+shape = SubResource("RectangleShape2D_awakening")
 
 [node name="SwordGleam" parent="." unique_id=2131474720 instance=ExtResource("2_8w05w")]
 visible = false
@@ -501,10 +442,10 @@ one_shot = true
 
 [node name="BlackWaterCooldown" type="Timer" parent="." unique_id=855685707]
 wait_time = 16.0
+one_shot = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1530356484]
 libraries/ = SubResource("AnimationLibrary_fkpj5")
-autoplay = &"idle"
 
 [node name="AnimationTree" type="AnimationTree" parent="." unique_id=1680059287]
 tree_root = SubResource("AnimationNodeStateMachine_1n5kv")
