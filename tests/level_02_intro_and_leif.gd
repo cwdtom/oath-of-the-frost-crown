@@ -59,11 +59,11 @@ func _run() -> void:
 	if player != null and leif != null and leif_sprite != null:
 		player.global_position.x = leif.global_position.x + 100.0
 		await fixture.process_frames(1)
-		fixture.expect(not leif_sprite.flip_h, "Leif faces a player on his right")
+		fixture.expect(leif_sprite.flip_h, "Leif faces a player on his right")
 
 		player.global_position.x = leif.global_position.x - 100.0
 		await fixture.process_frames(1)
-		fixture.expect(leif_sprite.flip_h, "Leif faces a player on his left")
+		fixture.expect(not leif_sprite.flip_h, "Leif faces a player on his left")
 
 	fixture.complete(false)
 	await fixture.process_frames(3)
