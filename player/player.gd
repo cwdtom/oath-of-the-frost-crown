@@ -14,7 +14,7 @@ const MAX_HEALTH = 5
 const DEAD_ANIMATION = "dead"
 const HURT_ANIMATION = "hurt"
 const HURT_KNOCKBACK_DISTANCE = 100.0
-const PERSISTENT_CONTACT_MARGIN = 1.0
+const PERSISTENT_CONTACT_TOLERANCE = 1.0
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum {IDLE, RUN, JUMP, HURT, DEAD, ATTACK}
@@ -225,24 +225,31 @@ func _physics_process(delta: float) -> void:
 func _try_take_persistent_contact_damage() -> void:
 	for collision_index in get_slide_collision_count():
 		var collision := get_slide_collision(collision_index)
-		if collision.get_collider() is DamageableActor:
-			take_damage(1, collision.get_normal(), true)
-			return
+		var actor := collision.get_collider() as DamageableActor
+		if not _can_deal_persistent_contact_damage(actor):
+			continue
+
+		take_damage(1, collision.get_normal(), true)
+		return
 
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = body_collision_shape.shape
 	query.transform = body_collision_shape.global_transform
-	query.margin = PERSISTENT_CONTACT_MARGIN
+	query.margin = PERSISTENT_CONTACT_TOLERANCE
 	query.collision_mask = collision_mask
 	query.exclude = [get_rid()]
 	query.collide_with_areas = false
 	for result in get_world_2d().direct_space_state.intersect_shape(query):
 		var actor := result["collider"] as DamageableActor
-		if actor == null or not is_instance_valid(actor):
+		if not _can_deal_persistent_contact_damage(actor):
 			continue
 
 		take_damage(1, global_position - actor.global_position, true)
 		return
+
+
+func _can_deal_persistent_contact_damage(actor: DamageableActor) -> bool:
+	return actor != null and is_instance_valid(actor) and actor.is_in_group("enemies")
 
 
 func take_damage(

@@ -26,6 +26,9 @@ func _run() -> void:
 	await test_player_contact_damage()
 	await test_persistent_contact_retriggers_after_hurt_immunity()
 	await test_contact_started_during_hurt_immunity_damages_afterward()
+	await test_separated_enemy_does_not_retrigger_contact_damage()
+	await test_simultaneous_contacts_deal_only_one_damage()
+	await test_contact_source_without_damage_capability_does_not_retrigger()
 	await test_persistent_contact_damages_after_shield_break_window()
 	await test_dash_distance_reentry_and_cooldown()
 	await test_dash_collision_and_weapon_immunity()
@@ -84,7 +87,13 @@ func test_persistent_contact_retriggers_after_hurt_immunity() -> void:
 		wolf_position + Vector2(-65.0, 0.0)
 	)
 	var hurt_event_count: Array[int] = [0]
-	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
+	var hurt_physics_frames: Array[int] = []
+	player.connect(
+		&"hurt_taken",
+		func() -> void:
+			hurt_event_count[0] += 1
+			hurt_physics_frames.append(Engine.get_physics_frames())
+	)
 	player.velocity = Vector2(600.0, 0.0)
 
 	await fixture.physics_frames(2)
@@ -92,10 +101,21 @@ func test_persistent_contact_retriggers_after_hurt_immunity() -> void:
 		hurt_event_count[0] == 1,
 		"Persistent Enemy contact first damages Player once"
 	)
+	player.set_physics_process(false)
 	await fixture.wait_seconds(0.95)
-	await fixture.physics_frames(1)
 	fixture.expect(
-		hurt_event_count[0] == 2 and player.get_current_health() == 3,
+		hurt_event_count[0] == 1 and not player.is_hurt_immune(),
+		"Persistent contact waits while Player physics is suspended"
+	)
+	var first_reenabled_physics_frame := Engine.get_physics_frames() + 1
+	player.set_physics_process(true)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		(
+			hurt_event_count[0] == 2
+			and player.get_current_health() == 3
+			and hurt_physics_frames[-1] == first_reenabled_physics_frame
+		),
 		(
 			"Persistent Enemy contact immediately damages Player after hurt immunity; "
 			+ "hurt_events=%s health=%s player_x=%s wolf_x=%s"
@@ -131,11 +151,13 @@ func test_contact_started_during_hurt_immunity_damages_afterward() -> void:
 	)
 	var hurt_event_count: Array[int] = [0]
 	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
+	player.set_physics_process(false)
 	player.take_damage(1, Vector2.ZERO)
 	player.global_position = wolf_position + Vector2(-65.0, 0.0)
 
 	await fixture.wait_seconds(0.95)
-	await fixture.physics_frames(1)
+	player.set_physics_process(true)
+	await fixture.physics_frames(2)
 	fixture.expect(
 		hurt_event_count[0] == 2 and player.get_current_health() == 3,
 		"Enemy contact started during hurt immunity damages Player afterward"
@@ -147,8 +169,107 @@ func test_contact_started_during_hurt_immunity_damages_afterward() -> void:
 	await fixture.process_frames(1)
 
 
+func test_separated_enemy_does_not_retrigger_contact_damage() -> void:
+	var wolf_position := Vector2(4000.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		wolf_position,
+		{"idle_duration": 10.0}
+	)
+	var player := harness.instantiate_actor(
+		preload("res://player/player.tscn"),
+		wolf_position + Vector2(-300.0, 0.0)
+	)
+	var hurt_event_count: Array[int] = [0]
+	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
+	player.set_physics_process(false)
+	player.take_damage(1, Vector2.ZERO)
+	player.global_position = wolf_position + Vector2(-68.0, 0.0)
+
+	await fixture.wait_seconds(0.95)
+	player.set_physics_process(true)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		hurt_event_count[0] == 1 and player.get_current_health() == 4,
+		"Separated Enemy cannot retrigger persistent contact damage"
+	)
+
+	wolf.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_simultaneous_contacts_deal_only_one_damage() -> void:
+	var player_position := Vector2(4500.0, 0.0)
+	var left_wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		player_position + Vector2(-65.0, 0.0),
+		{"idle_duration": 10.0}
+	)
+	var right_wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		player_position + Vector2(65.0, 0.0),
+		{"idle_duration": 10.0}
+	)
+	var player := harness.instantiate_actor(
+		preload("res://player/player.tscn"),
+		player_position
+	)
+	var hurt_event_count: Array[int] = [0]
+	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
+	player.set_physics_process(false)
+	player.take_damage(1, Vector2.ZERO)
+
+	await fixture.wait_seconds(0.95)
+	player.set_physics_process(true)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		hurt_event_count[0] == 2 and player.get_current_health() == 3,
+		"Simultaneous Enemy contacts deal only one damage after hurt immunity"
+	)
+
+	left_wolf.queue_free()
+	right_wolf.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_contact_source_without_damage_capability_does_not_retrigger() -> void:
+	var wolf_position := Vector2(5500.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		wolf_position,
+		{"idle_duration": 10.0}
+	)
+	var wall := harness.add_environment_wall(
+		wolf_position + Vector2(-93.0, 0.0),
+		Vector2(20.0, 200.0)
+	)
+	var player := harness.instantiate_actor(
+		preload("res://player/player.tscn"),
+		wolf_position + Vector2(-300.0, 0.0)
+	)
+	var hurt_event_count: Array[int] = [0]
+	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
+	player.take_damage(1, Vector2.ZERO)
+	player.global_position = wolf_position + Vector2(-65.0, 0.0)
+	wolf.remove_from_group("enemies")
+
+	await fixture.wait_seconds(0.95)
+	await fixture.physics_frames(1)
+	fixture.expect(
+		hurt_event_count[0] == 1 and player.get_current_health() == 4,
+		"Contact source without Enemy damage capability cannot damage Player"
+	)
+
+	wolf.queue_free()
+	wall.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
 func test_persistent_contact_damages_after_shield_break_window() -> void:
-	var wolf_position := Vector2(4500.0, 0.0)
+	var wolf_position := Vector2(6500.0, 0.0)
 	var wolf := harness.instantiate_enemy(
 		WOLF_SCENE,
 		wolf_position,
