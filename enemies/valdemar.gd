@@ -14,11 +14,12 @@ const ATTACK_ANIMATION := &"attack"
 const HURT_ANIMATION := &"hurt"
 const IDLE_ANIMATION := &"idle"
 const RUN_ANIMATION := &"run"
+const SKILL_ANIMATION := &"skill"
 const SWORD_GLEAM_CAST_ANIMATION := &"cast"
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum Phase { NORMAL_FORM, AWAKENING, DARK_MODE }
-enum DarkAction { PURSUIT, SWORD_GLEAM, HURT }
+enum DarkAction { PURSUIT, SWORD_GLEAM, HURT, BLACK_WATER_CAST }
 
 @export var awakening_distance := 600.0
 @export var pursuit_speed := 150.0
@@ -27,6 +28,7 @@ var _phase := Phase.NORMAL_FORM
 var _dark_action := DarkAction.PURSUIT
 var _health := DamageAndHealthModule.new(MAXIMUM_HEALTH)
 var _player: Node2D
+var _black_water_pending := false
 
 @onready var _normal: Sprite2D = $Normal
 @onready var _dark_mode: Sprite2D = $DarkMode
@@ -69,6 +71,7 @@ func _ready() -> void:
 	set_physics_process(false)
 	_animation_tree.active = false
 	_awakening_boundary.body_entered.connect(_on_awakening_boundary_body_entered)
+	_black_water_cooldown.timeout.connect(_on_black_water_cooldown_timeout)
 
 
 func get_current_health() -> int:
@@ -109,8 +112,7 @@ func take_damage(amount: int, _knockback_direction: Vector2) -> void:
 	).timeout
 	_health.end_hurt_immunity()
 	if _phase == Phase.DARK_MODE and _dark_action == DarkAction.HURT:
-		_dark_action = DarkAction.PURSUIT
-		_animation_state.start(IDLE_ANIMATION)
+		_finish_dark_action()
 
 
 func _on_hurt_box_area_entered(area: Area2D) -> void:
@@ -159,9 +161,17 @@ func _enter_dark_mode() -> void:
 
 func _physics_process(delta: float) -> void:
 	if _dark_action == DarkAction.PURSUIT:
-		if not is_on_floor():
-			velocity += get_gravity() * delta
-		_update_sword_pursuit(delta)
+		if _black_water_pending:
+			_start_black_water_cast()
+		elif (
+			not _black_water_cooldown.is_stopped()
+			and _black_water_cooldown.time_left <= delta
+		):
+			velocity = Vector2.ZERO
+		else:
+			if not is_on_floor():
+				velocity += get_gravity() * delta
+			_update_sword_pursuit(delta)
 	else:
 		velocity = Vector2.ZERO
 	move_and_slide()
@@ -215,6 +225,38 @@ func _start_sword_gleam() -> void:
 		_animation_player.get_animation(ATTACK_ANIMATION).length
 	).timeout
 	if _phase == Phase.DARK_MODE and _dark_action == DarkAction.SWORD_GLEAM:
+		_finish_dark_action()
+
+
+func _on_black_water_cooldown_timeout() -> void:
+	if _phase != Phase.DARK_MODE:
+		return
+
+	_black_water_pending = true
+	if _dark_action == DarkAction.PURSUIT:
+		_start_black_water_cast()
+
+
+func _start_black_water_cast() -> void:
+	_black_water_pending = false
+	_dark_action = DarkAction.BLACK_WATER_CAST
+	velocity = Vector2.ZERO
+	if is_instance_valid(_player):
+		_face_player()
+	_black_water_cooldown.start()
+	_animation_state.start(SKILL_ANIMATION)
+	black_water_requested.emit()
+	await get_tree().create_timer(
+		_animation_player.get_animation(SKILL_ANIMATION).length
+	).timeout
+	if _phase == Phase.DARK_MODE and _dark_action == DarkAction.BLACK_WATER_CAST:
+		_finish_dark_action()
+
+
+func _finish_dark_action() -> void:
+	if _black_water_pending:
+		_start_black_water_cast()
+	else:
 		_dark_action = DarkAction.PURSUIT
 		_animation_state.start(IDLE_ANIMATION)
 

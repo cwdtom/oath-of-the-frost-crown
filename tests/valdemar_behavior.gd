@@ -86,6 +86,19 @@ func verify_production_configuration(valdemar: DamageableActor) -> void:
 			),
 			"Valdemar %s has its production duration" % animation_name
 		)
+	var skill_animation := animation_player.get_animation(&"skill")
+	var skill_texture_track := skill_animation.find_track(
+		NodePath("DarkMode:texture"),
+		Animation.TYPE_VALUE
+	)
+	fixture.expect(
+		skill_animation.track_get_key_count(skill_texture_track) == 9
+		and is_equal_approx(
+			skill_animation.track_get_key_time(skill_texture_track, 8),
+			3.0
+		),
+		"Valdemar Black Water presents nine frames in its first three seconds"
+	)
 	fixture.expect(
 		is_equal_approx(
 			(valdemar.get_node("SwordGleamCooldown") as Timer).wait_time,
@@ -113,8 +126,9 @@ func verify_production_configuration(valdemar: DamageableActor) -> void:
 	var black_water_cooldown := valdemar.get_node("BlackWaterCooldown") as Timer
 	fixture.expect(
 		is_equal_approx(black_water_cooldown.wait_time, 16.0)
-		and black_water_cooldown.one_shot,
-		"Valdemar Black Water has a sixteen-second interval"
+		and black_water_cooldown.one_shot
+		and not black_water_cooldown.autostart,
+		"Valdemar Black Water has a non-autostart sixteen-second interval"
 	)
 
 
@@ -253,8 +267,9 @@ func verify_activation_sequence(
 		valdemar.is_physics_processing()
 		and not hurt_box_collision.disabled
 		and sword_cooldown.is_stopped()
-		and not black_water_cooldown.is_stopped(),
-		"Dark Mode enables active behavior with Sword Gleam ready and Black Water timing started"
+		and not black_water_cooldown.is_stopped()
+		and black_water_cooldown.time_left > 15.8,
+		"Dark Mode starts the production Black Water interval with Sword Gleam ready"
 	)
 
 	player.global_position = valdemar.global_position + Vector2(-1000.0, -5000.0)
@@ -583,6 +598,188 @@ func verify_dark_mode_combat_interactions(
 		"Valdemar Contact Damage remains active during the locked Sword Gleam before its damage region opens"
 	)
 	player.set_physics_process(false)
+	await verify_black_water_cycle_and_cast(player, valdemar, attack_start_frames)
+
+
+func verify_black_water_cycle_and_cast(
+	player: DamageableActor,
+	valdemar: DamageableActor,
+	attack_start_frames: Array[int]
+) -> void:
+	var dark_mode := valdemar.get_node("DarkMode") as Sprite2D
+	var health_bar := valdemar.get_node("HealthBar/TextureProgressBar") as TextureProgressBar
+	var sword_cooldown := valdemar.get_node("SwordGleamCooldown") as Timer
+	var black_water_cooldown := valdemar.get_node("BlackWaterCooldown") as Timer
+	var animation_player := valdemar.get_node("AnimationPlayer") as AnimationPlayer
+	var skill_animation := animation_player.get_animation(&"skill")
+	var animation_tree := valdemar.get_node("AnimationTree") as AnimationTree
+	var animation_state := animation_tree.get(
+		"parameters/playback"
+	) as AnimationNodeStateMachinePlayback
+	var black_water_notifications := [0]
+	valdemar.connect(
+		&"black_water_requested",
+		func() -> void: black_water_notifications[0] += 1
+	)
+
+	player.global_position = valdemar.global_position + Vector2(1000.0, -5000.0)
+	await make_black_water_due_twice(black_water_cooldown)
+	fixture.expect(
+		black_water_notifications[0] == 0
+		and animation_state.get_current_node() == &"attack"
+		and attack_start_frames.size() == 2,
+		"Due Black Water remains singularly pending while an active Sword Gleam finishes"
+	)
+
+	for _frame in 30:
+		await fixture.physics_frames(1)
+		if animation_state.get_current_node() == &"skill":
+			break
+	fixture.expect(
+		black_water_notifications[0] == 1
+		and animation_state.get_current_node() == &"skill"
+		and attack_start_frames.size() == 2
+		and dark_mode.flip_h,
+		"One pending Black Water Cast starts facing the Player immediately after Sword Gleam"
+	)
+	fixture.expect(
+		not black_water_cooldown.is_stopped()
+		and black_water_cooldown.time_left > 15.8,
+		"Black Water restarts its cycle when the delayed cast actually begins"
+	)
+
+	var cast_position := valdemar.global_position
+	var cast_facing := dark_mode.flip_h
+	var valdemar_health_before_cast_damage := int(valdemar.call("get_current_health"))
+	var sword_cooldown_at_cast_start := sword_cooldown.time_left
+	valdemar.take_damage(1, Vector2(-1000.0, 1000.0))
+	await fixture.physics_frames(1)
+	fixture.expect(
+		valdemar.call("get_current_health") == valdemar_health_before_cast_damage - 1
+		and health_bar.value == valdemar_health_before_cast_damage - 1
+		and valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() == &"skill"
+		and valdemar.global_position == cast_position
+		and dark_mode.flip_h == cast_facing,
+		"Accepted damage preserves the committed Black Water Cast while updating health"
+	)
+	fixture.expect(
+		sword_cooldown.time_left < sword_cooldown_at_cast_start,
+		"Sword Gleam cooldown continues independently during Black Water Cast"
+	)
+
+	await recover_player(player)
+	player.set_physics_process(true)
+	await verify_contact_damage(player, valdemar, "Black Water Cast")
+	player.set_physics_process(false)
+	player.global_position = valdemar.global_position + Vector2(-1000.0, -5000.0)
+	await recover_player(player)
+	var player_health_without_black_water_effect := int(player.call("get_current_health"))
+	var level_node_count := current_scene.find_children("*", "", true, false).size()
+
+	await fixture.wait_seconds(
+		maxf(2.75 - animation_state.get_current_play_position(), 0.0)
+	)
+	var penultimate_texture := dark_mode.texture
+	await fixture.wait_seconds(0.40)
+	var final_texture := dark_mode.texture
+	fixture.expect(
+		animation_state.get_current_node() == &"skill"
+		and animation_state.get_current_play_position() >= 3.0
+		and final_texture != penultimate_texture,
+		"Black Water reaches its ninth presentation frame at three seconds"
+	)
+	await fixture.wait_seconds(
+		maxf(5.70 - animation_state.get_current_play_position(), 0.0)
+	)
+	fixture.expect(
+		animation_state.get_current_node() == &"skill"
+		and dark_mode.texture == final_texture
+		and valdemar.global_position == cast_position
+		and dark_mode.flip_h == cast_facing
+		and attack_start_frames.size() == 2,
+		"Black Water holds its final frame and locked aim through the remaining three seconds"
+	)
+	fixture.expect(
+		black_water_notifications[0] == 1
+		and player.call("get_current_health") == player_health_without_black_water_effect
+		and current_scene.find_children("*", "", true, false).size() == level_node_count
+		and sword_cooldown.is_stopped(),
+		"One Black Water request adds no effect or damage while Sword Gleam cooldown completes"
+	)
+
+	await fixture.wait_seconds(0.35)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		animation_state.get_current_node() != &"skill"
+		and black_water_notifications[0] == 1,
+		"Black Water Cast completes after six seconds without accumulating another cast"
+	)
+
+	skill_animation.length = 0.15
+	player.global_position = Vector2(
+		valdemar.global_position.x + absf(valdemar.get_node("SwordGleam").position.x),
+		valdemar.global_position.y
+	)
+	black_water_cooldown.process_callback = Timer.TIMER_PROCESS_PHYSICS
+	black_water_cooldown.start(0.001)
+	black_water_cooldown.wait_time = 16.0
+	for _frame in 2:
+		await fixture.physics_frames(1)
+		if animation_state.get_current_node() == &"skill":
+			break
+	fixture.expect(
+		animation_state.get_current_node() == &"skill"
+		and black_water_notifications[0] == 2
+		and attack_start_frames.size() == 2,
+		"A due Black Water Cast wins over an aligned Sword Gleam that has not started"
+	)
+	player.global_position = valdemar.global_position + Vector2(-1000.0, -5000.0)
+	await fixture.wait_seconds(0.20)
+	await fixture.physics_frames(1)
+
+	var health_before_pending_hurt := int(valdemar.call("get_current_health"))
+	valdemar.take_damage(1, Vector2.ZERO)
+	await fixture.physics_frames(1)
+	fixture.expect(
+		valdemar.call("get_current_health") == health_before_pending_hurt - 1
+		and animation_state.get_current_node() == &"hurt",
+		"Pursuit damage begins Valdemar Hurt before the next Black Water due condition"
+	)
+	await make_black_water_due_twice(black_water_cooldown)
+	fixture.expect(
+		animation_state.get_current_node() == &"hurt"
+		and black_water_notifications[0] == 2,
+		"Repeated Black Water due conditions remain pending until Valdemar Hurt finishes"
+	)
+	for _frame in 30:
+		await fixture.physics_frames(1)
+		if black_water_notifications[0] == 3:
+			break
+	await fixture.physics_frames(1)
+	fixture.expect(
+		black_water_notifications[0] == 3
+		and animation_state.get_current_node() == &"skill",
+		"One pending Black Water Cast starts immediately after Hurt"
+	)
+	fixture.expect(
+		black_water_cooldown.time_left > 15.8,
+		"The cycle after Hurt restarts when the delayed Black Water Cast begins"
+	)
+	await fixture.wait_seconds(0.40)
+	fixture.expect(
+		black_water_notifications[0] == 3
+		and animation_state.get_current_node() != &"skill",
+		"Repeated due conditions cannot accumulate multiple pending Black Water Casts"
+	)
+
+
+func make_black_water_due_twice(black_water_cooldown: Timer) -> void:
+	black_water_cooldown.start(0.02)
+	await fixture.wait_seconds(0.04)
+	black_water_cooldown.start(0.02)
+	await fixture.wait_seconds(0.04)
+	black_water_cooldown.wait_time = 16.0
 
 
 func add_weapon_hit(position: Vector2) -> Area2D:
