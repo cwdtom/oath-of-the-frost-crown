@@ -26,6 +26,50 @@ _Avoid_: Scene instantiation, Level Advancement
 
 ### Combat
 
+**Boss Stability**:
+The rule that accepted damage never displaces a Boss, although it may still reduce health, grant hurt immunity, or cause a hurt presentation according to that Boss's current action. Every Boss retains its position instead of inheriting ordinary Enemy hurt knockback.
+_Avoid_: Damage immunity, skill immunity, ordinary Enemy knockback
+
+**Valdemar**:
+The final Boss encountered in the Level 04 throne room. He has fifteen maximum health and remains in his Normal Form until the Valdemar Awakening turns him into Dark Mode.
+_Avoid_: King, Elk King, generic species King
+
+**Valdemar Awakening**:
+The one-time transition that begins when the Player enters the throne-room boundary extending six hundred horizontal pixels from Valdemar, regardless of height. Valdemar cannot pursue, perform active attacks, take damage, or progress his Black Water Cycle before this transition finishes; its completion enters Dark Mode, enables his active combat behavior, and begins the first Black Water Cycle.
+_Avoid_: Level initialization, Boss Door crossing, preloaded Dark Mode
+
+**Valdemar Health Presentation**:
+The Boss Health Bar representing Valdemar's fifteen health. It remains hidden throughout Normal Form and Valdemar Awakening, becomes visible when Dark Mode begins, reflects each accepted damage event, and disappears on Valdemar Defeat.
+_Avoid_: Player HUD health, pre-awakening health bar, Normal Form damage
+
+**Valdemar Hurt**:
+The four-tenths-second non-lethal damage response that stops Valdemar's pursuit or sword-cooldown waiting without displacing him, presents his full hurt motion, and then resumes pursuit when hurt immunity finishes. Damage accepted during a Sword Gleam or Black Water Cast still reduces health and grants the same hurt-immunity interval but does not change that cast's position, facing, or presentation.
+_Avoid_: Boss knockback, cast interruption, Awakening damage
+
+**Valdemar Contact Damage**:
+The one damage dealt through physical contact with Valdemar in Normal Form, during Valdemar Awakening, or throughout Dark Mode, followed by the Player's ordinary knockback and hurt immunity. It is passive rather than an active attack and ends only on Valdemar Defeat.
+_Avoid_: Sword Gleam, contact-safe form, repeated damage during Player hurt immunity
+
+**Valdemar Sword Pursuit**:
+Valdemar's unbounded Dark Mode movement at one hundred fifty pixels per second toward the Player's current horizontal position, independent of a Skill Detection Area. He continuously runs or maintains alignment until the center of the Sword Gleam on his facing side shares the Player's horizontal coordinate, without requiring them to share the same height.
+_Avoid_: Enemy patrol, bounded chase, proximity-gated chase, body-to-body alignment
+
+**Valdemar Sword Gleam**:
+A half-second Dark Mode attack that is immediately available upon entering Dark Mode and begins whenever Valdemar's Sword Gleam is horizontally aligned with the Player and ready. It pairs Valdemar's locked attack position and facing with the Guard Sword Gleam, deals one damage to a given target at most once, and starts an independent four-second cooldown that continues through pursuit, hurt, and Black Water Cast; non-lethal damage cannot interrupt a release, while Valdemar Defeat prevents any further damage from it.
+_Avoid_: Guard Sword Gleam cooldown, Valdemar skill presentation, contact damage
+
+**Valdemar Black Water Cycle**:
+The repeating sixteen-second interval that begins when Valdemar enters Dark Mode. A completed interval makes one Black Water Cast due and takes priority over a Sword Gleam that has not started; it remains as one pending cast while an active Sword Gleam or hurt presentation finishes, and restarts only when that cast actually begins.
+_Avoid_: Ten-second signal interval, immediate first request, Sword Gleam
+
+**Valdemar Black Water Cast**:
+A stationary six-second skill presentation that begins facing the Player, locks Valdemar's position and facing, presents nine frames over its first three seconds, and deliberately holds its final frame for the remaining three. It emits exactly one Black Water signal when it begins and prevents pursuit or Sword Gleam until it finishes; non-lethal damage does not interrupt it, while Valdemar Defeat clears any pending cast and stops both an active cast and all future Black Water Cycles, and the signal currently causes no further effect or damage.
+_Avoid_: Sword Gleam, interruptible cast, implemented Black Water effect
+
+**Valdemar Defeat**:
+The Boss combat outcome reached when Valdemar's health is depleted. It disables his pursuit, attacks, Black Water Cycle, and combat collisions, hides his Health Bar, preserves his position and facing through the dead motion into the retained Dying presentation, and emits one `died` event when that presentation is reached; it does not yet constitute Level 04 Completion.
+_Avoid_: Level 04 Completion, immediate cleanup, implemented final ending
+
 **Elk King**:
 A Boss variant of the Elk with ten maximum health that retains the Elk's thunder and passive shield while adding an independently triggered earthquake ability.
 _Avoid_: Generic multi-skill Enemy, unrelated Enemy species

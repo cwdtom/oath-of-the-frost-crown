@@ -41,7 +41,7 @@
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_rs8d4"]
 radius = 29.0
-height = 100.0
+height = 88.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3tpfr"]
 size = Vector2(32, 99)
@@ -277,7 +277,7 @@ script = ExtResource("1_5lab5")
 texture = ExtResource("1_3tpfr")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1702750230]
-position = Vector2(-8, 4)
+position = Vector2(-3, 10)
 shape = SubResource("CapsuleShape2D_rs8d4")
 
 [node name="HurtBox" type="Area2D" parent="." unique_id=2137491245]
