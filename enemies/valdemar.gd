@@ -11,13 +11,14 @@ const MAXIMUM_HEALTH := 15
 const PLAYER_COLLISION_LAYER := 1 << 1
 const TRANSFORMATION_ANIMATION := &"transformation"
 const ATTACK_ANIMATION := &"attack"
+const HURT_ANIMATION := &"hurt"
 const IDLE_ANIMATION := &"idle"
 const RUN_ANIMATION := &"run"
 const SWORD_GLEAM_CAST_ANIMATION := &"cast"
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum Phase { NORMAL_FORM, AWAKENING, DARK_MODE }
-enum DarkAction { PURSUIT, SWORD_GLEAM }
+enum DarkAction { PURSUIT, SWORD_GLEAM, HURT }
 
 @export var awakening_distance := 600.0
 @export var pursuit_speed := 150.0
@@ -95,10 +96,28 @@ func restore_full_health() -> void:
 
 
 func take_damage(amount: int, _knockback_direction: Vector2) -> void:
-	if _phase != Phase.DARK_MODE:
+	if _phase != Phase.DARK_MODE or not _health.accept_damage(amount):
 		return
 
-	_health.accept_damage(amount)
+	if _dark_action == DarkAction.PURSUIT:
+		_dark_action = DarkAction.HURT
+		velocity = Vector2.ZERO
+		_animation_state.start(HURT_ANIMATION)
+
+	await get_tree().create_timer(
+		_animation_player.get_animation(HURT_ANIMATION).length
+	).timeout
+	_health.end_hurt_immunity()
+	if _phase == Phase.DARK_MODE and _dark_action == DarkAction.HURT:
+		_dark_action = DarkAction.PURSUIT
+		_animation_state.start(IDLE_ANIMATION)
+
+
+func _on_hurt_box_area_entered(area: Area2D) -> void:
+	if not area.is_in_group("weapons"):
+		return
+
+	take_damage(1, global_position - area.global_position)
 
 
 func _on_awakening_boundary_body_entered(body: Node2D) -> void:

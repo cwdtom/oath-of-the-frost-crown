@@ -462,3 +462,5 @@ libraries/ = SubResource("AnimationLibrary_fkpj5")
 [node name="AnimationTree" type="AnimationTree" parent="." unique_id=1680059287]
 tree_root = SubResource("AnimationNodeStateMachine_1n5kv")
 anim_player = NodePath("../AnimationPlayer")
+
+[connection signal="area_entered" from="HurtBox" to="." method="_on_hurt_box_area_entered"]

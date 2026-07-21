@@ -18,6 +18,7 @@ const EXPECTED_MAXIMUM_HEALTH := 15
 const EXPECTED_AWAKENING_DISTANCE := 600.0
 const EXPECTED_PURSUIT_SPEED := 150.0
 const EXPECTED_SWORD_GLEAM_COOLDOWN := 4.0
+const EXPECTED_HURT_DURATION := 0.4
 
 var fixture: HeadlessGameplayFixture
 
@@ -42,7 +43,7 @@ func _run() -> void:
 	if player != null and valdemar != null:
 		await verify_production_configuration(valdemar)
 		await verify_activation_sequence(level, player, valdemar)
-		await verify_sword_pursuit_and_gleam(player, valdemar)
+		await verify_dark_mode_combat_interactions(player, valdemar)
 
 	Input.action_release("right")
 	fixture.complete(false)
@@ -137,6 +138,7 @@ func verify_activation_sequence(
 	var black_water_notifications := [0]
 	var death_notifications := [0]
 	var awakening_count := [0]
+	var hurt_count := [0]
 	fixture.expect(
 		awakening_boundary.collision_mask == PLAYER_LAYER
 		and is_equal_approx(
@@ -159,6 +161,8 @@ func verify_activation_sequence(
 		func(animation_name: StringName) -> void:
 			if animation_name == &"transformation":
 				awakening_count[0] += 1
+			elif animation_name == &"hurt":
+				hurt_count[0] += 1
 	)
 
 	fixture.expect(normal.visible and not dark_mode.visible, "Valdemar begins in Normal Form")
@@ -253,12 +257,47 @@ func verify_activation_sequence(
 		"Dark Mode enables active behavior with Sword Gleam ready and Black Water timing started"
 	)
 
-	valdemar.take_damage(1, Vector2.ZERO)
+	player.global_position = valdemar.global_position + Vector2(-1000.0, -5000.0)
+	await fixture.physics_frames(2)
+	var hurt_position := valdemar.global_position
+	valdemar.take_damage(1, Vector2(1000.0, -1000.0))
+	await fixture.physics_frames(1)
 	fixture.expect(
 		valdemar.call("get_current_health") == EXPECTED_MAXIMUM_HEALTH - 1
 		and health_bar.value == EXPECTED_MAXIMUM_HEALTH - 1
-		and health_notifications == [Vector2i(14, 15)],
-		"Dark Mode enables incoming damage and publishes Health Presentation changes"
+		and health_notifications == [Vector2i(14, 15)]
+		and valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() == &"hurt"
+		and hurt_count[0] == 1
+		and valdemar.global_position == hurt_position,
+		"Pursuit damage updates Health Presentation and starts Valdemar Hurt without displacement"
+	)
+	var hurt_play_position := animation_state.get_current_play_position()
+	valdemar.take_damage(1, Vector2(-1000.0, 1000.0))
+	await fixture.physics_frames(2)
+	fixture.expect(
+		valdemar.call("get_current_health") == EXPECTED_MAXIMUM_HEALTH - 1
+		and health_notifications == [Vector2i(14, 15)]
+		and hurt_count[0] == 1
+		and animation_state.get_current_play_position() > hurt_play_position
+		and valdemar.global_position == hurt_position,
+		"Hurt immunity rejects repeated damage without restarting Valdemar Hurt or moving him"
+	)
+	await fixture.wait_seconds(EXPECTED_HURT_DURATION - 0.15)
+	fixture.expect(
+		valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() == &"hurt"
+		and valdemar.global_position == hurt_position,
+		"Valdemar remains stationary for the complete Hurt response"
+	)
+	player.global_position = valdemar.global_position + Vector2(1000.0, -5000.0)
+	await fixture.wait_seconds(0.15)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		not valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() == &"run"
+		and valdemar.global_position.x > hurt_position.x,
+		"Completed Valdemar Hurt resumes Pursuit toward the Player's current position"
 	)
 	fixture.expect(
 		black_water_notifications[0] == 0 and death_notifications[0] == 0,
@@ -275,11 +314,12 @@ func verify_activation_sequence(
 	)
 
 
-func verify_sword_pursuit_and_gleam(
+func verify_dark_mode_combat_interactions(
 	player: DamageableActor,
 	valdemar: DamageableActor
 ) -> void:
 	var dark_mode := valdemar.get_node("DarkMode") as Sprite2D
+	var health_bar := valdemar.get_node("HealthBar/TextureProgressBar") as TextureProgressBar
 	var sword_gleam := valdemar.get_node("SwordGleam") as Area2D
 	var sword_collision := sword_gleam.get_node("CollisionShape2D") as CollisionShape2D
 	var sword_animation := sword_gleam.get_node("AnimationPlayer") as AnimationPlayer
@@ -359,8 +399,39 @@ func verify_sword_pursuit_and_gleam(
 		and sword_cooldown.time_left > EXPECTED_SWORD_GLEAM_COOLDOWN - 0.1,
 		"Sword Gleam starts its independent four-second cooldown at attack start"
 	)
+	var valdemar_health_before_attack_damage := int(valdemar.call("get_current_health"))
+	var locked_position := valdemar.global_position
+	var locked_facing := dark_mode.flip_h
+	var locked_gleam_position := sword_gleam.position
+	var locked_gleam_scale := sword_gleam.scale
+	var gleam_play_position := sword_animation.current_animation_position
+	var cooldown_before_attack_damage := sword_cooldown.time_left
+	valdemar.take_damage(1, Vector2(1000.0, 1000.0))
+	await fixture.physics_frames(1)
+	fixture.expect(
+		valdemar.call("get_current_health") == valdemar_health_before_attack_damage - 1
+		and health_bar.value == valdemar_health_before_attack_damage - 1
+		and valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() == &"attack"
+		and sword_animation.current_animation == &"cast"
+		and sword_animation.current_animation_position > gleam_play_position
+		and valdemar.global_position == locked_position
+		and dark_mode.flip_h == locked_facing
+		and sword_gleam.position == locked_gleam_position
+		and sword_gleam.scale == locked_gleam_scale
+		and sword_cooldown.time_left < cooldown_before_attack_damage,
+		"Damage during Sword Gleam updates health without interrupting its committed attack or cooldown"
+	)
+	valdemar.take_damage(1, Vector2(-1000.0, -1000.0))
+	await fixture.physics_frames(1)
+	fixture.expect(
+		valdemar.call("get_current_health") == valdemar_health_before_attack_damage - 1
+		and animation_state.get_current_node() == &"attack"
+		and valdemar.global_position == locked_position,
+		"Sword Gleam hurt immunity rejects repeated damage without changing the committed attack"
+	)
 
-	await fixture.wait_seconds(0.10)
+	await fixture.wait_seconds(0.05)
 	fixture.expect(
 		player.call("get_current_health") == health_before_first_cast
 		and sword_collision.disabled,
@@ -383,9 +454,6 @@ func verify_sword_pursuit_and_gleam(
 	)
 	per_cast_target.collision_layer = 0
 
-	var locked_position := valdemar.global_position
-	var locked_gleam_position := sword_gleam.position
-	var locked_gleam_scale := sword_gleam.scale
 	player.global_position = valdemar.global_position + Vector2(1000.0, 0.0)
 	await fixture.wait_seconds(0.12)
 	fixture.expect(
@@ -406,7 +474,8 @@ func verify_sword_pursuit_and_gleam(
 	var pursuit_resume_x := valdemar.global_position.x
 	await fixture.physics_frames(3)
 	fixture.expect(
-		animation_state.get_current_node() == &"run"
+		not valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() == &"run"
 		and valdemar.global_position.x > pursuit_resume_x
 		and dark_mode.flip_h
 		and sword_gleam.position.x > 0.0
@@ -426,6 +495,10 @@ func verify_sword_pursuit_and_gleam(
 		and attack_start_frames.size() == 1,
 		"Sword cooldown pursuit keeps correcting alignment when the Player changes sides and height"
 	)
+	await recover_player(player)
+	player.set_physics_process(true)
+	await verify_contact_damage(player, valdemar, "Dark Mode Pursuit")
+	player.set_physics_process(false)
 
 	player.global_position = Vector2(
 		valdemar.global_position.x - sword_offset,
@@ -438,26 +511,93 @@ func verify_sword_pursuit_and_gleam(
 		and attack_start_frames.size() == 1,
 		"Valdemar holds current alignment without attacking while Sword Gleam cools down"
 	)
+	await recover_player(player)
+	var valdemar_health_before_wait_damage := int(valdemar.call("get_current_health"))
+	var waiting_position := valdemar.global_position
+	var cooldown_before_hurt := sword_cooldown.time_left
+	var weapon_hit := add_weapon_hit(valdemar.global_position)
+	for _frame in 3:
+		await fixture.physics_frames(1)
+		if animation_state.get_current_node() == &"hurt":
+			break
+	weapon_hit.collision_layer = 0
+	fixture.expect(
+		valdemar.call("get_current_health") == valdemar_health_before_wait_damage - 1
+		and health_bar.value == valdemar_health_before_wait_damage - 1,
+		"Damage during Sword Gleam cooldown waiting reduces Valdemar health"
+	)
+	fixture.expect(
+		animation_state.get_current_node() == &"hurt",
+		"Damage during Sword Gleam cooldown waiting starts Valdemar Hurt"
+	)
+	fixture.expect(
+		valdemar.global_position == waiting_position,
+		"Damage during Sword Gleam cooldown waiting applies zero displacement"
+	)
+	player.set_physics_process(true)
+	await verify_contact_damage(player, valdemar, "Valdemar Hurt")
+	player.set_physics_process(false)
+	fixture.expect(
+		animation_state.get_current_node() == &"hurt"
+		and sword_cooldown.time_left < cooldown_before_hurt - 0.05
+		and valdemar.global_position == waiting_position,
+		"Sword Gleam cooldown and Valdemar Contact Damage remain active throughout Hurt"
+	)
+	await fixture.wait_seconds(EXPECTED_HURT_DURATION)
+	fixture.expect(
+		not valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() != &"hurt",
+		"Sword-cooldown Hurt completes before Valdemar resumes Pursuit"
+	)
 
-	await fixture.wait_seconds(maxf(sword_cooldown.time_left - 0.10, 0.0))
+	await fixture.wait_seconds(maxf(sword_cooldown.time_left - 0.05, 0.0))
 	fixture.expect(
 		attack_start_frames.size() == 1,
 		"Sword Gleam cannot release again before its four-second cooldown completes"
 	)
 	var health_before_second_cast := int(player.call("get_current_health"))
-	await fixture.wait_seconds(0.20)
+	for _frame in 8:
+		await fixture.physics_frames(1)
+		if attack_start_frames.size() == 2:
+			break
 	fixture.expect(
 		attack_start_frames.size() == 2
 		and gleam_start_frames.size() == 2
 		and attack_start_frames[1] == gleam_start_frames[1],
 		"An aligned Sword Gleam releases again when its independent cooldown completes"
 	)
-	await fixture.wait_seconds(0.20)
-	fixture.expect(
-		player.call("get_current_health") == health_before_second_cast - 1,
-		"Each later Sword Gleam release contributes one new damage event"
-	)
+	var second_cast_position := valdemar.global_position
 	player.set_physics_process(true)
+	player.global_position = valdemar.global_position + Vector2(-55.0, 0.0)
+	Input.action_press("right")
+	for _frame in 7:
+		await fixture.physics_frames(1)
+		if int(player.call("get_current_health")) < health_before_second_cast:
+			break
+	Input.action_release("right")
+	fixture.expect(
+		player.call("get_current_health") == health_before_second_cast - 1
+		and sword_collision.disabled
+		and animation_state.get_current_node() == &"attack"
+		and valdemar.global_position == second_cast_position,
+		"Valdemar Contact Damage remains active during the locked Sword Gleam before its damage region opens"
+	)
+	player.set_physics_process(false)
+
+
+func add_weapon_hit(position: Vector2) -> Area2D:
+	var weapon := Area2D.new()
+	weapon.add_to_group("weapons")
+	weapon.collision_layer = PLAYER_LAYER
+	weapon.collision_mask = 1 << 2
+	weapon.global_position = position
+	var collision := CollisionShape2D.new()
+	var shape := RectangleShape2D.new()
+	shape.size = Vector2(20.0, 20.0)
+	collision.shape = shape
+	weapon.add_child(collision)
+	fixture.add_node(weapon, current_scene)
+	return weapon
 
 
 func cross_boss_door(level: CampaignLevel, player: DamageableActor) -> void:
