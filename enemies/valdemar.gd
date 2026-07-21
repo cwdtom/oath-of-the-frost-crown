@@ -10,15 +10,22 @@ signal died
 const MAXIMUM_HEALTH := 15
 const PLAYER_COLLISION_LAYER := 1 << 1
 const TRANSFORMATION_ANIMATION := &"transformation"
+const ATTACK_ANIMATION := &"attack"
 const IDLE_ANIMATION := &"idle"
+const RUN_ANIMATION := &"run"
+const SWORD_GLEAM_CAST_ANIMATION := &"cast"
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum Phase { NORMAL_FORM, AWAKENING, DARK_MODE }
+enum DarkAction { PURSUIT, SWORD_GLEAM }
 
 @export var awakening_distance := 600.0
+@export var pursuit_speed := 150.0
 
 var _phase := Phase.NORMAL_FORM
+var _dark_action := DarkAction.PURSUIT
 var _health := DamageAndHealthModule.new(MAXIMUM_HEALTH)
+var _player: Node2D
 
 @onready var _normal: Sprite2D = $Normal
 @onready var _dark_mode: Sprite2D = $DarkMode
@@ -27,6 +34,10 @@ var _health := DamageAndHealthModule.new(MAXIMUM_HEALTH)
 @onready var _hurt_box_collision: CollisionShape2D = $HurtBox/CollisionShape2D
 @onready var _awakening_boundary: Area2D = $AwakeningBoundary
 @onready var _awakening_shape: CollisionShape2D = $AwakeningBoundary/CollisionShape2D
+@onready var _sword_gleam: Area2D = $SwordGleam
+@onready var _sword_gleam_animation_player: AnimationPlayer = $SwordGleam/AnimationPlayer
+@onready var _sword_gleam_offset_x := absf(_sword_gleam.position.x)
+@onready var _sword_gleam_scale_x := absf(_sword_gleam.scale.x)
 @onready var _sword_gleam_cooldown: Timer = $SwordGleamCooldown
 @onready var _black_water_cooldown: Timer = $BlackWaterCooldown
 @onready var _animation_player: AnimationPlayer = $AnimationPlayer
@@ -100,6 +111,7 @@ func _on_awakening_boundary_body_entered(body: Node2D) -> void:
 		return
 
 	_phase = Phase.AWAKENING
+	_player = body
 	_awakening_boundary.set_deferred("monitoring", false)
 	_animation_tree.active = true
 	_animation_state.start(TRANSFORMATION_ANIMATION)
@@ -127,9 +139,65 @@ func _enter_dark_mode() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not is_on_floor():
-		velocity += get_gravity() * delta
+	if _dark_action == DarkAction.PURSUIT:
+		if not is_on_floor():
+			velocity += get_gravity() * delta
+		_update_sword_pursuit(delta)
+	else:
+		velocity = Vector2.ZERO
 	move_and_slide()
+
+
+func _update_sword_pursuit(delta: float) -> void:
+	if not is_instance_valid(_player):
+		velocity.x = 0.0
+		_play_movement_animation(IDLE_ANIMATION)
+		return
+
+	_face_player()
+	var target_x := _player.global_position.x - _sword_gleam.position.x
+	var distance_to_target := target_x - global_position.x
+	var maximum_step := pursuit_speed * delta
+	if absf(distance_to_target) <= maximum_step:
+		global_position.x = target_x
+		velocity.x = 0.0
+		if _sword_gleam_cooldown.is_stopped():
+			_start_sword_gleam()
+		else:
+			_play_movement_animation(IDLE_ANIMATION)
+		return
+
+	velocity.x = signf(distance_to_target) * pursuit_speed
+	_play_movement_animation(RUN_ANIMATION)
+
+
+func _face_player() -> void:
+	var direction := signf(_player.global_position.x - global_position.x)
+	if is_zero_approx(direction):
+		return
+
+	_dark_mode.flip_h = direction > 0.0
+	_sword_gleam.position.x = _sword_gleam_offset_x * direction
+	_sword_gleam.scale.x = -_sword_gleam_scale_x * direction
+
+
+func _play_movement_animation(animation_name: StringName) -> void:
+	if _animation_state.get_current_node() != animation_name:
+		_animation_state.travel(animation_name)
+
+
+func _start_sword_gleam() -> void:
+	_dark_action = DarkAction.SWORD_GLEAM
+	velocity = Vector2.ZERO
+	_sword_gleam_cooldown.start()
+	_animation_state.start(ATTACK_ANIMATION)
+	_sword_gleam_animation_player.play(SWORD_GLEAM_CAST_ANIMATION)
+	await get_tree().create_timer(
+		_animation_player.get_animation(ATTACK_ANIMATION).length
+	).timeout
+	if _phase == Phase.DARK_MODE and _dark_action == DarkAction.SWORD_GLEAM:
+		_dark_action = DarkAction.PURSUIT
+		_animation_state.start(IDLE_ANIMATION)
 
 
 func _on_health_changed(current_health: int, maximum_health: int) -> void:

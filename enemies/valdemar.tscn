@@ -251,6 +251,18 @@ tracks/0/keys = {
 "update": 0,
 "values": [ExtResource("22_prw4k"), ExtResource("23_im525"), ExtResource("24_ocshj"), ExtResource("25_fc2qg"), ExtResource("26_j3o80"), ExtResource("27_th374"), ExtResource("28_c2rep"), ExtResource("29_7bwf5"), ExtResource("30_i8iee")]
 }
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("DarkMode:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 
 [sub_resource type="Animation" id="Animation_no11j"]
 resource_name = "skill"

@@ -1,11 +1,23 @@
 extends SceneTree
 
 
+class CountingDamageableActor:
+	extends DamageableActor
+
+	var damage_received := 0
+
+
+	func take_damage(amount: int, _knockback_direction: Vector2) -> void:
+		damage_received += amount
+
+
 const LEVEL_04_SCENE := preload("res://levels/level_04.tscn")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const PLAYER_LAYER := 1 << 1
 const EXPECTED_MAXIMUM_HEALTH := 15
 const EXPECTED_AWAKENING_DISTANCE := 600.0
+const EXPECTED_PURSUIT_SPEED := 150.0
+const EXPECTED_SWORD_GLEAM_COOLDOWN := 4.0
 
 var fixture: HeadlessGameplayFixture
 
@@ -30,6 +42,7 @@ func _run() -> void:
 	if player != null and valdemar != null:
 		await verify_production_configuration(valdemar)
 		await verify_activation_sequence(level, player, valdemar)
+		await verify_sword_pursuit_and_gleam(player, valdemar)
 
 	Input.action_release("right")
 	fixture.complete(false)
@@ -75,9 +88,26 @@ func verify_production_configuration(valdemar: DamageableActor) -> void:
 	fixture.expect(
 		is_equal_approx(
 			(valdemar.get_node("SwordGleamCooldown") as Timer).wait_time,
-			4.0
+			EXPECTED_SWORD_GLEAM_COOLDOWN
 		),
 		"Valdemar Sword Gleam has a four-second cooldown"
+	)
+	fixture.expect(
+		is_equal_approx(
+			(
+				valdemar.get_node("SwordGleam/AnimationPlayer") as AnimationPlayer
+			).get_animation(&"cast").length,
+			0.5
+		),
+		"Valdemar's Guard Sword Gleam presentation lasts half a second"
+	)
+	fixture.expect(
+		valdemar.get("pursuit_speed") == EXPECTED_PURSUIT_SPEED,
+		"Valdemar pursues at 150 pixels per second"
+	)
+	fixture.expect(
+		valdemar.get_node_or_null("SkillDetect") == null,
+		"Valdemar pursuit has no Skill Detection Area gate"
 	)
 	var black_water_cooldown := valdemar.get_node("BlackWaterCooldown") as Timer
 	fixture.expect(
@@ -243,6 +273,191 @@ func verify_activation_sequence(
 		awakening_count[0] == 1 and dark_mode.visible,
 		"The Awakening boundary cannot restart after its first entry"
 	)
+
+
+func verify_sword_pursuit_and_gleam(
+	player: DamageableActor,
+	valdemar: DamageableActor
+) -> void:
+	var dark_mode := valdemar.get_node("DarkMode") as Sprite2D
+	var sword_gleam := valdemar.get_node("SwordGleam") as Area2D
+	var sword_collision := sword_gleam.get_node("CollisionShape2D") as CollisionShape2D
+	var sword_animation := sword_gleam.get_node("AnimationPlayer") as AnimationPlayer
+	var sword_cooldown := valdemar.get_node("SwordGleamCooldown") as Timer
+	var animation_tree := valdemar.get_node("AnimationTree") as AnimationTree
+	var animation_state := animation_tree.get(
+		"parameters/playback"
+	) as AnimationNodeStateMachinePlayback
+	var sword_offset := absf(sword_gleam.position.x)
+	var attack_start_frames: Array[int] = []
+	var gleam_start_frames: Array[int] = []
+	animation_tree.animation_started.connect(
+		func(animation_name: StringName) -> void:
+			if animation_name == &"attack":
+				attack_start_frames.append(Engine.get_physics_frames())
+	)
+	sword_animation.animation_started.connect(
+		func(animation_name: StringName) -> void:
+			if animation_name == &"cast":
+				gleam_start_frames.append(Engine.get_physics_frames())
+	)
+
+	await recover_player(player)
+	(player.get_node("VisualRoot/ShieldSkill/Shield") as CanvasItem).hide()
+	player.set_physics_process(false)
+	player.global_position = valdemar.global_position + Vector2(-1500.0, -5000.0)
+	var pursuit_start_x := valdemar.global_position.x
+	var pursuit_frames := 6
+	await fixture.physics_frames(pursuit_frames)
+	var expected_pursuit_x := (
+		pursuit_start_x
+		- EXPECTED_PURSUIT_SPEED * (pursuit_frames - 1) / Engine.physics_ticks_per_second
+	)
+	fixture.expect(
+		is_equal_approx(valdemar.global_position.x, expected_pursuit_x),
+		"Dark Mode pursues an unbounded horizontal target at 150 pixels per second regardless of height"
+	)
+	fixture.expect(
+		not dark_mode.flip_h
+		and sword_gleam.position.x < 0.0
+		and sword_gleam.scale.x > 0.0,
+		"Left pursuit keeps Valdemar and Sword Gleam coherently west-facing"
+	)
+
+	var snap_target_x := valdemar.global_position.x - 1.0
+	player.global_position = Vector2(
+		snap_target_x - sword_offset,
+		valdemar.global_position.y
+	)
+	var per_cast_target := CountingDamageableActor.new()
+	per_cast_target.collision_layer = PLAYER_LAYER
+	per_cast_target.collision_mask = 0
+	per_cast_target.global_position = player.global_position
+	var per_cast_target_shape := CollisionShape2D.new()
+	var per_cast_target_rectangle := RectangleShape2D.new()
+	per_cast_target_rectangle.size = Vector2(20.0, 20.0)
+	per_cast_target_shape.shape = per_cast_target_rectangle
+	per_cast_target.add_child(per_cast_target_shape)
+	fixture.add_node(per_cast_target, player.get_parent())
+	var health_before_first_cast := int(player.call("get_current_health"))
+	await fixture.physics_frames(1)
+	fixture.expect(
+		is_equal_approx(valdemar.global_position.x, snap_target_x)
+		and is_equal_approx(sword_gleam.global_position.x, player.global_position.x),
+		"Pursuit snaps across its next step to align the facing Sword Gleam center without oscillation"
+	)
+	fixture.expect(
+		attack_start_frames.size() == 1
+		and gleam_start_frames.size() == 1
+		and attack_start_frames[0] == gleam_start_frames[0]
+		and animation_state.get_current_node() == &"attack"
+		and sword_animation.current_animation == &"cast",
+		"Immediate readiness starts Valdemar and Sword Gleam together in one physics frame"
+	)
+	fixture.expect(
+		not sword_cooldown.is_stopped()
+		and sword_cooldown.time_left > EXPECTED_SWORD_GLEAM_COOLDOWN - 0.1,
+		"Sword Gleam starts its independent four-second cooldown at attack start"
+	)
+
+	await fixture.wait_seconds(0.10)
+	fixture.expect(
+		player.call("get_current_health") == health_before_first_cast
+		and sword_collision.disabled,
+		"Sword Gleam does not expose damage before 0.15 seconds"
+	)
+	await fixture.wait_seconds(0.10)
+	fixture.expect(
+		player.call("get_current_health") == health_before_first_cast - 1
+		and per_cast_target.damage_received == 1
+		and not sword_collision.disabled,
+		"Sword Gleam exposes one damage per target from 0.15 seconds"
+	)
+	per_cast_target.global_position.x += 400.0
+	await fixture.physics_frames(2)
+	per_cast_target.global_position.x -= 400.0
+	await fixture.physics_frames(2)
+	fixture.expect(
+		per_cast_target.damage_received == 1,
+		"One active Sword Gleam cannot damage a target again after it exits and re-enters"
+	)
+	per_cast_target.collision_layer = 0
+
+	var locked_position := valdemar.global_position
+	var locked_gleam_position := sword_gleam.position
+	var locked_gleam_scale := sword_gleam.scale
+	player.global_position = valdemar.global_position + Vector2(1000.0, 0.0)
+	await fixture.wait_seconds(0.12)
+	fixture.expect(
+		valdemar.global_position == locked_position
+		and not dark_mode.flip_h
+		and sword_gleam.position == locked_gleam_position
+		and sword_gleam.scale == locked_gleam_scale
+		and not sword_collision.disabled
+		and animation_state.get_current_node() == &"attack",
+		"Sword Gleam remains damaging while locking Valdemar's position, facing, and release through 0.5 seconds"
+	)
+	fixture.expect(
+		player.call("get_current_health") == health_before_first_cast - 1,
+		"One Sword Gleam release damages the real Player at most once"
+	)
+
+	await fixture.wait_seconds(0.15)
+	var pursuit_resume_x := valdemar.global_position.x
+	await fixture.physics_frames(3)
+	fixture.expect(
+		animation_state.get_current_node() == &"run"
+		and valdemar.global_position.x > pursuit_resume_x
+		and dark_mode.flip_h
+		and sword_gleam.position.x > 0.0
+		and sword_gleam.scale.x < 0.0
+		and not sword_gleam.visible
+		and sword_collision.disabled
+		and sword_collision.global_position.x > valdemar.global_position.x,
+		"Pursuit resumes after 0.5 seconds and mirrors the complete Sword Gleam to the Player's right"
+	)
+
+	player.global_position = valdemar.global_position + Vector2(-1000.0, -5000.0)
+	var turn_start_x := valdemar.global_position.x
+	await fixture.physics_frames(3)
+	fixture.expect(
+		valdemar.global_position.x < turn_start_x
+		and not dark_mode.flip_h
+		and attack_start_frames.size() == 1,
+		"Sword cooldown pursuit keeps correcting alignment when the Player changes sides and height"
+	)
+
+	player.global_position = Vector2(
+		valdemar.global_position.x - sword_offset,
+		valdemar.global_position.y
+	)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		is_equal_approx(sword_gleam.global_position.x, player.global_position.x)
+		and animation_state.get_current_node() == &"idle"
+		and attack_start_frames.size() == 1,
+		"Valdemar holds current alignment without attacking while Sword Gleam cools down"
+	)
+
+	await fixture.wait_seconds(maxf(sword_cooldown.time_left - 0.10, 0.0))
+	fixture.expect(
+		attack_start_frames.size() == 1,
+		"Sword Gleam cannot release again before its four-second cooldown completes"
+	)
+	var health_before_second_cast := int(player.call("get_current_health"))
+	await fixture.wait_seconds(0.20)
+	fixture.expect(
+		attack_start_frames.size() == 2
+		and gleam_start_frames.size() == 2
+		and attack_start_frames[1] == gleam_start_frames[1],
+		"An aligned Sword Gleam releases again when its independent cooldown completes"
+	)
+	await fixture.wait_seconds(0.20)
+	fixture.expect(
+		player.call("get_current_health") == health_before_second_cast - 1,
+		"Each later Sword Gleam release contributes one new damage event"
+	)
+	player.set_physics_process(true)
 
 
 func cross_boss_door(level: CampaignLevel, player: DamageableActor) -> void:
