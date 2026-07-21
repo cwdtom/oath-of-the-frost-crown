@@ -11,6 +11,7 @@ const MAXIMUM_HEALTH := 15
 const PLAYER_COLLISION_LAYER := 1 << 1
 const TRANSFORMATION_ANIMATION := &"transformation"
 const ATTACK_ANIMATION := &"attack"
+const DEAD_ANIMATION := &"dead"
 const HURT_ANIMATION := &"hurt"
 const IDLE_ANIMATION := &"idle"
 const RUN_ANIMATION := &"run"
@@ -18,7 +19,7 @@ const SKILL_ANIMATION := &"skill"
 const SWORD_GLEAM_CAST_ANIMATION := &"cast"
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
-enum Phase { NORMAL_FORM, AWAKENING, DARK_MODE }
+enum Phase { NORMAL_FORM, AWAKENING, DARK_MODE, DEFEATED }
 enum DarkAction { PURSUIT, SWORD_GLEAM, HURT, BLACK_WATER_CAST }
 
 @export var awakening_distance := 600.0
@@ -32,12 +33,15 @@ var _black_water_pending := false
 
 @onready var _normal: Sprite2D = $Normal
 @onready var _dark_mode: Sprite2D = $DarkMode
+@onready var _dying: Sprite2D = $Dying
+@onready var _body_collision: CollisionShape2D = $CollisionShape2D
 @onready var _health_bar_root: Node2D = $HealthBar
 @onready var _health_bar: TextureProgressBar = $HealthBar/TextureProgressBar
 @onready var _hurt_box_collision: CollisionShape2D = $HurtBox/CollisionShape2D
 @onready var _awakening_boundary: Area2D = $AwakeningBoundary
 @onready var _awakening_shape: CollisionShape2D = $AwakeningBoundary/CollisionShape2D
 @onready var _sword_gleam: Area2D = $SwordGleam
+@onready var _sword_gleam_collision: CollisionShape2D = $SwordGleam/CollisionShape2D
 @onready var _sword_gleam_animation_player: AnimationPlayer = $SwordGleam/AnimationPlayer
 @onready var _sword_gleam_offset_x := absf(_sword_gleam.position.x)
 @onready var _sword_gleam_scale_x := absf(_sword_gleam.scale.x)
@@ -99,7 +103,19 @@ func restore_full_health() -> void:
 
 
 func take_damage(amount: int, _knockback_direction: Vector2) -> void:
-	if _phase != Phase.DARK_MODE or not _health.accept_damage(amount):
+	if _phase != Phase.DARK_MODE:
+		return
+
+	if (
+		amount > 0
+		and amount >= _health.get_current_health()
+		and _health.is_hurt_immune()
+	):
+		_health.end_hurt_immunity()
+	if not _health.accept_damage(amount):
+		return
+	if _health.is_depleted():
+		_begin_defeat()
 		return
 
 	if _dark_action == DarkAction.PURSUIT:
@@ -259,6 +275,54 @@ func _finish_dark_action() -> void:
 	else:
 		_dark_action = DarkAction.PURSUIT
 		_animation_state.start(IDLE_ANIMATION)
+
+
+func _begin_defeat() -> void:
+	if _phase == Phase.DEFEATED:
+		return
+
+	_phase = Phase.DEFEATED
+	_dark_action = DarkAction.PURSUIT
+	_black_water_pending = false
+	velocity = Vector2.ZERO
+	set_physics_process(false)
+	remove_from_group("enemies")
+	_health_bar_root.hide()
+	_sword_gleam_cooldown.stop()
+	_black_water_cooldown.stop()
+	_sword_gleam.call("cancel_cast")
+	_sword_gleam_animation_player.stop()
+	_sword_gleam.hide()
+	_dark_mode.show()
+	_dying.hide()
+	_dying.flip_h = _dark_mode.flip_h
+
+	collision_layer = 0
+	collision_mask = 0
+	$HurtBox.collision_layer = 0
+	$HurtBox.collision_mask = 0
+	_sword_gleam.collision_layer = 0
+	_sword_gleam.collision_mask = 0
+	_awakening_boundary.collision_layer = 0
+	_awakening_boundary.collision_mask = 0
+	_body_collision.set_deferred("disabled", true)
+	_hurt_box_collision.set_deferred("disabled", true)
+	_sword_gleam_collision.set_deferred("disabled", true)
+	_awakening_boundary.set_deferred("monitoring", false)
+	_sword_gleam.set_deferred("monitoring", false)
+
+	_animation_state.start(DEAD_ANIMATION)
+	_animation_tree.advance(0.0)
+	await get_tree().create_timer(
+		_animation_player.get_animation(DEAD_ANIMATION).length
+	).timeout
+	if _phase != Phase.DEFEATED:
+		return
+
+	_animation_tree.active = false
+	_dark_mode.hide()
+	_dying.show()
+	died.emit()
 
 
 func _on_health_changed(current_health: int, maximum_health: int) -> void:
