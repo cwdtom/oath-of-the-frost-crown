@@ -31,8 +31,12 @@ The temporary protection that follows accepted non-lethal damage to the Player a
 _Avoid_: Invincibility, damage immunity, invincibility frames
 
 **Persistent Damage Contact**:
-The Player's uninterrupted physical contact with a passive damage source that remains able to deal damage over time, such as a living Enemy's body; separation, loss of the source's damage capability, explicit Player damage immunity, or a terminal outcome makes the contact invalid. If contact remains valid when Player Hurt Immunity ends, one contact immediately produces another complete accepted-damage response—including health loss, the hurt event and presentation, knockback, and renewed Player Hurt Immunity—without requiring contact re-entry; the contact need not be the source that started the immunity and remains applicable if it began or attempted damage during that immunity, while simultaneous contacts cannot produce additional accepted damage during the renewed immunity.
+The Player's uninterrupted physical contact with a damage source that remains able to deal damage over time, such as a living Enemy's body or an active Black Water Field; separation, loss of the source's damage capability, explicit Player damage immunity, or a terminal outcome makes the contact invalid. If contact remains valid when Player Hurt Immunity ends, one contact immediately produces another complete accepted-damage response—including health loss, the hurt event and presentation, knockback, and renewed Player Hurt Immunity—without requiring contact re-entry; the contact need not be the source that started the immunity and remains applicable if it began or attempted damage during that immunity, while simultaneous contacts cannot produce additional accepted damage during the renewed immunity.
 _Avoid_: Skill hit, repeated hit from one skill release, contact re-entry, originating damage source
+
+**Black Water Field**:
+The Level 04 field associated with Valdemar's Black Water Cast. It rests below the playable ground between casts and becomes hazardous through its cast motion whenever Valdemar requests it; while it overlaps the Player, uninterrupted contact deals one damage per accepted hit and follows Persistent Damage Contact rather than the once-per-release rule used by ordinary skill hits. Its accepted hits use the ordinary source-relative knockback and Player damage response without a Black Water-specific exception.
+_Avoid_: One-hit skill, Valdemar contact damage, permanent terrain hazard
 
 **Boss Stability**:
 The rule that accepted damage never displaces a Boss, although it may still reduce health, grant hurt immunity, or cause a hurt presentation according to that Boss's current action. Every Boss retains its position instead of inheriting ordinary Enemy hurt knockback.
@@ -51,7 +55,7 @@ The Boss Health Bar representing Valdemar's fifteen health. It remains hidden th
 _Avoid_: Player HUD health, pre-awakening health bar, Normal Form damage
 
 **Valdemar Hurt**:
-The four-tenths-second non-lethal damage response that stops Valdemar's pursuit or sword-cooldown waiting without displacing him, presents his full hurt motion, and then resumes pursuit when hurt immunity finishes. Damage accepted during a Sword Gleam or Black Water Cast still reduces health and grants the same hurt-immunity interval but does not change that cast's position, facing, or presentation.
+The four-tenths-second non-lethal damage response that stops Valdemar's pursuit or sword-cooldown waiting without displacing him, presents his full hurt motion, and then resumes pursuit when hurt immunity finishes. Damage accepted during a Sword Gleam still reduces health and grants the same hurt-immunity interval without changing that attack's position, facing, or presentation, while damage attempted during a Black Water Cast is rejected by Valdemar Black Water Immunity.
 _Avoid_: Boss knockback, cast interruption, Awakening damage
 
 **Valdemar Contact Damage**:
@@ -75,8 +79,12 @@ The repeating sixteen-second interval that begins when Valdemar enters Dark Mode
 _Avoid_: Ten-second signal interval, immediate first request, Sword Gleam
 
 **Valdemar Black Water Cast**:
-A stationary six-second skill presentation that begins facing the Player, locks Valdemar's position and facing, presents nine frames over its first three seconds, and deliberately holds its final frame for the remaining three. It emits exactly one Black Water signal when it begins and prevents pursuit or Sword Gleam until it finishes; non-lethal damage does not interrupt it, while Valdemar Defeat clears any pending cast and stops both an active cast and all future Black Water Cycles, and the signal currently causes no further effect or damage.
-_Avoid_: Sword Gleam, interruptible cast, implemented Black Water effect
+A stationary six-second skill presentation that begins facing the Player, locks Valdemar's position and facing, presents nine frames over its first three seconds, and deliberately holds its final frame for the remaining three. It requests exactly one Black Water Field cast when it begins, grants Valdemar Black Water Immunity, and prevents pursuit or Sword Gleam until it finishes; Valdemar Defeat clears any pending cast and stops all future Black Water Cycles, while defeat through incoming damage cannot occur during an active cast.
+_Avoid_: Sword Gleam, interruptible cast, permanent Black Water hazard
+
+**Valdemar Black Water Immunity**:
+The explicit damage immunity lasting for the full Valdemar Black Water Cast. Every incoming damage attempt during this interval is rejected without changing health, beginning hurt immunity, or presenting Valdemar Hurt.
+_Avoid_: Valdemar Hurt, cast interruption, Sword Gleam damage handling
 
 **Valdemar Defeat**:
 The Boss combat outcome reached when Valdemar's health is depleted. It disables his pursuit, attacks, Black Water Cycle, and combat collisions, hides his Health Bar, preserves his position and facing through the dead motion into the retained Dying presentation, and emits one `died` event when that presentation is reached; it does not yet constitute Level 04 Completion.
