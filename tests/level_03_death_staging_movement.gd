@@ -386,6 +386,7 @@ func test_player_handoff_holds_elk_king_death_tableau() -> void:
 	)
 	if level_04 != null:
 		fixture.add_node(level_04)
+		await fixture.wait_for_act_announcement(level_04)
 	fixture.expect(
 		campaign_outcomes == [CampaignLevel.OUTCOME_COMPLETION]
 		and not bool(result_interface.call("is_result_visible"))

@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://ca33vgjge8t7" path="res://NPCs/leif.tscn" id="10_4c076"]
 [ext_resource type="PackedScene" uid="uid://bqliwr6qcf8le" path="res://enemies/bear_king.tscn" id="14_ddsyl"]
 [ext_resource type="PackedScene" uid="uid://dl5eqe8erpo5s" path="res://ui/story.tscn" id="14_pdr83"]
+[ext_resource type="PackedScene" uid="uid://bpkspsgvfpdnx" path="res://ui/announcer.tscn" id="16_5l6ou"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_h518d"]
 
@@ -409,3 +410,6 @@ tile_set = SubResource("TileSet_8yqd8")
 
 [node name="Story" parent="." index="7" unique_id=1214048430 instance=ExtResource("14_pdr83")]
 story_path = "res://levels/level_02_story.json"
+
+[node name="Announcer" parent="." index="9" unique_id=1141772961 instance=ExtResource("16_5l6ou")]
+announcement_text = "第二幕\n林中疑影"

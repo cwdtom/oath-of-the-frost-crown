@@ -9,6 +9,8 @@ const DEAD_DURATION := 0.9
 const MAX_STORY_ADVANCE_INPUTS := 64
 const TERMINAL_OUTCOME_PLAYER_DEFEAT := &"player_defeat"
 const TERMINAL_OUTCOME_VALDEMAR_DEFEAT := &"valdemar_defeat"
+const PHASE_EPILOGUE := &"epilogue"
+const PHASE_PRODUCER := &"producer"
 
 var fixture: HeadlessGameplayFixture
 
@@ -177,32 +179,77 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 		and paused
 		and victory_story != null
 		and victory_story.get("story_path") == "res://levels/level_04_b_story.json",
-		"Level 04 Completion starts lv_4_b as its Victory Story"
+		"Level 04 Completion starts the Valdemar Post-Defeat Story"
 	)
 	valdemar.emit_signal("died")
 	await fixture.process_frames(2)
 	fixture.expect(
 		campaign_outcomes == [CampaignLevel.OUTCOME_COMPLETION]
 		and level.get_node_or_null("VictoryStory") == victory_story,
-		"A repeated Valdemar died signal cannot duplicate completion or lv_4_b"
+		"A repeated Valdemar died signal cannot duplicate completion or the Valdemar Post-Defeat Story"
 	)
 
+	var background := level.get_node("Background")
 	await advance_story_phase(level)
 	fixture.expect(
-		main.call("get_active_campaign_level") == level
-		and not level.is_campaign_story_phase_active()
+		main.call("get_campaign_phase") == PHASE_EPILOGUE
+		and main.call("get_active_campaign_level") == null,
+		"Finishing the Valdemar Post-Defeat Story leaves Level 04 for the Campaign Epilogue Page"
+	)
+	fixture.expect(
+		main.get_node_or_null("CampaignEpiloguePage") != null
+		and not bool(main.call("is_campaign_result_visible"))
 		and not paused,
-		"Finishing lv_4_b retains the active Level 04 session"
+		"The Campaign Epilogue Page is an unpaused presentation without a result popup"
+	)
+	var epilogue_page := main.get_node_or_null("CampaignEpiloguePage")
+	var epilogue_music := (
+		epilogue_page.find_child("AudioStreamPlayer", true, false) as AudioStreamPlayer
+		if epilogue_page != null
+		else null
 	)
 	fixture.expect(
-		not level.is_campaign_hud_visible()
-		and not level.is_campaign_control_available()
-		and not bool(main.call("is_campaign_result_visible")),
-		"Finishing lv_4_b holds the Final Tableau without controls or a result popup"
+		epilogue_music != null and epilogue_music.stream != null,
+		"The Campaign Epilogue Page provides narrative-page music"
 	)
 	fixture.expect(
-		bool(valdemar.get_node("Dying").visible),
-		"The Level 04 Final Tableau retains Valdemar's Dying presentation"
+		not is_instance_valid(level) and not is_instance_valid(background),
+		"The Campaign Epilogue Page begins only after Level 04 and its music leave the tree"
+	)
+
+	var continuation := InputEventKey.new()
+	continuation.keycode = KEY_ENTER
+	continuation.pressed = true
+	Input.parse_input_event(continuation)
+	await fixture.process_frames(1)
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_PRODUCER
+		and main.get_node_or_null("Producer") != null,
+		"Campaign Epilogue Page continuation enters the Producer Page"
+	)
+	fixture.expect(
+		main.call("get_active_campaign_level") == null
+		and not bool(main.call("is_campaign_result_visible"))
+		and not paused,
+		"The Producer Page remains outside gameplay and result presentation"
+	)
+	var producer_page := main.get_node_or_null("Producer")
+	var producer_music := (
+		producer_page.find_child("AudioStreamPlayer", true, false) as AudioStreamPlayer
+		if producer_page != null
+		else null
+	)
+	fixture.expect(
+		producer_music != null and producer_music.stream != null,
+		"The Producer Page provides narrative-page music"
+	)
+
+	Input.parse_input_event(continuation)
+	await fixture.process_frames(1)
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_PRODUCER
+		and main.get_node_or_null("Producer") == producer_page,
+		"Continuation Input cannot leave or replace the Producer Page"
 	)
 
 	fixture.set_current_scene(null)
@@ -247,7 +294,7 @@ func test_player_defeat_first_remains_authoritative() -> void:
 	fixture.expect(
 		bool(main.call("is_campaign_result_visible"))
 		and not level.is_campaign_story_phase_active(),
-		"Later Valdemar Defeat cannot replace the loss or start lv_4_b"
+		"Later Valdemar Defeat cannot replace the loss or start the Valdemar Post-Defeat Story"
 	)
 
 	fixture.set_current_scene(null)
@@ -280,7 +327,7 @@ func enter_valdemar_awakening_boundary(
 
 func advance_story_phase(level: CampaignLevel) -> void:
 	for _input_index in MAX_STORY_ADVANCE_INPUTS:
-		if not level.is_campaign_story_phase_active():
+		if not is_instance_valid(level) or not level.is_campaign_story_phase_active():
 			return
 		var input := InputEventKey.new()
 		input.keycode = KEY_ENTER

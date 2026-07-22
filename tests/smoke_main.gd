@@ -42,11 +42,13 @@ func _run() -> void:
 	guide_input.pressed = true
 	Input.parse_input_event(guide_input)
 	await fixture.process_frames(1)
+	Input.parse_input_event(guide_input)
+	await fixture.process_frames(1)
 
 	var level_01 := main.call("get_active_campaign_level") as CampaignLevel
 	fixture.expect(
 		level_01 != null and level_01.get_campaign_id() == &"level_01",
-		"Production title and guide input start Level01"
+		"Production Campaign Prologue Page and Input Guide sequence starts Level01"
 	)
 	if level_01 == null:
 		fixture.complete()
@@ -157,6 +159,7 @@ func _run() -> void:
 		fixture.complete()
 		return
 	fixture.add_node(level_03)
+	await fixture.wait_for_act_announcement(level_03)
 	fixture.expect(
 		find_player_event_source(level_03) != null,
 		"Level03 wires its production Player"
@@ -194,6 +197,7 @@ func _run() -> void:
 
 
 func advance_story_phase(level: CampaignLevel, description: String) -> void:
+	await fixture.wait_for_act_announcement(level)
 	var phase_finished := [false]
 	level.campaign_story_phase_finished.connect(
 		func() -> void: phase_finished[0] = true,

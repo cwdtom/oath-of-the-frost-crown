@@ -25,6 +25,7 @@ func _run() -> void:
 	fixture.expect(level != null, "Debug Runner automatically enters a Campaign Level")
 	if level != null:
 		fixture.add_node(level)
+		await fixture.wait_for_act_announcement(level)
 		fixture.expect(level.get_campaign_id() == &"level_01", "Checkpoint 1 starts Level01")
 		fixture.expect(
 			level.is_campaign_story_phase_active(),
@@ -122,6 +123,7 @@ func verify_campaign_progression(runner: Node, level_01: CampaignLevel) -> void:
 	)
 	if level_02 != null:
 		fixture.add_node(level_02)
+		await fixture.wait_for_act_announcement(level_02)
 		fixture.expect(level_02.is_campaign_story_phase_active(), "Level02 starts its opening Story")
 		verify_debug_health_overrides(level_02)
 		await advance_story_phase(level_02, "Level02 opening Story")
@@ -137,6 +139,7 @@ func verify_campaign_progression(runner: Node, level_01: CampaignLevel) -> void:
 	if level_03 == null:
 		return
 	fixture.add_node(level_03)
+	await fixture.wait_for_act_announcement(level_03)
 	fixture.expect(level_03.is_campaign_story_phase_active(), "Level03 starts its Opening Story")
 	fixture.expect(not level_03.is_campaign_control_available(), "Level03 Story disables controls")
 	fixture.expect(not level_03.is_campaign_hud_visible(), "Level03 Story hides its HUD")
@@ -169,6 +172,7 @@ func verify_campaign_progression(runner: Node, level_01: CampaignLevel) -> void:
 
 
 func advance_story_phase(level: CampaignLevel, description: String) -> void:
+	await fixture.wait_for_act_announcement(level)
 	var finished := [false]
 	level.campaign_story_phase_finished.connect(func() -> void: finished[0] = true)
 	for _input_index in MAX_STORY_ADVANCE_INPUTS:

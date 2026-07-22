@@ -7,6 +7,7 @@ extends "res://levels/campaign_level.gd"
 @onready var player = $Player
 @onready var hud = $HUD
 @onready var story: CanvasLayer = get_node_or_null("Story") as CanvasLayer
+@onready var announcer: CanvasLayer = get_node_or_null("Announcer") as CanvasLayer
 @onready var player_camera: Camera2D = $Player/Camera2D
 
 var story_camera: Camera2D = null
@@ -16,6 +17,9 @@ func prepare_for_campaign(play_opening_story: bool) -> void:
 	var level_player := get_node("Player")
 	level_player.restore_full_health()
 	if play_opening_story:
+		var background := get_node_or_null("Background")
+		if background != null:
+			background.call("set_music_autostart_enabled", false)
 		return
 
 	var opening_story := get_node_or_null("Story")
@@ -23,9 +27,25 @@ func prepare_for_campaign(play_opening_story: bool) -> void:
 		remove_child(opening_story)
 		opening_story.queue_free()
 
+	var act_announcer := get_node_or_null("Announcer")
+	if act_announcer != null:
+		remove_child(act_announcer)
+		act_announcer.queue_free()
+
 
 func is_campaign_story_phase_active() -> bool:
-	return story != null
+	return story != null and announcer == null
+
+
+func is_campaign_act_announcement_active() -> bool:
+	return announcer != null
+
+
+func get_campaign_act_announcement_text() -> String:
+	var announcer := get_node_or_null("Announcer")
+	if announcer == null:
+		return ""
+	return str(announcer.call("get_announcement_text"))
 
 
 func is_campaign_control_available() -> bool:
@@ -59,6 +79,11 @@ func has_campaign_music() -> bool:
 func is_campaign_music_playing() -> bool:
 	var background := get_node_or_null("Background")
 	return background != null and bool(background.call("is_music_playing"))
+
+
+func has_campaign_music_started() -> bool:
+	var background := get_node_or_null("Background")
+	return background != null and bool(background.call("has_music_started"))
 
 
 func get_campaign_music_playback_position() -> float:
@@ -120,8 +145,19 @@ func _ready() -> void:
 		story_camera.force_update_scroll()
 
 		hud.visible = false
-		story.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+		story.process_mode = (
+			Node.PROCESS_MODE_DISABLED
+			if announcer != null
+			else Node.PROCESS_MODE_WHEN_PAUSED
+		)
+		story.set_process_input(announcer == null)
 		story.connect("story_finished", _on_story_finished)
+		if announcer != null:
+			announcer.connect(
+				"announcement_finished",
+				_on_act_announcement_finished,
+				CONNECT_ONE_SHOT
+			)
 		get_tree().paused = true
 
 
@@ -145,6 +181,18 @@ func _on_story_finished() -> void:
 	get_tree().paused = false
 	finished_story.queue_free()
 	campaign_story_phase_finished.emit()
+
+
+func _on_act_announcement_finished() -> void:
+	var finished_announcer := announcer
+	announcer = null
+
+	story.process_mode = Node.PROCESS_MODE_WHEN_PAUSED
+	story.set_process_input(true)
+	var background := get_node_or_null("Background")
+	if background != null:
+		background.call("start_music")
+	finished_announcer.queue_free()
 
 
 func _on_victory_story_finished() -> void:

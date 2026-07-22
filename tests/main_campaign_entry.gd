@@ -4,6 +4,7 @@ extends SceneTree
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const MAIN_SCENE := "res://main.tscn"
 const PHASE_TITLE := &"title"
+const PHASE_PROLOGUE := &"prologue"
 const PHASE_GUIDE := &"guide"
 const PHASE_LEVEL := &"level"
 const CAMERA_OPENING_STORY := &"opening_story"
@@ -36,12 +37,36 @@ func _run() -> void:
 
 	title.emit_signal("start_requested")
 	await fixture.process_frames(1)
-	fixture.expect(main.call("get_campaign_phase") == PHASE_GUIDE, "Title start presents the guide")
-	fixture.expect(main.call("get_active_campaign_level") == null, "Guide has no active Level")
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_PROLOGUE,
+		"Title start presents the Campaign Prologue Page"
+	)
+	fixture.expect(
+		main.call("get_active_campaign_level") == null,
+		"Campaign Prologue Page has no active Level"
+	)
+	var prologue_page := main.get_node_or_null("Prologue")
+	var prologue_music := (
+		prologue_page.find_child("AudioStreamPlayer", true, false) as AudioStreamPlayer
+		if prologue_page != null
+		else null
+	)
+	fixture.expect(
+		prologue_music != null and prologue_music.stream != null,
+		"Campaign Prologue Page provides narrative-page music"
+	)
 
 	var guide_input := InputEventKey.new()
 	guide_input.keycode = KEY_SPACE
 	guide_input.pressed = true
+	Input.parse_input_event(guide_input)
+	await fixture.process_frames(1)
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_GUIDE,
+		"Campaign Prologue Page Continuation Input presents the Input Guide"
+	)
+	fixture.expect(main.call("get_active_campaign_level") == null, "Input Guide has no active Level")
+
 	Input.parse_input_event(guide_input)
 	await fixture.process_frames(1)
 
@@ -53,6 +78,7 @@ func _run() -> void:
 		return
 	fixture.add_node(level_01)
 	fixture.expect(level_01.get_campaign_id() == &"level_01", "Guide input starts Level01")
+	await fixture.wait_for_act_announcement(level_01)
 
 	fixture.expect(level_01.is_campaign_story_phase_active(), "Level01 opens with its Story")
 	fixture.expect(paused, "Level01 opening Story pauses the campaign")
@@ -153,6 +179,10 @@ func _run() -> void:
 
 	await retire_main(main)
 	await verify_pointer_guide_input()
+	await verify_gamepad_continuation_input()
+	await verify_touch_continuation_input()
+	await verify_continuation_input_after_activation()
+	await verify_title_start_input_is_not_continuation_input()
 	fixture.complete(false)
 	await fixture.process_frames(3)
 	fixture.complete()
@@ -177,6 +207,13 @@ func verify_pointer_guide_input() -> void:
 	guide_input.pressed = true
 	Input.parse_input_event(guide_input)
 	await fixture.process_frames(1)
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_GUIDE,
+		"Pointer Continuation Input leaves the Campaign Prologue Page for the Input Guide"
+	)
+
+	Input.parse_input_event(guide_input)
+	await fixture.process_frames(1)
 
 	var level_01 := main.call("get_active_campaign_level") as CampaignLevel
 	fixture.expect(
@@ -190,6 +227,123 @@ func verify_pointer_guide_input() -> void:
 	fixture.expect(
 		main.call("get_active_campaign_level") == level_01,
 		"Repeated pointer guide input cannot start another Level01 session"
+	)
+
+	await retire_main(main)
+
+
+func verify_gamepad_continuation_input() -> void:
+	var main := instantiate_main()
+	if main == null:
+		return
+
+	await fixture.process_frames(1)
+	var title := main.get_node_or_null("Title")
+	if title == null:
+		fixture.expect(false, "Gamepad Continuation Input check is missing the title input")
+		return
+
+	title.emit_signal("start_requested")
+	await fixture.process_frames(1)
+
+	var continuation := InputEventJoypadButton.new()
+	continuation.button_index = JOY_BUTTON_A
+	continuation.pressed = true
+	Input.parse_input_event(continuation)
+	await fixture.process_frames(1)
+
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_GUIDE,
+		"Gamepad Continuation Input leaves the Campaign Prologue Page for the Input Guide"
+	)
+	fixture.expect(
+		main.call("get_active_campaign_level") == null,
+		"Gamepad Continuation Input stops at the Input Guide"
+	)
+
+	await retire_main(main)
+
+
+func verify_touch_continuation_input() -> void:
+	var main := instantiate_main()
+	if main == null:
+		return
+
+	await fixture.process_frames(1)
+	var title := main.get_node_or_null("Title")
+	if title == null:
+		fixture.expect(false, "Touch Continuation Input check is missing the title input")
+		return
+
+	title.emit_signal("start_requested")
+	await fixture.process_frames(1)
+
+	var continuation := InputEventScreenTouch.new()
+	continuation.index = 0
+	continuation.pressed = true
+	main.get_viewport().push_input(continuation, true)
+	await fixture.process_frames(1)
+
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_GUIDE,
+		"Touch Continuation Input leaves the Campaign Prologue Page for the Input Guide"
+	)
+	fixture.expect(
+		main.call("get_active_campaign_level") == null,
+		"Touch Continuation Input stops at the Input Guide"
+	)
+
+	await retire_main(main)
+
+
+func verify_continuation_input_after_activation() -> void:
+	var main := instantiate_main()
+	if main == null:
+		return
+
+	await fixture.process_frames(1)
+	var title := main.get_node_or_null("Title")
+	if title == null:
+		fixture.expect(false, "Continuation Input activation check is missing the title input")
+		return
+
+	var continuation := InputEventKey.new()
+	continuation.keycode = KEY_SPACE
+	continuation.pressed = true
+	title.emit_signal("start_requested")
+	main.get_viewport().push_input(continuation, true)
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_GUIDE,
+		"A new Continuation Input works after Campaign Prologue Page activation"
+	)
+
+	await retire_main(main)
+
+
+func verify_title_start_input_is_not_continuation_input() -> void:
+	var main := instantiate_main()
+	if main == null:
+		return
+
+	await fixture.process_frames(1)
+	var start_button := main.get_node_or_null("Title/VBoxContainer/Start") as Button
+	if start_button == null:
+		fixture.expect(false, "Title Start Input check is missing the Start button")
+		return
+
+	start_button.grab_focus()
+	var start_input := InputEventKey.new()
+	start_input.keycode = KEY_ENTER
+	start_input.pressed = true
+	Input.parse_input_event(start_input)
+	await fixture.process_frames(1)
+	start_input.pressed = false
+	Input.parse_input_event(start_input)
+	await fixture.process_frames(1)
+
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_PROLOGUE,
+		"Title Start Input cannot also act as Campaign Prologue Page Continuation Input"
 	)
 
 	await retire_main(main)

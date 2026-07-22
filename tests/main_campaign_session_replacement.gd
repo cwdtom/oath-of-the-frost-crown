@@ -80,6 +80,7 @@ func verify_prologue_session_replacement() -> void:
 		await retire_main(main)
 		return
 	fixture.add_node(suspended_level_01)
+	await fixture.wait_for_act_announcement(suspended_level_01)
 	fixture.expect(
 		suspended_level_01.is_campaign_story_phase_active(),
 		"Complete Level01 replacement starts its opening Story"
@@ -253,6 +254,7 @@ func verify_victory_story_session_replacement() -> void:
 
 
 func advance_story_phase(level: CampaignLevel) -> void:
+	await fixture.wait_for_act_announcement(level)
 	var story_phase_finished := [false]
 	level.campaign_story_phase_finished.connect(func() -> void: story_phase_finished[0] = true)
 	for _input_index in MAX_STORY_ADVANCE_INPUTS:

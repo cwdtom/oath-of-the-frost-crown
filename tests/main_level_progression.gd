@@ -91,6 +91,7 @@ func _run() -> void:
 		fixture.complete()
 		return
 	fixture.add_node(level_02)
+	await fixture.wait_for_act_announcement(level_02)
 	fixture.expect(level_02.get_campaign_id() == &"level_02", "Level01 completion starts Level02")
 	fixture.expect(not is_instance_valid(level_01), "Level01 is permanently disposed after completion")
 	fixture.expect(
@@ -179,6 +180,7 @@ func _run() -> void:
 		fixture.complete()
 		return
 	fixture.add_node(level_03)
+	await fixture.wait_for_act_announcement(level_03)
 	fixture.expect(
 		level_03.get_campaign_id() == &"level_03",
 		"Level02 final Story completion starts Level03"
@@ -290,6 +292,7 @@ func _run() -> void:
 		)
 		if level_04 != null and level_04 != replacement:
 			fixture.add_node(level_04)
+			await fixture.wait_for_act_announcement(level_04)
 			fixture.expect(
 				level_04.is_campaign_story_phase_active(),
 				"Level04 starts its Opening Story"

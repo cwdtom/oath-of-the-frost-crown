@@ -358,6 +358,11 @@ func switch_checkpoint(
 		"%s starts %s" % [shortcut, expected_campaign_id]
 	)
 	fixture.expect(
+		level.is_campaign_act_announcement_active() == play_opening_story,
+		"%s uses the requested Act Announcement choice" % shortcut
+	)
+	await fixture.wait_for_act_announcement(level)
+	fixture.expect(
 		level.is_campaign_story_phase_active() == play_opening_story,
 		"%s uses the requested opening-Story choice" % shortcut
 	)
@@ -418,6 +423,7 @@ func send_key(
 
 
 func advance_story_phase(level: CampaignLevel, description: String) -> void:
+	await fixture.wait_for_act_announcement(level)
 	var finished := [false]
 	level.campaign_story_phase_finished.connect(func() -> void: finished[0] = true)
 	for _input_index in MAX_STORY_ADVANCE_INPUTS:
