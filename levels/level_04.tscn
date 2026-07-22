@@ -22,6 +22,7 @@
 [ext_resource type="PackedScene" uid="uid://dv41qxt1l04xf" path="res://enemies/valdemar.tscn" id="10_vlrfo"]
 [ext_resource type="Texture2D" uid="uid://b4a2et41sh1u7" path="res://assets/enemies/skills/black_water/cast/frame_007.png" id="11_nymxa"]
 [ext_resource type="Texture2D" uid="uid://cmxluybc66bn0" path="res://assets/enemies/skills/black_water/cast/frame_008.png" id="12_jjwoc"]
+[ext_resource type="Script" uid="uid://dv2sdntw3l0i5" path="res://levels/black_water_field.gd" id="13_black_water"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
 size = Vector2(1924, 126)
@@ -381,6 +382,7 @@ supported_campaign_outcomes = Array[StringName]([&"defeat"])
 position = Vector2(4616, 571)
 collision_layer = 4
 collision_mask = 2
+script = ExtResource("13_black_water")
 
 [node name="Sprite2D" type="Sprite2D" parent="BlackWater" index="0" unique_id=1596818629]
 position = Vector2(2, -2)
@@ -476,3 +478,5 @@ position = Vector2(2915, 412)
 
 [node name="Story" parent="." index="9" unique_id=1214048430 instance=ExtResource("7_rpmp5")]
 story_path = "res://levels/level_04_story.json"
+
+[connection signal="black_water_requested" from="Enemies/Valdemar" to="BlackWater" method="cast"]
