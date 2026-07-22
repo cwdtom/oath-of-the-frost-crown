@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://b4a2et41sh1u7" path="res://assets/enemies/skills/black_water/cast/frame_007.png" id="11_nymxa"]
 [ext_resource type="Texture2D" uid="uid://cmxluybc66bn0" path="res://assets/enemies/skills/black_water/cast/frame_008.png" id="12_jjwoc"]
 [ext_resource type="Script" uid="uid://dv2sdntw3l0i5" path="res://levels/black_water_field.gd" id="13_black_water"]
+[ext_resource type="AudioStream" uid="uid://8odkei80xb2" path="res://assets/enemies/skills/black_water/sounds/black_water.wav" id="14_folie"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
 size = Vector2(1924, 126)
@@ -82,6 +83,21 @@ tracks/1/keys = {
 "update": 0,
 "values": [570.0, 440.0, 570.0]
 }
+tracks/2/type = "audio"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AudioStreamPlayer2D")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"clips": [{
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource("14_folie")
+}],
+"times": PackedFloat32Array(0)
+}
+tracks/2/use_blend = true
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_5ikr7"]
 _data = {
@@ -397,7 +413,9 @@ texture = ExtResource("3_srcxc")
 position = Vector2(2, 31)
 shape = SubResource("RectangleShape2D_1n5kv")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="BlackWater" index="2" unique_id=340950201]
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="BlackWater" index="2" unique_id=584603256]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="BlackWater" index="3" unique_id=340950201]
 libraries/ = SubResource("AnimationLibrary_5ikr7")
 
 [node name="BossDoor" parent="." index="2" unique_id=1824600193]
