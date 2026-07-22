@@ -29,6 +29,14 @@ func is_campaign_story_phase_active() -> bool:
 	return false
 
 
+func is_campaign_act_announcement_active() -> bool:
+	return false
+
+
+func get_campaign_act_announcement_text() -> String:
+	return ""
+
+
 func is_campaign_control_available() -> bool:
 	return false
 
@@ -50,6 +58,10 @@ func has_campaign_music() -> bool:
 
 
 func is_campaign_music_playing() -> bool:
+	return false
+
+
+func has_campaign_music_started() -> bool:
 	return false
 
 

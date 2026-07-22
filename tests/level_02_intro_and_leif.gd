@@ -20,13 +20,16 @@ func _run() -> void:
 		fixture.complete()
 		return
 
-	var level := fixture.instantiate_scene(scene) as CampaignLevel
+	var level := scene.instantiate() as CampaignLevel
 	fixture.expect(level != null, "Level02 implements CampaignLevel")
 	if level == null:
 		fixture.complete()
 		return
+	level.prepare_for_campaign(true)
+	fixture.add_node(level)
 	fixture.set_current_scene(level)
 	await fixture.process_frames(1)
+	await fixture.wait_for_act_announcement(level)
 
 	var story := level.get_node_or_null("Story") as CanvasLayer
 	fixture.expect(story != null, "Level02 contains an opening Story")

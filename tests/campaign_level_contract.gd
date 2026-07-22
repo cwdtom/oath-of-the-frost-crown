@@ -16,6 +16,7 @@ const LEVEL_SPECS := [
 		"outcomes": [&"defeat", &"completion"],
 		"has_music": true,
 		"has_opening_story": true,
+		"act_announcement_text": "第一幕\n王座之命",
 	},
 	{
 		"scene": "res://levels/level_02.tscn",
@@ -23,6 +24,7 @@ const LEVEL_SPECS := [
 		"outcomes": [&"defeat", &"completion"],
 		"has_music": true,
 		"has_opening_story": true,
+		"act_announcement_text": "第二幕\n林中疑影",
 	},
 	{
 		"scene": "res://levels/level_03.tscn",
@@ -30,6 +32,7 @@ const LEVEL_SPECS := [
 		"outcomes": [&"defeat", &"completion"],
 		"has_music": true,
 		"has_opening_story": true,
+		"act_announcement_text": "第三幕\n白鹿悲歌",
 	},
 	{
 		"scene": "res://levels/level_04.tscn",
@@ -38,6 +41,7 @@ const LEVEL_SPECS := [
 		"has_music": true,
 		"has_opening_story": true,
 		"opening_story_path": "res://levels/level_04_story.json",
+		"act_announcement_text": "第四幕\n寒冠之誓",
 	},
 ]
 const MAX_STORY_ADVANCE_INPUTS := 64
@@ -53,6 +57,7 @@ func _run() -> void:
 	fixture = HeadlessGameplayFixture.new(self)
 	for spec in LEVEL_SPECS:
 		verify_level_contract(spec)
+	await verify_act_announcement_start_contract()
 	await verify_story_phase_contract()
 	await verify_lifecycle_contract()
 
@@ -84,6 +89,12 @@ func verify_level_contract(spec: Dictionary) -> void:
 		level.has_campaign_music() == spec["has_music"],
 		"%s declares its campaign music capability" % scene_path
 	)
+	if spec.has("act_announcement_text"):
+		fixture.expect(
+			level.get_campaign_act_announcement_text()
+			== spec["act_announcement_text"],
+			"%s declares its configured Act Announcement" % scene_path
+		)
 	if spec.has("opening_story_path"):
 		var opening_story := level.get_node_or_null("Story")
 		fixture.expect(
@@ -92,6 +103,88 @@ func verify_level_contract(spec: Dictionary) -> void:
 			"%s uses its configured Opening Story" % scene_path
 		)
 	level.free()
+
+
+func verify_act_announcement_start_contract() -> void:
+	for spec in LEVEL_SPECS:
+		if not spec.has("act_announcement_text"):
+			continue
+
+		var scene_path := str(spec["scene"])
+		var level := (load(scene_path) as PackedScene).instantiate() as CampaignLevel
+		var observed := {"story_phase_finished": false}
+		level.campaign_story_phase_finished.connect(
+			func() -> void: observed["story_phase_finished"] = true
+		)
+		level.prepare_for_campaign(true)
+		fixture.add_node(level)
+		fixture.set_current_scene(level)
+		await fixture.process_frames(1)
+
+		fixture.expect(
+			level.is_campaign_act_announcement_active(),
+			"%s starts its Act Announcement" % scene_path
+		)
+		fixture.expect(
+			not level.is_campaign_story_phase_active(),
+			"%s does not start its Opening Story during the Act Announcement"
+			% scene_path
+		)
+		fixture.expect(
+			not level.is_campaign_control_available(),
+			"%s keeps controls unavailable during the Act Announcement" % scene_path
+		)
+		fixture.expect(
+			not level.is_campaign_hud_visible(),
+			"%s hides the HUD during the Act Announcement" % scene_path
+		)
+		fixture.expect(paused, "%s pauses for its Act Announcement" % scene_path)
+
+		for _input_index in MAX_STORY_ADVANCE_INPUTS:
+			var input := InputEventKey.new()
+			input.keycode = KEY_ENTER
+			input.pressed = true
+			Input.parse_input_event(input)
+			await fixture.process_frames(1)
+
+		fixture.expect(
+			level.is_campaign_act_announcement_active(),
+			"%s cannot skip its Act Announcement through input" % scene_path
+		)
+		fixture.expect(
+			not observed["story_phase_finished"],
+			"%s ignores Story input during its Act Announcement" % scene_path
+		)
+		fixture.expect(
+			not level.has_campaign_music_started(),
+			"%s keeps campaign music stopped during its Act Announcement"
+			% scene_path
+		)
+
+		await fixture.wait_seconds(3.1)
+		fixture.expect(
+			not level.is_campaign_act_announcement_active(),
+			"%s finishes its Act Announcement after three seconds" % scene_path
+		)
+		fixture.expect(
+			level.is_campaign_story_phase_active(),
+			"%s starts its Opening Story after the Act Announcement" % scene_path
+		)
+		fixture.expect(
+			level.has_campaign_music_started(),
+			"%s starts campaign music with its Opening Story" % scene_path
+		)
+		fixture.expect(
+			not observed["story_phase_finished"],
+			"%s retains its Opening Story after ignored announcement input"
+			% scene_path
+		)
+		fixture.expect(paused, "%s remains paused for its Opening Story" % scene_path)
+
+		fixture.set_current_scene(null)
+		root.remove_child(level)
+		fixture.set_paused(false)
+		await fixture.process_frames(1)
 
 
 func verify_story_phase_contract() -> void:
@@ -112,6 +205,8 @@ func verify_story_phase_contract() -> void:
 		fixture.add_node(level)
 		fixture.set_current_scene(level)
 		await fixture.process_frames(1)
+		if spec.has("act_announcement_text"):
+			await fixture.wait_seconds(3.1)
 		if has_gameplay and has_opening_story:
 			fixture.expect(
 				level.is_campaign_story_phase_active(),
@@ -189,6 +284,10 @@ func verify_lifecycle_contract() -> void:
 		fixture.expect(
 			not level.is_campaign_story_phase_active(),
 			"%s can start without replaying its Story phase" % scene_path
+		)
+		fixture.expect(
+			not level.is_campaign_act_announcement_active(),
+			"%s can start without replaying its Act Announcement" % scene_path
 		)
 		if has_gameplay:
 			fixture.expect(

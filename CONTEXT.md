@@ -25,8 +25,12 @@ The closing narrative phase that follows Level Completion. Only after the Victor
 _Avoid_: Ending, result screen
 
 **Opening Story**:
-The introductory narrative phase of a newly active Level. Gameplay remains unavailable until it finishes, after which that same Level enters Level Initialization.
+The introductory narrative phase of a newly active Level. In Level 01 through Level 04, it begins after that Level's Act Announcement and together with its campaign music; gameplay remains unavailable until the Story finishes, after which that same Level enters Level Initialization.
 _Avoid_: Victory Story, Level Initialization
+
+**Act Announcement**:
+The silent title-card narrative beat immediately preceding the Opening Story of Level 01 through Level 04. It identifies that Level's numbered Act and title, and remains distinct from the Opening Story itself.
+_Avoid_: Opening Story, Campaign Prologue Page, Level title
 
 **Valdemar Pre-Awakening Story**:
 The one-time Level 04 narrative phase that begins when the Player first enters Valdemar's throne-room boundary during the initial story-bearing attempt. It pauses gameplay before Valdemar Awakening begins; finishing it immediately begins that awakening, while a retry omits this Story and begins the awakening directly at the boundary.

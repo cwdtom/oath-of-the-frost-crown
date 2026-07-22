@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cux0hsr1f3sk4" path="res://assets/ui/intermission.png" id="1_3m3st"]
 [ext_resource type="FontFile" uid="uid://duuhvp4kpsqjy" path="res://assets/ui/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="2_adcxo"]
+[ext_resource type="AudioStream" uid="uid://bw6nl5ssdthfv" path="res://assets/bg/sounds/text_bg.ogg" id="3_adcxo"]
 
 [node name="Producer" type="CanvasLayer" unique_id=1141772961]
 
@@ -42,3 +43,7 @@ theme_override_font_sizes/font_size = 32
 text = "制作人：cwdtom
 github: github.com/cwdtom/oath-of-the-frost-crown"
 horizontal_alignment = 1
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1213704580]
+stream = ExtResource("3_adcxo")
+autoplay = true

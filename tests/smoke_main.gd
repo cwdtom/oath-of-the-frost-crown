@@ -159,6 +159,7 @@ func _run() -> void:
 		fixture.complete()
 		return
 	fixture.add_node(level_03)
+	await fixture.wait_for_act_announcement(level_03)
 	fixture.expect(
 		find_player_event_source(level_03) != null,
 		"Level03 wires its production Player"
@@ -196,6 +197,7 @@ func _run() -> void:
 
 
 func advance_story_phase(level: CampaignLevel, description: String) -> void:
+	await fixture.wait_for_act_announcement(level)
 	var phase_finished := [false]
 	level.campaign_story_phase_finished.connect(
 		func() -> void: phase_finished[0] = true,

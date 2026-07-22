@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://bpkspsgvfpdnx"]
+
+[ext_resource type="Texture2D" uid="uid://cux0hsr1f3sk4" path="res://assets/ui/intermission.png" id="1_yfwhh"]
+[ext_resource type="FontFile" uid="uid://duuhvp4kpsqjy" path="res://assets/ui/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="2_ymbcc"]
+[ext_resource type="Script" path="res://ui/announcer.gd" id="3_announcer"]
+
+[node name="Announcer" type="CanvasLayer" unique_id=1141772961]
+process_mode = 3
+script = ExtResource("3_announcer")
+
+[node name="Control" type="Control" parent="." unique_id=864976976]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="Control" unique_id=784228656]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_yfwhh")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control" unique_id=1607339530]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/VBoxContainer" unique_id=1903036519]
+layout_mode = 2
+theme_override_constants/margin_top = 250
+
+[node name="Label" type="Label" parent="Control/VBoxContainer/MarginContainer" unique_id=1387857308]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ymbcc")
+theme_override_font_sizes/font_size = 48
+horizontal_alignment = 1
+
+[node name="Timer" type="Timer" parent="." unique_id=786449652]
+wait_time = 3.0
+one_shot = true
+autostart = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

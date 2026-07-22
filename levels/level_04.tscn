@@ -1,7 +1,6 @@
 [gd_scene format=4 uid="uid://cwr6gu2lkxufm"]
 
 [ext_resource type="PackedScene" uid="uid://c51ln2t7to2xu" path="res://levels/level_base.tscn" id="1_vosiq"]
-[ext_resource type="Script" path="res://levels/level_04.gd" id="15_level_04"]
 [ext_resource type="PackedScene" uid="uid://bsx3lgnpy111l" path="res://player/player_04.tscn" id="2_fdgl0"]
 [ext_resource type="PackedScene" uid="uid://dwniqf562x0l5" path="res://levels/background_03.tscn" id="2_r8aof"]
 [ext_resource type="PackedScene" uid="uid://xj003pqnpari" path="res://objects/throne.tscn" id="3_6w184"]
@@ -25,6 +24,8 @@
 [ext_resource type="Texture2D" uid="uid://cmxluybc66bn0" path="res://assets/enemies/skills/black_water/cast/frame_008.png" id="12_jjwoc"]
 [ext_resource type="Script" uid="uid://dv2sdntw3l0i5" path="res://levels/black_water_field.gd" id="13_black_water"]
 [ext_resource type="AudioStream" uid="uid://8odkei80xb2" path="res://assets/enemies/skills/black_water/sounds/black_water.wav" id="14_folie"]
+[ext_resource type="Script" uid="uid://btrr67i42cbfj" path="res://levels/level_04.gd" id="15_level_04"]
+[ext_resource type="PackedScene" uid="uid://bpkspsgvfpdnx" path="res://ui/announcer.tscn" id="26_1tvcb"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1n5kv"]
 size = Vector2(1924, 126)
@@ -500,5 +501,8 @@ position = Vector2(2915, 412)
 
 [node name="Story" parent="." index="9" unique_id=1214048430 instance=ExtResource("7_rpmp5")]
 story_path = "res://levels/level_04_story.json"
+
+[node name="Announcer" parent="." index="10" unique_id=1141772961 instance=ExtResource("26_1tvcb")]
+announcement_text = "第四幕\n寒冠之誓"
 
 [connection signal="black_water_requested" from="Enemies/Valdemar" to="BlackWater" method="cast"]

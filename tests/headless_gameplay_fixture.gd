@@ -77,6 +77,11 @@ func wait_seconds(duration: float) -> void:
 	await _scene_tree.create_timer(duration).timeout
 
 
+func wait_for_act_announcement(level: CampaignLevel) -> void:
+	if level != null and level.is_campaign_act_announcement_active():
+		await wait_seconds(3.1)
+
+
 func expect(condition: bool, message: String) -> void:
 	if not condition:
 		_failures.append(message)

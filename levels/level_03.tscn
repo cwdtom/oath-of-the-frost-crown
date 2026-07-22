@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://dl5eqe8erpo5s" path="res://ui/story.tscn" id="6_story"]
 [ext_resource type="PackedScene" uid="uid://g0ie5c3rg1oc" path="res://enemies/elk_king.tscn" id="13_wrb7r"]
 [ext_resource type="Script" uid="uid://bmt5ne31go2u8" path="res://levels/level_03.gd" id="14_level_03"]
+[ext_resource type="PackedScene" uid="uid://bpkspsgvfpdnx" path="res://ui/announcer.tscn" id="16_xgj7h"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_mljax"]
 
@@ -402,3 +403,6 @@ tile_set = SubResource("TileSet_1n5kv")
 [node name="Story" parent="." index="7" unique_id=1661462204 instance=ExtResource("6_story")]
 visible = false
 story_path = "res://levels/level_03_story.json"
+
+[node name="Announcer" parent="." index="9" unique_id=1141772961 instance=ExtResource("16_xgj7h")]
+announcement_text = "第三幕\n白鹿悲歌"

@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cux0hsr1f3sk4" path="res://assets/ui/intermission.png" id="1_8a05t"]
 [ext_resource type="FontFile" uid="uid://duuhvp4kpsqjy" path="res://assets/ui/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="2_ta184"]
+[ext_resource type="AudioStream" uid="uid://bw6nl5ssdthfv" path="res://assets/bg/sounds/text_bg.ogg" id="3_ta184"]
 
 [node name="End" type="CanvasLayer" unique_id=1141772961]
 
@@ -50,3 +51,7 @@ text = "寒冠落地，兽灵烙印随国王的死亡逐渐消散。
 黑冬结束了。
 而艾尔斯维克的新生，才刚刚开始。"
 horizontal_alignment = 1
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1547142237]
+stream = ExtResource("3_ta184")
+autoplay = true

@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cux0hsr1f3sk4" path="res://assets/ui/intermission.png" id="1_mjnhf"]
 [ext_resource type="FontFile" uid="uid://duuhvp4kpsqjy" path="res://assets/ui/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="2_uibyg"]
+[ext_resource type="AudioStream" uid="uid://bw6nl5ssdthfv" path="res://assets/bg/sounds/text_bg.ogg" id="3_7ndj8"]
 
 [node name="Prologue" type="CanvasLayer" unique_id=1141772961]
 
@@ -48,3 +49,7 @@ text = "北方王国艾尔斯维克，曾与森林中的兽灵立下古老誓约
 奉国王之命，艾拉踏入黑森林，开始了讨伐邪神的旅程。
 她尚不知道，真正的敌人并不在森林深处。"
 horizontal_alignment = 1
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=782768516]
+stream = ExtResource("3_7ndj8")
+autoplay = true

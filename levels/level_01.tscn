@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://cyihsdwwlxkrm" path="res://objects/rock_2.tscn" id="14_q27ur"]
 [ext_resource type="PackedScene" uid="uid://cji0rrb52ymh5" path="res://objects/rock.tscn" id="15_685d6"]
 [ext_resource type="PackedScene" uid="uid://dlorrqeiumu3k" path="res://objects/mushroom.tscn" id="15_g2xra"]
+[ext_resource type="PackedScene" uid="uid://bpkspsgvfpdnx" path="res://ui/announcer.tscn" id="21_xt52j"]
 [ext_resource type="PackedScene" uid="uid://ci30p1cc0qye5" path="res://player/player.tscn" id="23_bkw67"]
 [ext_resource type="PackedScene" uid="uid://fwkdntiemw7" path="res://enemies/wolf_king.tscn" id="26_40vlm"]
 [ext_resource type="PackedScene" uid="uid://dl5eqe8erpo5s" path="res://ui/story.tscn" id="27_story"]
@@ -500,3 +501,6 @@ tile_set = SubResource("TileSet_1n5kv")
 
 [node name="Story" parent="." index="7" unique_id=292316685 instance=ExtResource("27_story")]
 story_path = "res://levels/level_01_story.json"
+
+[node name="Announcer" parent="." index="8" unique_id=1141772961 instance=ExtResource("21_xt52j")]
+announcement_text = "第一幕\n王座之命"

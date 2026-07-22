@@ -68,6 +68,7 @@ func _run() -> void:
 		return
 	fixture.add_node(level_01)
 	fixture.expect(level_01.get_campaign_id() == &"level_01", "Guide input starts Level01")
+	await fixture.wait_for_act_announcement(level_01)
 
 	fixture.expect(level_01.is_campaign_story_phase_active(), "Level01 opens with its Story")
 	fixture.expect(paused, "Level01 opening Story pauses the campaign")
