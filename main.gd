@@ -83,10 +83,14 @@ func show_result(result_text: String) -> void:
 
 func start_level(
 	scene: PackedScene,
-	play_intro: bool,
+	play_opening_story: bool,
 	play_pre_awakening_story := true
 ) -> void:
-	replace_campaign_session(scene, play_intro, play_pre_awakening_story)
+	replace_campaign_session(
+		scene,
+		play_opening_story,
+		play_pre_awakening_story
+	)
 
 
 func replace_campaign_session(

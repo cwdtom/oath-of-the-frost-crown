@@ -179,6 +179,13 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 		and victory_story.get("story_path") == "res://levels/level_04_b_story.json",
 		"Level 04 Completion starts lv_4_b as its Victory Story"
 	)
+	valdemar.emit_signal("died")
+	await fixture.process_frames(2)
+	fixture.expect(
+		campaign_outcomes == [CampaignLevel.OUTCOME_COMPLETION]
+		and level.get_node_or_null("VictoryStory") == victory_story,
+		"A repeated Valdemar died signal cannot duplicate completion or lv_4_b"
+	)
 
 	await advance_story_phase(level)
 	fixture.expect(

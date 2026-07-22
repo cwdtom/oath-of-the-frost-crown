@@ -11,6 +11,7 @@ const TERMINAL_OUTCOME_VALDEMAR_DEFEAT := &"valdemar_defeat"
 
 var _play_pre_awakening_story := true
 var _terminal_outcome := TERMINAL_OUTCOME_NONE
+var _level_completion_reached := false
 
 
 func set_pre_awakening_story_enabled(enabled: bool) -> void:
@@ -42,8 +43,12 @@ func _on_campaign_defeated() -> void:
 
 
 func _on_campaign_completed() -> void:
-	if _terminal_outcome != TERMINAL_OUTCOME_VALDEMAR_DEFEAT:
+	if (
+		_terminal_outcome != TERMINAL_OUTCOME_VALDEMAR_DEFEAT
+		or _level_completion_reached
+	):
 		return
+	_level_completion_reached = true
 	super._on_campaign_completed()
 
 
