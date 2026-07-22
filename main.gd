@@ -81,11 +81,19 @@ func show_result(result_text: String) -> void:
 	_game_result_popup.show_result(result_text)
 
 
-func start_level(scene: PackedScene, play_intro: bool) -> void:
-	replace_campaign_session(scene, play_intro)
+func start_level(
+	scene: PackedScene,
+	play_intro: bool,
+	play_pre_awakening_story := true
+) -> void:
+	replace_campaign_session(scene, play_intro, play_pre_awakening_story)
 
 
-func replace_campaign_session(scene: PackedScene, play_opening_story: bool) -> void:
+func replace_campaign_session(
+	scene: PackedScene,
+	play_opening_story: bool,
+	play_pre_awakening_story := true
+) -> void:
 	get_tree().paused = false
 	if is_instance_valid(_title):
 		_title.visible = false
@@ -98,6 +106,11 @@ func replace_campaign_session(scene: PackedScene, play_opening_story: bool) -> v
 		old_suspended_level.queue_free()
 
 	var next_level := scene.instantiate() as CampaignLevel
+	if scene == LEVEL_04_SCENE:
+		next_level.call(
+			"set_pre_awakening_story_enabled",
+			play_pre_awakening_story
+		)
 	next_level.prepare_for_campaign(play_opening_story)
 	replace_level(scene, next_level)
 	if scene == LEVEL_01_SCENE and play_opening_story:
@@ -237,7 +250,7 @@ func retry_campaign() -> void:
 		return
 
 	get_tree().paused = false
-	start_level(_active_level_scene, false)
+	start_level(_active_level_scene, false, false)
 
 
 func _on_retry_pressed() -> void:

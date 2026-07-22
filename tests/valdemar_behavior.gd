@@ -40,6 +40,7 @@ func _run() -> void:
 	fixture.set_project_setting("physics/2d/default_gravity", 0.0)
 
 	var level := fixture.instantiate_scene(LEVEL_04_SCENE) as CampaignLevel
+	level.call("set_pre_awakening_story_enabled", false)
 	fixture.set_current_scene(level)
 	await fixture.process_frames(2)
 	fixture.set_paused(false)
@@ -1113,9 +1114,9 @@ func verify_defeat_preempts_scenario(scenario_name: StringName) -> void:
 	)
 	fixture.expect(
 		death_notifications[0] == 1
-		and campaign_outcomes.is_empty()
+		and campaign_outcomes == [CampaignLevel.OUTCOME_COMPLETION]
 		and level.get_node_or_null("VictoryStory") == null,
-		"Valdemar Dying emits one Defeat event without Level Completion during %s"
+		"Valdemar Dying emits one Defeat event and Level Completion during %s"
 		% scenario_name
 	)
 	await fixture.wait_seconds(0.60)
@@ -1123,7 +1124,7 @@ func verify_defeat_preempts_scenario(scenario_name: StringName) -> void:
 		is_instance_valid(valdemar)
 		and dying.visible
 		and death_notifications[0] == 1
-		and campaign_outcomes.is_empty()
+		and campaign_outcomes == [CampaignLevel.OUTCOME_COMPLETION]
 		and sword_cooldown.is_stopped()
 		and black_water_cooldown.is_stopped()
 		and black_water_notifications[0] == notifications_before_defeat,
@@ -1137,6 +1138,7 @@ func verify_defeat_preempts_scenario(scenario_name: StringName) -> void:
 
 func instantiate_active_valdemar() -> Dictionary:
 	var level := fixture.instantiate_scene(LEVEL_04_SCENE) as CampaignLevel
+	level.call("set_pre_awakening_story_enabled", false)
 	fixture.set_current_scene(level)
 	await fixture.process_frames(2)
 	fixture.set_paused(false)

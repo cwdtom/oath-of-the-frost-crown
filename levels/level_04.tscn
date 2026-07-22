@@ -1,6 +1,7 @@
 [gd_scene format=4 uid="uid://cwr6gu2lkxufm"]
 
 [ext_resource type="PackedScene" uid="uid://c51ln2t7to2xu" path="res://levels/level_base.tscn" id="1_vosiq"]
+[ext_resource type="Script" path="res://levels/level_04.gd" id="15_level_04"]
 [ext_resource type="PackedScene" uid="uid://bsx3lgnpy111l" path="res://player/player_04.tscn" id="2_fdgl0"]
 [ext_resource type="PackedScene" uid="uid://dwniqf562x0l5" path="res://levels/background_03.tscn" id="2_r8aof"]
 [ext_resource type="PackedScene" uid="uid://xj003pqnpari" path="res://objects/throne.tscn" id="3_6w184"]
@@ -373,8 +374,11 @@ physics_layer_0/physics_material = SubResource("PhysicsMaterial_mljax")
 sources/1 = SubResource("TileSetAtlasSource_5p57d")
 
 [node name="Level04" unique_id=1993614508 instance=ExtResource("1_vosiq")]
+script = ExtResource("15_level_04")
+_campaign_completion_source_path = NodePath("Enemies/Valdemar")
+_campaign_victory_story_path = "res://levels/level_04_b_story.json"
 campaign_id = &"level_04"
-supported_campaign_outcomes = Array[StringName]([&"defeat"])
+supported_campaign_outcomes = Array[StringName]([&"defeat", &"completion"])
 
 [node name="Background" parent="." index="0" unique_id=226699892 instance=ExtResource("2_r8aof")]
 

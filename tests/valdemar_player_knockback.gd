@@ -23,6 +23,7 @@ func _run() -> void:
 
 func test_sword_gleam_knocks_player_horizontally_away_from_valdemar() -> void:
 	var level := fixture.instantiate_scene(LEVEL_04_SCENE) as CampaignLevel
+	level.call("set_pre_awakening_story_enabled", false)
 	fixture.set_current_scene(level)
 	await fixture.process_frames(2)
 	fixture.set_paused(false)
@@ -59,6 +60,7 @@ func test_sword_gleam_knocks_player_horizontally_away_from_valdemar() -> void:
 
 func test_contact_knocks_player_horizontally_away_from_valdemar() -> void:
 	var level := fixture.instantiate_scene(LEVEL_04_SCENE) as CampaignLevel
+	level.call("set_pre_awakening_story_enabled", false)
 	fixture.set_current_scene(level)
 	await fixture.process_frames(2)
 	fixture.set_paused(false)

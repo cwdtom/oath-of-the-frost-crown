@@ -5,6 +5,7 @@ const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.
 const DEBUG_RUNNER_SCENE := preload("res://debug/debug_runner.tscn")
 const MAIN_SCENE := preload("res://main.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
+const VALDEMAR_AWAKENING_DISTANCE := 600.0
 const MAX_STORY_ADVANCE_INPUTS := 64
 
 var fixture: HeadlessGameplayFixture
@@ -283,6 +284,8 @@ func verify_level_04_shortcuts(runner: Node) -> void:
 	)
 	if level_04_story == null:
 		return
+	await advance_story_phase(level_04_story, "Ctrl+7 Level04 opening Story")
+	await verify_level_04_pre_awakening_story(level_04_story, "Ctrl+7")
 
 	var level_04_playable := await switch_checkpoint(
 		runner, level_04_story, KEY_8, &"level_04", false, "Ctrl+8"
@@ -297,6 +300,34 @@ func verify_level_04_shortcuts(runner: Node) -> void:
 		level_04_playable.get_campaign_camera_role() == CampaignLevel.CAMERA_PLAYER,
 		"Ctrl+8 starts Level04 with the Player Camera"
 	)
+	await verify_level_04_pre_awakening_story(level_04_playable, "Ctrl+8")
+
+
+func verify_level_04_pre_awakening_story(
+	level: CampaignLevel,
+	shortcut: String
+) -> void:
+	var player := level.get_node("Player") as DamageableActor
+	var valdemar := level.get_node("Enemies/Valdemar") as DamageableActor
+	player.global_position = (
+		valdemar.global_position
+		+ Vector2(-VALDEMAR_AWAKENING_DISTANCE - 20.0, -5000.0)
+	)
+	await fixture.physics_frames(2)
+	player.global_position.x = (
+		valdemar.global_position.x - VALDEMAR_AWAKENING_DISTANCE + 1.0
+	)
+	await fixture.physics_frames(3)
+
+	var pre_awakening_story := level.get_node_or_null("PreAwakeningStory")
+	fixture.expect(
+		level.is_campaign_story_phase_active()
+		and pre_awakening_story != null
+		and pre_awakening_story.get("story_path")
+		== "res://levels/level_04_a_story.json",
+		"%s plays lv_4_a when the Player enters Valdemar's boundary" % shortcut
+	)
+	fixture.expect(paused, "%s pauses for the Pre-Awakening Story" % shortcut)
 
 
 func switch_checkpoint(

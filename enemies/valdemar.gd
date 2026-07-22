@@ -2,6 +2,8 @@ extends "res://combat/damageable_actor.gd"
 
 
 signal health_changed(current_health: int, maximum_health: int)
+signal awakening_requested
+signal defeat_started
 @warning_ignore("unused_signal")
 signal black_water_requested
 @warning_ignore("unused_signal")
@@ -20,7 +22,7 @@ const SWORD_GLEAM_CAST_ANIMATION := &"cast"
 const BODY_PURSUIT_VERTICAL_DISTANCE := 10.0
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
-enum Phase { NORMAL_FORM, AWAKENING, DARK_MODE, DEFEATED }
+enum Phase { NORMAL_FORM, PRE_AWAKENING, AWAKENING, DARK_MODE, DEFEATED }
 enum DarkAction { PURSUIT, SWORD_GLEAM, HURT, BLACK_WATER_CAST }
 
 @export var awakening_distance := 600.0
@@ -106,6 +108,20 @@ func restore_full_health() -> void:
 	_health.restore_full_health()
 
 
+func begin_awakening() -> void:
+	if _phase != Phase.PRE_AWAKENING:
+		return
+
+	_phase = Phase.AWAKENING
+	_animation_tree.active = true
+	_animation_state.start(TRANSFORMATION_ANIMATION)
+	await get_tree().create_timer(
+		_animation_player.get_animation(TRANSFORMATION_ANIMATION).length
+	).timeout
+	if _phase == Phase.AWAKENING:
+		_enter_dark_mode()
+
+
 func take_damage(amount: int, _knockback_direction: Vector2) -> void:
 	if _phase != Phase.DARK_MODE:
 		return
@@ -154,16 +170,10 @@ func _on_awakening_boundary_body_entered(body: Node2D) -> void:
 	):
 		return
 
-	_phase = Phase.AWAKENING
+	_phase = Phase.PRE_AWAKENING
 	_player = body
 	_awakening_boundary.set_deferred("monitoring", false)
-	_animation_tree.active = true
-	_animation_state.start(TRANSFORMATION_ANIMATION)
-	await get_tree().create_timer(
-		_animation_player.get_animation(TRANSFORMATION_ANIMATION).length
-	).timeout
-	if _phase == Phase.AWAKENING:
-		_enter_dark_mode()
+	awakening_requested.emit()
 
 
 func _enter_dark_mode() -> void:
@@ -379,6 +389,7 @@ func _begin_defeat() -> void:
 		return
 
 	_phase = Phase.DEFEATED
+	defeat_started.emit()
 	_dark_action = DarkAction.PURSUIT
 	_black_water_pending = false
 	_clear_locked_sword_target()
