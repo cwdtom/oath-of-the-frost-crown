@@ -179,14 +179,14 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 		and paused
 		and victory_story != null
 		and victory_story.get("story_path") == "res://levels/level_04_b_story.json",
-		"Level 04 Completion starts lv_4_b as its Victory Story"
+		"Level 04 Completion starts the Valdemar Post-Defeat Story"
 	)
 	valdemar.emit_signal("died")
 	await fixture.process_frames(2)
 	fixture.expect(
 		campaign_outcomes == [CampaignLevel.OUTCOME_COMPLETION]
 		and level.get_node_or_null("VictoryStory") == victory_story,
-		"A repeated Valdemar died signal cannot duplicate completion or lv_4_b"
+		"A repeated Valdemar died signal cannot duplicate completion or the Valdemar Post-Defeat Story"
 	)
 
 	var background := level.get_node("Background")
@@ -194,7 +194,7 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 	fixture.expect(
 		main.call("get_campaign_phase") == PHASE_EPILOGUE
 		and main.call("get_active_campaign_level") == null,
-		"Finishing lv_4_b leaves Level 04 for the Campaign Epilogue Page"
+		"Finishing the Valdemar Post-Defeat Story leaves Level 04 for the Campaign Epilogue Page"
 	)
 	fixture.expect(
 		main.get_node_or_null("CampaignEpiloguePage") != null
@@ -214,7 +214,7 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 	await fixture.process_frames(1)
 	fixture.expect(
 		main.call("get_campaign_phase") == PHASE_PRODUCER
-		and main.get_node_or_null("ProducerPage") != null,
+		and main.get_node_or_null("Producer") != null,
 		"Campaign Epilogue Page continuation enters the Producer Page"
 	)
 	fixture.expect(
@@ -223,7 +223,7 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 		and not paused,
 		"The Producer Page remains outside gameplay and result presentation"
 	)
-	var producer_page := main.get_node_or_null("ProducerPage")
+	var producer_page := main.get_node_or_null("Producer")
 	fixture.expect(
 		producer_page != null
 		and producer_page.find_children("*", "AudioStreamPlayer", true, false).is_empty(),
@@ -234,7 +234,7 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 	await fixture.process_frames(1)
 	fixture.expect(
 		main.call("get_campaign_phase") == PHASE_PRODUCER
-		and main.get_node_or_null("ProducerPage") == producer_page,
+		and main.get_node_or_null("Producer") == producer_page,
 		"Continuation Input cannot leave or replace the Producer Page"
 	)
 
@@ -280,7 +280,7 @@ func test_player_defeat_first_remains_authoritative() -> void:
 	fixture.expect(
 		bool(main.call("is_campaign_result_visible"))
 		and not level.is_campaign_story_phase_active(),
-		"Later Valdemar Defeat cannot replace the loss or start lv_4_b"
+		"Later Valdemar Defeat cannot replace the loss or start the Valdemar Post-Defeat Story"
 	)
 
 	fixture.set_current_scene(null)

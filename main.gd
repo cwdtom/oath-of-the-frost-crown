@@ -22,7 +22,6 @@ var _suspended_level: CampaignLevel = null
 var _campaign_prologue: CanvasLayer = null
 var _campaign_epilogue: CanvasLayer = null
 var _producer_page: CanvasLayer = null
-var _campaign_page_activation_frame := -1
 var _victory_story_active := false
 var _level_completion_handled := false
 var _active_level_scene: PackedScene = null
@@ -58,7 +57,6 @@ func _input(event: InputEvent) -> void:
 		_campaign_epilogue.queue_free()
 		_campaign_epilogue = null
 		_producer_page = PRODUCER_SCENE.instantiate() as CanvasLayer
-		_producer_page.name = "ProducerPage"
 		add_child(_producer_page)
 		return
 
@@ -75,8 +73,6 @@ func _input(event: InputEvent) -> void:
 
 
 func _is_campaign_page_continuation(event: InputEvent) -> bool:
-	if Engine.get_process_frames() <= _campaign_page_activation_frame:
-		return false
 	if not (
 		event is InputEventKey
 		or event is InputEventMouseButton
@@ -238,7 +234,6 @@ func _on_title_start_requested() -> void:
 	_title.queue_free()
 	_campaign_prologue = CAMPAIGN_PROLOGUE_SCENE.instantiate() as CanvasLayer
 	add_child(_campaign_prologue)
-	_campaign_page_activation_frame = Engine.get_process_frames()
 
 
 func _on_level_01_story_phase_finished(source: CampaignLevel) -> void:
@@ -321,7 +316,6 @@ func show_campaign_epilogue() -> void:
 	_campaign_epilogue = CAMPAIGN_EPILOGUE_SCENE.instantiate() as CanvasLayer
 	_campaign_epilogue.name = "CampaignEpiloguePage"
 	add_child(_campaign_epilogue)
-	_campaign_page_activation_frame = Engine.get_process_frames()
 
 
 func retry_campaign() -> void:

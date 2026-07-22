@@ -48,7 +48,7 @@ func _run() -> void:
 	var level_01 := main.call("get_active_campaign_level") as CampaignLevel
 	fixture.expect(
 		level_01 != null and level_01.get_campaign_id() == &"level_01",
-		"Production Prologue Page and Input Guide continuation start Level01"
+		"Production Campaign Prologue Page and Input Guide sequence starts Level01"
 	)
 	if level_01 == null:
 		fixture.complete()
