@@ -9,12 +9,20 @@ The successful combat outcome of a Level. It begins that Level's Victory Story w
 _Avoid_: Level ending, campaign completion
 
 **Victory Story**:
-The closing narrative phase that follows Level Completion. The campaign advances only after the Victory Story finishes.
+The closing narrative phase that follows Level Completion. Only after the Victory Story finishes may the campaign advance to another Level or enter its final terminal presentation.
 _Avoid_: Ending, result screen
 
 **Opening Story**:
 The introductory narrative phase of a newly active Level. Gameplay remains unavailable until it finishes, after which that same Level enters Level Initialization.
 _Avoid_: Victory Story, Level Initialization
+
+**Valdemar Pre-Awakening Story**:
+The one-time Level 04 narrative phase that begins when the Player first enters Valdemar's throne-room boundary during the initial story-bearing attempt. It pauses gameplay before Valdemar Awakening begins; finishing it immediately begins that awakening, while a retry omits this Story and begins the awakening directly at the boundary.
+_Avoid_: Opening Story, Victory Story, Valdemar Awakening, replayed retry Story
+
+**Valdemar Post-Defeat Story**:
+The Level 04 Victory Story that begins only after Valdemar's complete death motion reaches its retained Dying presentation and constitutes Level 04 Completion.
+_Avoid_: Health-depletion Story, interrupted death motion, ordinary post-combat dialogue
 
 **Level Advancement**:
 The replacement of the completed Level with a newly initialized next Level after its Victory Story finishes.
@@ -47,7 +55,7 @@ The final Boss encountered in the Level 04 throne room. He has fifteen maximum h
 _Avoid_: King, Elk King, generic species King
 
 **Valdemar Awakening**:
-The one-time transition that begins when the Player enters the throne-room boundary extending six hundred horizontal pixels from Valdemar, regardless of height. Valdemar cannot pursue, perform active attacks, take damage, or progress his Black Water Cycle before this transition finishes; its completion enters Dark Mode, enables his active combat behavior, and begins the first Black Water Cycle.
+The one-time transition that begins when the Valdemar Pre-Awakening Story finishes during the initial story-bearing Level 04 attempt, or immediately when the Player enters the throne-room boundary on a retry. The boundary extends four hundred horizontal pixels from Valdemar regardless of height; he cannot pursue, perform active attacks, take damage, or progress his Black Water Cycle before this transition finishes, whose completion enters Dark Mode, enables his active combat behavior, and begins the first Black Water Cycle.
 _Avoid_: Level initialization, Boss Door crossing, preloaded Dark Mode
 
 **Valdemar Health Presentation**:
@@ -87,8 +95,20 @@ The explicit damage immunity lasting for the full Valdemar Black Water Cast. Eve
 _Avoid_: Valdemar Hurt, cast interruption, Sword Gleam damage handling
 
 **Valdemar Defeat**:
-The Boss combat outcome reached when Valdemar's health is depleted. It disables his pursuit, attacks, Black Water Cycle, and combat collisions, hides his Health Bar, preserves his position and facing through the dead motion into the retained Dying presentation, and emits one `died` event when that presentation is reached; it does not yet constitute Level 04 Completion.
-_Avoid_: Level 04 Completion, immediate cleanup, implemented final ending
+The Boss combat outcome reached when Valdemar's health is depleted. It disables his pursuit, attacks, Black Water Cycle, and combat collisions, hides his Health Bar, and preserves his position and facing through the complete dead motion into the retained Dying presentation; it remains distinct from the later Level 04 Completion.
+_Avoid_: Level 04 Completion, immediate cleanup
+
+**Level 04 Completion**:
+The successful Level 04 outcome reached when Valdemar's complete death motion enters its retained Dying presentation and emits one `died` event. It immediately begins the Valdemar Post-Defeat Story rather than occurring when his health is first depleted.
+_Avoid_: Valdemar Defeat, health depletion, interrupted death motion
+
+**Level 04 Terminal Outcome Lock**:
+The first confirmed health depletion between the Player and Valdemar irreversibly fixes Level 04's terminal outcome, including when both occur during the same physics frame. Valdemar Defeat first immediately hides the HUD, removes Player control, and grants terminal Player damage immunity so no lingering combat effect can replace the victory, while Player Defeat first prevents any later Valdemar Defeat from replacing the loss; Level 04 Completion still waits for Valdemar's complete death motion after a locked victory.
+_Avoid_: Simultaneous terminal presentations, same-frame outcome replacement, delayed victory decision
+
+**Level 04 Final Tableau**:
+The terminal campaign presentation entered when the Valdemar Post-Defeat Story finishes. Level 04 retains its current camera composition and Valdemar's Dying presentation, keeps the HUD hidden and Player control unavailable, and shows no result interface or further transition.
+_Avoid_: Level Advancement, result screen, restored gameplay
 
 **Elk King**:
 A Boss variant of the Elk with ten maximum health that retains the Elk's thunder and passive shield while adding an independently triggered earthquake ability.

@@ -23,13 +23,19 @@ func _run() -> void:
 
 func test_sword_gleam_knocks_player_horizontally_away_from_valdemar() -> void:
 	var level := fixture.instantiate_scene(LEVEL_04_SCENE) as CampaignLevel
+	level.call("set_pre_awakening_story_enabled", false)
 	fixture.set_current_scene(level)
 	await fixture.process_frames(2)
 	fixture.set_paused(false)
 
 	var player := level.get_node("Player") as DamageableActor
+	var valdemar := level.get_node("Enemies/Valdemar") as DamageableActor
+	var awakening_distance := float(valdemar.get("awakening_distance"))
 	(player.get_node("VisualRoot/ShieldSkill/Shield") as CanvasItem).hide()
-	player.global_position = Vector2(4800.0, 200.0)
+	player.global_position = Vector2(
+		valdemar.global_position.x - awakening_distance + 1.0,
+		200.0
+	)
 	await wait_until_grounded(player)
 
 	var health_before := int(player.call("get_current_health"))
@@ -59,6 +65,7 @@ func test_sword_gleam_knocks_player_horizontally_away_from_valdemar() -> void:
 
 func test_contact_knocks_player_horizontally_away_from_valdemar() -> void:
 	var level := fixture.instantiate_scene(LEVEL_04_SCENE) as CampaignLevel
+	level.call("set_pre_awakening_story_enabled", false)
 	fixture.set_current_scene(level)
 	await fixture.process_frames(2)
 	fixture.set_paused(false)

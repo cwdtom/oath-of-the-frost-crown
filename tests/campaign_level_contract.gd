@@ -34,7 +34,7 @@ const LEVEL_SPECS := [
 	{
 		"scene": "res://levels/level_04.tscn",
 		"campaign_id": &"level_04",
-		"outcomes": [&"defeat"],
+		"outcomes": [&"defeat", &"completion"],
 		"has_music": true,
 		"has_opening_story": true,
 		"opening_story_path": "res://levels/level_04_story.json",

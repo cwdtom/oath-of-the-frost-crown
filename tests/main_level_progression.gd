@@ -285,8 +285,8 @@ func _run() -> void:
 		)
 		fixture.expect(
 			level_04 != null
-			and level_04.get_supported_campaign_outcomes() == [&"defeat"],
-			"Level04 supports defeat without a completion outcome"
+			and level_04.get_supported_campaign_outcomes() == [&"defeat", &"completion"],
+			"Level04 supports defeat and completion outcomes"
 		)
 		if level_04 != null and level_04 != replacement:
 			fixture.add_node(level_04)
