@@ -5,7 +5,7 @@ The campaign context describes how playable Levels, combat outcomes, and Stories
 ## Language
 
 **Campaign Prologue Page**:
-The single-page narrative preface presented after the Player starts the campaign and before the Input Guide. It is distinct from the later playable Level 00 narrative sequence.
+The single-page narrative preface with narrative-page music presented after the Player starts the campaign and before the Input Guide. It is distinct from the later playable Level 00 narrative sequence.
 _Avoid_: Level 00, Opening Story, prologue Level
 
 **Input Guide**:
@@ -127,11 +127,11 @@ The non-interactive combat composition retained through the Valdemar Post-Defeat
 _Avoid_: Campaign Epilogue Page, result screen, restored gameplay
 
 **Campaign Epilogue Page**:
-The silent, single-page narrative conclusion presented after the Valdemar Post-Defeat Story and after Level 04 and its music have ended. Continuing from it enters the Producer Page.
+The single-page narrative conclusion with narrative-page music presented after the Valdemar Post-Defeat Story and after Level 04 and its music have ended. Continuing from it enters the Producer Page.
 _Avoid_: Valdemar Post-Defeat Story, Level 04 Closing Tableau, result screen
 
 **Producer Page**:
-The campaign's silent final presentation entered from the Campaign Epilogue Page. It remains visible indefinitely and does not accept Continuation Input or initiate another campaign transition.
+The campaign's final presentation with narrative-page music entered from the Campaign Epilogue Page. It remains visible indefinitely and does not accept Continuation Input or initiate another campaign transition.
 _Avoid_: Campaign Epilogue Page, title page, restart page
 
 **Elk King**:

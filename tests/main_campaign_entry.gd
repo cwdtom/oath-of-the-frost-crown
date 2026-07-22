@@ -45,6 +45,16 @@ func _run() -> void:
 		main.call("get_active_campaign_level") == null,
 		"Campaign Prologue Page has no active Level"
 	)
+	var prologue_page := main.get_node_or_null("Prologue")
+	var prologue_music := (
+		prologue_page.find_child("AudioStreamPlayer", true, false) as AudioStreamPlayer
+		if prologue_page != null
+		else null
+	)
+	fixture.expect(
+		prologue_music != null and prologue_music.stream != null,
+		"Campaign Prologue Page provides narrative-page music"
+	)
 
 	var guide_input := InputEventKey.new()
 	guide_input.keycode = KEY_SPACE

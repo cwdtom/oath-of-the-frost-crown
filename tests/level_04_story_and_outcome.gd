@@ -202,6 +202,16 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 		and not paused,
 		"The Campaign Epilogue Page is an unpaused presentation without a result popup"
 	)
+	var epilogue_page := main.get_node_or_null("CampaignEpiloguePage")
+	var epilogue_music := (
+		epilogue_page.find_child("AudioStreamPlayer", true, false) as AudioStreamPlayer
+		if epilogue_page != null
+		else null
+	)
+	fixture.expect(
+		epilogue_music != null and epilogue_music.stream != null,
+		"The Campaign Epilogue Page provides narrative-page music"
+	)
 	fixture.expect(
 		not is_instance_valid(level) and not is_instance_valid(background),
 		"The Campaign Epilogue Page begins only after Level 04 and its music leave the tree"
@@ -224,10 +234,14 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 		"The Producer Page remains outside gameplay and result presentation"
 	)
 	var producer_page := main.get_node_or_null("Producer")
+	var producer_music := (
+		producer_page.find_child("AudioStreamPlayer", true, false) as AudioStreamPlayer
+		if producer_page != null
+		else null
+	)
 	fixture.expect(
-		producer_page != null
-		and producer_page.find_children("*", "AudioStreamPlayer", true, false).is_empty(),
-		"The Producer Page has no music playback"
+		producer_music != null and producer_music.stream != null,
+		"The Producer Page provides narrative-page music"
 	)
 
 	Input.parse_input_event(continuation)
