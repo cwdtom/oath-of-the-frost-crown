@@ -29,8 +29,13 @@ func test_sword_gleam_knocks_player_horizontally_away_from_valdemar() -> void:
 	fixture.set_paused(false)
 
 	var player := level.get_node("Player") as DamageableActor
+	var valdemar := level.get_node("Enemies/Valdemar") as DamageableActor
+	var awakening_distance := float(valdemar.get("awakening_distance"))
 	(player.get_node("VisualRoot/ShieldSkill/Shield") as CanvasItem).hide()
-	player.global_position = Vector2(4800.0, 200.0)
+	player.global_position = Vector2(
+		valdemar.global_position.x - awakening_distance + 1.0,
+		200.0
+	)
 	await wait_until_grounded(player)
 
 	var health_before := int(player.call("get_current_health"))

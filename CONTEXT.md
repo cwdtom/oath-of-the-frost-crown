@@ -55,7 +55,7 @@ The final Boss encountered in the Level 04 throne room. He has fifteen maximum h
 _Avoid_: King, Elk King, generic species King
 
 **Valdemar Awakening**:
-The one-time transition that begins when the Valdemar Pre-Awakening Story finishes during the initial story-bearing Level 04 attempt, or immediately when the Player enters the throne-room boundary on a retry. The boundary extends six hundred horizontal pixels from Valdemar regardless of height; he cannot pursue, perform active attacks, take damage, or progress his Black Water Cycle before this transition finishes, whose completion enters Dark Mode, enables his active combat behavior, and begins the first Black Water Cycle.
+The one-time transition that begins when the Valdemar Pre-Awakening Story finishes during the initial story-bearing Level 04 attempt, or immediately when the Player enters the throne-room boundary on a retry. The boundary extends four hundred horizontal pixels from Valdemar regardless of height; he cannot pursue, perform active attacks, take damage, or progress his Black Water Cycle before this transition finishes, whose completion enters Dark Mode, enables his active combat behavior, and begins the first Black Water Cycle.
 _Avoid_: Level initialization, Boss Door crossing, preloaded Dark Mode
 
 **Valdemar Health Presentation**:

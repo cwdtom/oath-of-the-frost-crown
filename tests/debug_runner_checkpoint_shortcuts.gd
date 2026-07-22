@@ -5,7 +5,6 @@ const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.
 const DEBUG_RUNNER_SCENE := preload("res://debug/debug_runner.tscn")
 const MAIN_SCENE := preload("res://main.tscn")
 const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
-const VALDEMAR_AWAKENING_DISTANCE := 600.0
 const MAX_STORY_ADVANCE_INPUTS := 64
 
 var fixture: HeadlessGameplayFixture
@@ -309,13 +308,14 @@ func verify_level_04_pre_awakening_story(
 ) -> void:
 	var player := level.get_node("Player") as DamageableActor
 	var valdemar := level.get_node("Enemies/Valdemar") as DamageableActor
+	var awakening_distance := float(valdemar.get("awakening_distance"))
 	player.global_position = (
 		valdemar.global_position
-		+ Vector2(-VALDEMAR_AWAKENING_DISTANCE - 20.0, -5000.0)
+		+ Vector2(-awakening_distance - 20.0, -5000.0)
 	)
 	await fixture.physics_frames(2)
 	player.global_position.x = (
-		valdemar.global_position.x - VALDEMAR_AWAKENING_DISTANCE + 1.0
+		valdemar.global_position.x - awakening_distance + 1.0
 	)
 	await fixture.physics_frames(3)
 

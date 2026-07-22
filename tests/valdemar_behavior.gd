@@ -15,7 +15,7 @@ const LEVEL_04_SCENE := preload("res://levels/level_04.tscn")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const PLAYER_LAYER := 1 << 1
 const EXPECTED_MAXIMUM_HEALTH := 15
-const EXPECTED_AWAKENING_DISTANCE := 600.0
+const EXPECTED_AWAKENING_DISTANCE := 400.0
 const EXPECTED_PURSUIT_SPEED := 150.0
 const EXPECTED_SWORD_GLEAM_COOLDOWN := 4.0
 const EXPECTED_HURT_DURATION := 0.4
@@ -74,7 +74,7 @@ func verify_production_configuration(valdemar: DamageableActor) -> void:
 	)
 	fixture.expect(
 		float(valdemar.get("awakening_distance")) == EXPECTED_AWAKENING_DISTANCE,
-		"Valdemar has a 600-pixel Awakening boundary"
+		"Valdemar has a 400-pixel Awakening boundary"
 	)
 	fixture.expect(
 		valdemar.call("get_maximum_health") == EXPECTED_MAXIMUM_HEALTH,
@@ -170,7 +170,7 @@ func verify_activation_sequence(
 			(awakening_shape.shape as RectangleShape2D).size.x,
 			EXPECTED_AWAKENING_DISTANCE * 2.0
 		),
-		"Valdemar's centered Awakening boundary monitors the Player across 600 pixels per side"
+		"Valdemar's centered Awakening boundary monitors the Player across 400 pixels per side"
 	)
 	valdemar.connect(
 		&"health_changed",
@@ -1148,7 +1148,11 @@ func instantiate_active_valdemar() -> Dictionary:
 		return {"level": level, "player": player, "valdemar": valdemar}
 
 	player.set_physics_process(false)
-	player.global_position = valdemar.global_position + Vector2(-500.0, -5000.0)
+	var awakening_distance := float(valdemar.get("awakening_distance"))
+	player.global_position = valdemar.global_position + Vector2(
+		-awakening_distance + 1.0,
+		-5000.0
+	)
 	for _frame in 70:
 		await fixture.physics_frames(1)
 		if valdemar.is_physics_processing():

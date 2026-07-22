@@ -4,7 +4,7 @@ extends SceneTree
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const LEVEL_04_SCENE := preload("res://levels/level_04.tscn")
 const MAIN_SCENE := preload("res://main.tscn")
-const AWAKENING_DISTANCE := 600.0
+const AWAKENING_DISTANCE := 400.0
 const DEAD_DURATION := 0.9
 const MAX_STORY_ADVANCE_INPUTS := 64
 const TERMINAL_OUTCOME_PLAYER_DEFEAT := &"player_defeat"
@@ -260,10 +260,20 @@ func enter_valdemar_awakening_boundary(
 	player: DamageableActor,
 	valdemar: DamageableActor
 ) -> void:
+	var awakening_requests := [0]
+	valdemar.connect(
+		&"awakening_requested",
+		func() -> void: awakening_requests[0] += 1,
+		CONNECT_ONE_SHOT
+	)
 	player.global_position = (
 		valdemar.global_position + Vector2(-AWAKENING_DISTANCE - 20.0, -5000.0)
 	)
 	await fixture.physics_frames(2)
+	fixture.expect(
+		awakening_requests[0] == 0,
+		"Valdemar remains dormant while the Player is beyond the 400-pixel boundary"
+	)
 	player.global_position.x = valdemar.global_position.x - AWAKENING_DISTANCE + 1.0
 	await fixture.physics_frames(3)
 

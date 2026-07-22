@@ -70,7 +70,7 @@ height = 112.0
 size = Vector2(32, 99)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_awakening"]
-size = Vector2(1200, 100000)
+size = Vector2(800, 100000)
 
 [sub_resource type="Animation" id="Animation_lpxcn"]
 length = 0.001

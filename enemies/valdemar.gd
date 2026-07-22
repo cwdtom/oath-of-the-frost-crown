@@ -25,7 +25,7 @@ const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 enum Phase { NORMAL_FORM, PRE_AWAKENING, AWAKENING, DARK_MODE, DEFEATED }
 enum DarkAction { PURSUIT, SWORD_GLEAM, HURT, BLACK_WATER_CAST }
 
-@export var awakening_distance := 600.0
+@export var awakening_distance := 400.0
 @export var pursuit_speed := 150.0
 
 var _phase := Phase.NORMAL_FORM
