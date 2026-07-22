@@ -26,7 +26,6 @@ const DEFEAT_SCENARIOS: Array[StringName] = [
 	&"hurt",
 	&"sword_gleam",
 	&"pending_black_water",
-	&"active_black_water",
 ]
 
 var fixture: HeadlessGameplayFixture
@@ -778,6 +777,18 @@ func verify_black_water_cycle_and_cast(
 		and attack_start_frames.size() == 2,
 		"Due Black Water remains singularly pending while an active Sword Gleam finishes"
 	)
+	await fixture.wait_seconds(
+		maxf(0.46 - animation_state.get_current_play_position(), 0.0)
+	)
+	var health_immediately_before_cast := int(valdemar.call("get_current_health"))
+	valdemar.take_damage(1, Vector2.ZERO)
+	fixture.expect(
+		valdemar.call("get_current_health") == health_immediately_before_cast - 1
+		and health_bar.value == health_immediately_before_cast - 1
+		and valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() == &"attack",
+		"Sword Gleam accepts damage immediately before pending Black Water begins"
+	)
 
 	for _frame in 30:
 		await fixture.physics_frames(1)
@@ -800,20 +811,38 @@ func verify_black_water_cycle_and_cast(
 	var cast_facing := dark_mode.flip_h
 	var valdemar_health_before_cast_damage := int(valdemar.call("get_current_health"))
 	var sword_cooldown_at_cast_start := sword_cooldown.time_left
+	await fixture.wait_seconds(EXPECTED_HURT_DURATION)
+	fixture.expect(
+		not valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() == &"skill",
+		"Black Water Cast continues after pre-boundary Sword Gleam Hurt immunity ends"
+	)
 	valdemar.take_damage(1, Vector2(-1000.0, 1000.0))
 	await fixture.physics_frames(1)
 	fixture.expect(
-		valdemar.call("get_current_health") == valdemar_health_before_cast_damage - 1
-		and health_bar.value == valdemar_health_before_cast_damage - 1
-		and valdemar.call("is_hurt_immune")
+		valdemar.call("get_current_health") == valdemar_health_before_cast_damage
+		and health_bar.value == valdemar_health_before_cast_damage
+		and not valdemar.call("is_hurt_immune")
 		and animation_state.get_current_node() == &"skill"
 		and valdemar.global_position == cast_position
 		and dark_mode.flip_h == cast_facing,
-		"Accepted damage preserves the committed Black Water Cast while updating health"
+		"Black Water Cast rejects damage without hurt immunity or presentation side effects"
 	)
 	fixture.expect(
 		sword_cooldown.time_left < sword_cooldown_at_cast_start,
 		"Sword Gleam cooldown continues independently during Black Water Cast"
+	)
+	var cast_play_position := animation_state.get_current_play_position()
+	valdemar.take_damage(valdemar_health_before_cast_damage, Vector2.ZERO)
+	await fixture.physics_frames(1)
+	fixture.expect(
+		valdemar.call("get_current_health") == valdemar_health_before_cast_damage
+		and not valdemar.call("is_health_depleted")
+		and animation_state.get_current_node() == &"skill"
+		and animation_state.get_current_play_position() > cast_play_position
+		and valdemar.global_position == cast_position
+		and dark_mode.flip_h == cast_facing,
+		"Lethal damage cannot defeat or interrupt Valdemar during Black Water Cast"
 	)
 
 	await recover_player(player)
@@ -863,6 +892,18 @@ func verify_black_water_cycle_and_cast(
 		and black_water_notifications[0] == 1,
 		"Black Water Cast completes after six seconds without accumulating another cast"
 	)
+	var position_after_cast := valdemar.global_position
+	valdemar.take_damage(1, Vector2.ZERO)
+	await fixture.physics_frames(1)
+	fixture.expect(
+		valdemar.call("get_current_health") == valdemar_health_before_cast_damage - 1
+		and health_bar.value == valdemar_health_before_cast_damage - 1
+		and valdemar.call("is_hurt_immune")
+		and animation_state.get_current_node() == &"hurt"
+		and valdemar.global_position == position_after_cast,
+		"Damage resumes normal Hurt behavior immediately after Black Water Cast"
+	)
+	await fixture.wait_seconds(EXPECTED_HURT_DURATION)
 
 	skill_animation.length = 0.15
 	player.global_position = Vector2(
@@ -986,11 +1027,6 @@ func verify_defeat_preempts_scenario(scenario_name: StringName) -> void:
 	var late_target := add_late_sword_target(sword_gleam.global_position, level)
 	var defeat_position := valdemar.global_position
 	var defeat_facing := dark_mode.flip_h
-	if scenario_name == &"active_black_water":
-		fixture.expect(
-			defeat_facing,
-			"Active Black Water Defeat scenario holds the non-default east facing"
-		)
 	if scenario_name != &"hurt":
 		fixture.expect(
 			bool(valdemar.call("apply_debug_health_override", 1)),
@@ -1187,17 +1223,6 @@ func prepare_defeat_scenario(
 					and black_water_notifications[0] == 0,
 					"Valdemar Defeat scenario includes one pending Black Water Cast"
 				)
-		&"active_black_water":
-			player.global_position = valdemar.global_position + Vector2(1000.0, -5000.0)
-			await fixture.physics_frames(2)
-			black_water_cooldown.process_callback = Timer.TIMER_PROCESS_PHYSICS
-			black_water_cooldown.start(0.001)
-			await fixture.physics_frames(2)
-			fixture.expect(
-				animation_state.get_current_node() == &"skill"
-				and black_water_notifications[0] == 1,
-				"Valdemar Defeat scenario begins during an active Black Water Cast"
-			)
 		_:
 			fixture.expect(false, "Unknown Valdemar Defeat scenario: %s" % scenario_name)
 

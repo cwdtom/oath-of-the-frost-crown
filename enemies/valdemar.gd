@@ -109,6 +109,8 @@ func restore_full_health() -> void:
 func take_damage(amount: int, _knockback_direction: Vector2) -> void:
 	if _phase != Phase.DARK_MODE:
 		return
+	if _dark_action == DarkAction.BLACK_WATER_CAST:
+		return
 
 	if (
 		amount > 0
