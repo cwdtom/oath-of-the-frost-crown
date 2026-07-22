@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://dh4swwpkjdcw"]
+
+[ext_resource type="Texture2D" uid="uid://cux0hsr1f3sk4" path="res://assets/ui/intermission.png" id="1_8a05t"]
+[ext_resource type="FontFile" uid="uid://duuhvp4kpsqjy" path="res://assets/ui/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="2_ta184"]
+
+[node name="End" type="CanvasLayer" unique_id=1141772961]
+
+[node name="Control" type="Control" parent="." unique_id=864976976]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="Control" unique_id=784228656]
+layout_mode = 0
+offset_left = 1.0
+offset_top = -99.0
+offset_right = 1153.0
+offset_bottom = 737.0
+texture = ExtResource("1_8a05t")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control" unique_id=1607339530]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/VBoxContainer" unique_id=1903036519]
+layout_mode = 2
+theme_override_constants/margin_top = 100
+
+[node name="Label" type="Label" parent="Control/VBoxContainer/MarginContainer" unique_id=1387857308]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ta184")
+theme_override_font_sizes/font_size = 32
+text = "寒冠落地，兽灵烙印随国王的死亡逐渐消散。
+黑雾退去，冰雪开始融化，艾尔斯维克终于迎来了久违的春天。
+伊瓦尔公开了王宫隐瞒的真相，莱夫的银盾也被送回王都。
+艾拉失去了战友与父亲，也不再是王座的剑。
+她重新立起被掩埋的誓约碑，将长剑插入雪中。
+“我执剑，不为王座。”
+“只为守护仍然活着的人。”
+远方传来一声鹿鸣。
+黑冬结束了。
+而艾尔斯维克的新生，才刚刚开始。"
+horizontal_alignment = 1

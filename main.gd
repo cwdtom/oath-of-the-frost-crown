@@ -6,13 +6,23 @@ const LEVEL_01_SCENE := preload("res://levels/level_01.tscn")
 const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
 const LEVEL_03_SCENE := preload("res://levels/level_03.tscn")
 const LEVEL_04_SCENE := preload("res://levels/level_04.tscn")
+const CAMPAIGN_PROLOGUE_SCENE := preload("res://ui/prologue.tscn")
+const CAMPAIGN_EPILOGUE_SCENE := preload("res://ui/end.tscn")
+const PRODUCER_SCENE := preload("res://ui/producer.tscn")
 const RESULT_DEAD := "DEAD"
 const CAMPAIGN_PHASE_TITLE := &"title"
+const CAMPAIGN_PHASE_PROLOGUE := &"prologue"
 const CAMPAIGN_PHASE_GUIDE := &"guide"
 const CAMPAIGN_PHASE_LEVEL := &"level"
+const CAMPAIGN_PHASE_EPILOGUE := &"epilogue"
+const CAMPAIGN_PHASE_PRODUCER := &"producer"
 
 var _active_level: CampaignLevel = null
 var _suspended_level: CampaignLevel = null
+var _campaign_prologue: CanvasLayer = null
+var _campaign_epilogue: CanvasLayer = null
+var _producer_page: CanvasLayer = null
+var _campaign_page_activation_frame := -1
 var _victory_story_active := false
 var _level_completion_handled := false
 var _active_level_scene: PackedScene = null
@@ -30,6 +40,28 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if is_instance_valid(_campaign_prologue):
+		if not _is_campaign_page_continuation(event):
+			return
+
+		get_viewport().set_input_as_handled()
+		_campaign_prologue.queue_free()
+		_campaign_prologue = null
+		_guide.visible = true
+		return
+
+	if is_instance_valid(_campaign_epilogue):
+		if not _is_campaign_page_continuation(event):
+			return
+
+		get_viewport().set_input_as_handled()
+		_campaign_epilogue.queue_free()
+		_campaign_epilogue = null
+		_producer_page = PRODUCER_SCENE.instantiate() as CanvasLayer
+		_producer_page.name = "ProducerPage"
+		add_child(_producer_page)
+		return
+
 	if not _guide.visible:
 		return
 	if not (event is InputEventKey or event is InputEventMouseButton):
@@ -42,9 +74,28 @@ func _input(event: InputEvent) -> void:
 	start_level_01()
 
 
+func _is_campaign_page_continuation(event: InputEvent) -> bool:
+	if Engine.get_process_frames() <= _campaign_page_activation_frame:
+		return false
+	if not (
+		event is InputEventKey
+		or event is InputEventMouseButton
+		or event is InputEventJoypadButton
+		or event is InputEventScreenTouch
+	):
+		return false
+	return event.is_pressed() and not event.is_echo()
+
+
 func get_campaign_phase() -> StringName:
 	if _active_level != null:
 		return CAMPAIGN_PHASE_LEVEL
+	if is_instance_valid(_campaign_prologue):
+		return CAMPAIGN_PHASE_PROLOGUE
+	if is_instance_valid(_campaign_epilogue):
+		return CAMPAIGN_PHASE_EPILOGUE
+	if is_instance_valid(_producer_page):
+		return CAMPAIGN_PHASE_PRODUCER
 	if is_instance_valid(_title) and _title.visible:
 		return CAMPAIGN_PHASE_TITLE
 	if _guide.visible:
@@ -101,6 +152,9 @@ func replace_campaign_session(
 	get_tree().paused = false
 	if is_instance_valid(_title):
 		_title.visible = false
+	if is_instance_valid(_campaign_prologue):
+		_campaign_prologue.queue_free()
+		_campaign_prologue = null
 	_guide.visible = false
 	_victory_story_active = false
 
@@ -182,7 +236,9 @@ func play_level_00() -> void:
 func _on_title_start_requested() -> void:
 	_title.visible = false
 	_title.queue_free()
-	_guide.visible = true
+	_campaign_prologue = CAMPAIGN_PROLOGUE_SCENE.instantiate() as CanvasLayer
+	add_child(_campaign_prologue)
+	_campaign_page_activation_frame = Engine.get_process_frames()
 
 
 func _on_level_01_story_phase_finished(source: CampaignLevel) -> void:
@@ -247,6 +303,25 @@ func _on_level_victory_story_finished(source: CampaignLevel) -> void:
 			start_level_03()
 		&"level_03":
 			start_level_04()
+		&"level_04":
+			show_campaign_epilogue()
+
+
+func show_campaign_epilogue() -> void:
+	get_tree().paused = false
+	_game_result_popup.hide_result()
+
+	if _active_level != null:
+		var finished_level := _active_level
+		_active_level = null
+		remove_child(finished_level)
+		finished_level.queue_free()
+	_active_level_scene = null
+
+	_campaign_epilogue = CAMPAIGN_EPILOGUE_SCENE.instantiate() as CanvasLayer
+	_campaign_epilogue.name = "CampaignEpiloguePage"
+	add_child(_campaign_epilogue)
+	_campaign_page_activation_frame = Engine.get_process_frames()
 
 
 func retry_campaign() -> void:

@@ -4,6 +4,18 @@ The campaign context describes how playable Levels, combat outcomes, and Stories
 
 ## Language
 
+**Campaign Prologue Page**:
+The single-page narrative preface presented after the Player starts the campaign and before the Input Guide. It is distinct from the later playable Level 00 narrative sequence.
+_Avoid_: Level 00, Opening Story, prologue Level
+
+**Input Guide**:
+The campaign instruction page presented after the Campaign Prologue Page. Continuing from it begins Level 01 and its Opening Story.
+_Avoid_: Campaign Prologue Page, Opening Story
+
+**Continuation Input**:
+A new keyboard-key, mouse-button, gamepad-button, or touchscreen press received after the Campaign Prologue Page or Campaign Epilogue Page becomes active. Releases, key-repeat echoes, pointer motion, and analog-axis motion are not Continuation Inputs, and the input that opens a page cannot also continue past it.
+_Avoid_: Any input event, held input, opening input
+
 **Level Completion**:
 The successful combat outcome of a Level. It begins that Level's Victory Story when one exists; it does not itself advance to the next Level.
 _Avoid_: Level ending, campaign completion
@@ -106,9 +118,17 @@ _Avoid_: Valdemar Defeat, health depletion, interrupted death motion
 The first confirmed health depletion between the Player and Valdemar irreversibly fixes Level 04's terminal outcome, including when both occur during the same physics frame. Valdemar Defeat first immediately hides the HUD, removes Player control, and grants terminal Player damage immunity so no lingering combat effect can replace the victory, while Player Defeat first prevents any later Valdemar Defeat from replacing the loss; Level 04 Completion still waits for Valdemar's complete death motion after a locked victory.
 _Avoid_: Simultaneous terminal presentations, same-frame outcome replacement, delayed victory decision
 
-**Level 04 Final Tableau**:
-The terminal campaign presentation entered when the Valdemar Post-Defeat Story finishes. Level 04 retains its current camera composition and Valdemar's Dying presentation, keeps the HUD hidden and Player control unavailable, and shows no result interface or further transition.
-_Avoid_: Level Advancement, result screen, restored gameplay
+**Level 04 Closing Tableau**:
+The non-interactive combat composition retained through the Valdemar Post-Defeat Story, with Valdemar in his Dying presentation, the HUD hidden, and Player control unavailable. When that Story finishes, the campaign leaves this tableau for the Campaign Epilogue Page.
+_Avoid_: Campaign Epilogue Page, result screen, restored gameplay
+
+**Campaign Epilogue Page**:
+The silent, single-page narrative conclusion presented after the Valdemar Post-Defeat Story and after Level 04 and its music have ended. Continuing from it enters the Producer Page.
+_Avoid_: Valdemar Post-Defeat Story, Level 04 Closing Tableau, result screen
+
+**Producer Page**:
+The campaign's silent final presentation entered from the Campaign Epilogue Page. It remains visible indefinitely and does not accept Continuation Input or initiate another campaign transition.
+_Avoid_: Campaign Epilogue Page, title page, restart page
 
 **Elk King**:
 A Boss variant of the Elk with ten maximum health that retains the Elk's thunder and passive shield while adding an independently triggered earthquake ability.

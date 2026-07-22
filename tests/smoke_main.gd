@@ -42,11 +42,13 @@ func _run() -> void:
 	guide_input.pressed = true
 	Input.parse_input_event(guide_input)
 	await fixture.process_frames(1)
+	Input.parse_input_event(guide_input)
+	await fixture.process_frames(1)
 
 	var level_01 := main.call("get_active_campaign_level") as CampaignLevel
 	fixture.expect(
 		level_01 != null and level_01.get_campaign_id() == &"level_01",
-		"Production title and guide input start Level01"
+		"Production Prologue Page and Input Guide continuation start Level01"
 	)
 	if level_01 == null:
 		fixture.complete()

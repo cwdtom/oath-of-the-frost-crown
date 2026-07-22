@@ -9,6 +9,8 @@ const DEAD_DURATION := 0.9
 const MAX_STORY_ADVANCE_INPUTS := 64
 const TERMINAL_OUTCOME_PLAYER_DEFEAT := &"player_defeat"
 const TERMINAL_OUTCOME_VALDEMAR_DEFEAT := &"valdemar_defeat"
+const PHASE_EPILOGUE := &"epilogue"
+const PHASE_PRODUCER := &"producer"
 
 var fixture: HeadlessGameplayFixture
 
@@ -187,22 +189,53 @@ func test_valdemar_defeat_plays_victory_story_after_death_motion() -> void:
 		"A repeated Valdemar died signal cannot duplicate completion or lv_4_b"
 	)
 
+	var background := level.get_node("Background")
 	await advance_story_phase(level)
 	fixture.expect(
-		main.call("get_active_campaign_level") == level
-		and not level.is_campaign_story_phase_active()
+		main.call("get_campaign_phase") == PHASE_EPILOGUE
+		and main.call("get_active_campaign_level") == null,
+		"Finishing lv_4_b leaves Level 04 for the Campaign Epilogue Page"
+	)
+	fixture.expect(
+		main.get_node_or_null("CampaignEpiloguePage") != null
+		and not bool(main.call("is_campaign_result_visible"))
 		and not paused,
-		"Finishing lv_4_b retains the active Level 04 session"
+		"The Campaign Epilogue Page is an unpaused presentation without a result popup"
 	)
 	fixture.expect(
-		not level.is_campaign_hud_visible()
-		and not level.is_campaign_control_available()
-		and not bool(main.call("is_campaign_result_visible")),
-		"Finishing lv_4_b holds the Final Tableau without controls or a result popup"
+		not is_instance_valid(level) and not is_instance_valid(background),
+		"The Campaign Epilogue Page begins only after Level 04 and its music leave the tree"
+	)
+
+	var continuation := InputEventKey.new()
+	continuation.keycode = KEY_ENTER
+	continuation.pressed = true
+	Input.parse_input_event(continuation)
+	await fixture.process_frames(1)
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_PRODUCER
+		and main.get_node_or_null("ProducerPage") != null,
+		"Campaign Epilogue Page continuation enters the Producer Page"
 	)
 	fixture.expect(
-		bool(valdemar.get_node("Dying").visible),
-		"The Level 04 Final Tableau retains Valdemar's Dying presentation"
+		main.call("get_active_campaign_level") == null
+		and not bool(main.call("is_campaign_result_visible"))
+		and not paused,
+		"The Producer Page remains outside gameplay and result presentation"
+	)
+	var producer_page := main.get_node_or_null("ProducerPage")
+	fixture.expect(
+		producer_page != null
+		and producer_page.find_children("*", "AudioStreamPlayer", true, false).is_empty(),
+		"The Producer Page has no music playback"
+	)
+
+	Input.parse_input_event(continuation)
+	await fixture.process_frames(1)
+	fixture.expect(
+		main.call("get_campaign_phase") == PHASE_PRODUCER
+		and main.get_node_or_null("ProducerPage") == producer_page,
+		"Continuation Input cannot leave or replace the Producer Page"
 	)
 
 	fixture.set_current_scene(null)
@@ -280,7 +313,7 @@ func enter_valdemar_awakening_boundary(
 
 func advance_story_phase(level: CampaignLevel) -> void:
 	for _input_index in MAX_STORY_ADVANCE_INPUTS:
-		if not level.is_campaign_story_phase_active():
+		if not is_instance_valid(level) or not level.is_campaign_story_phase_active():
 			return
 		var input := InputEventKey.new()
 		input.keycode = KEY_ENTER
