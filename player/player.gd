@@ -13,6 +13,7 @@ const ATTACK_TO_RUNNING = "parameters/conditions/attack_to_running"
 const MAX_HEALTH = 5
 const DEAD_ANIMATION = "dead"
 const HURT_ANIMATION = "hurt"
+const HURT_IMMUNITY_DURATION = 1.5
 const HURT_KNOCKBACK_DISTANCE = 100.0
 const PERSISTENT_CONTACT_TOLERANCE = 1.0
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
@@ -26,6 +27,7 @@ enum {IDLE, RUN, JUMP, HURT, DEAD, ATTACK}
 var state = -1
 var controls_enabled := true
 var _damage_immune := false
+var _hurt_response_active := false
 var _health := DamageAndHealthModule.new(MAX_HEALTH)
 
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -202,7 +204,7 @@ func _physics_process(delta: float) -> void:
 
 	if not _health.is_hurt_immune():
 		_try_take_persistent_contact_damage()
-	if _health.is_hurt_immune() or state == DEAD:
+	if _hurt_response_active or state == DEAD:
 		return
 
 	if wants_attack:
@@ -268,9 +270,17 @@ func take_damage(
 		return
 
 	apply_knockback(knockback_direction, complete_knockback_collision_motion)
+	_hurt_response_active = true
 	change_state(HURT)
-	await get_tree().create_timer(animation_player.get_animation(HURT_ANIMATION).length).timeout
+	get_tree().create_timer(
+		animation_player.get_animation(HURT_ANIMATION).length
+	).timeout.connect(_end_hurt_response)
+	await get_tree().create_timer(HURT_IMMUNITY_DURATION).timeout
 	_health.end_hurt_immunity()
+
+
+func _end_hurt_response() -> void:
+	_hurt_response_active = false
 
 
 func _on_health_changed(current_health: int, observed_maximum_health: int) -> void:

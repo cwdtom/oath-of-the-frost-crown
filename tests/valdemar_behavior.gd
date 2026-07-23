@@ -1296,4 +1296,8 @@ func recover_player(player: DamageableActor) -> void:
 		(player.get_node("AnimationPlayer") as AnimationPlayer).get_animation(&"hurt").length
 	)
 	await fixture.wait_seconds(hurt_duration + 0.05)
+	# Keep contact-damage scenarios isolated from the longer Player Hurt Immunity timer.
+	var health := player.get("_health") as DamageAndHealth
+	if health != null:
+		health.end_hurt_immunity()
 	player.call("restore_full_health")

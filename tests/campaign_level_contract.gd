@@ -91,6 +91,10 @@ func verify_level_contract(spec: Dictionary) -> void:
 	)
 	if spec.has("act_announcement_text"):
 		fixture.expect(
+			not FileAccess.get_file_as_string(scene_path).contains("announcement_text ="),
+			"%s keeps its Act Announcement text in script" % scene_path
+		)
+		fixture.expect(
 			level.get_campaign_act_announcement_text()
 			== spec["act_announcement_text"],
 			"%s declares its configured Act Announcement" % scene_path

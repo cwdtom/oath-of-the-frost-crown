@@ -3,6 +3,7 @@ extends SceneTree
 
 const LEVEL_04_SCENE := preload("res://levels/level_04.tscn")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
+const PLAYER_HURT_IMMUNITY_WAIT := 1.55
 
 var fixture: HeadlessGameplayFixture
 
@@ -82,9 +83,7 @@ func test_field_persists_player_contact_damage(level: CampaignLevel) -> void:
 	var shield_animation_player := player.get_node(
 		"VisualRoot/ShieldSkill/Shield/AnimationPlayer"
 	) as AnimationPlayer
-	var player_animation_player := player.get_node("AnimationPlayer") as AnimationPlayer
 	var shield_break_duration := shield_animation_player.get_animation(&"break").length
-	var hurt_duration := player_animation_player.get_animation(&"hurt").length
 	var hurt_event_count: Array[int] = [0]
 	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
 	player.set_physics_process(false)
@@ -126,7 +125,7 @@ func test_field_persists_player_contact_damage(level: CampaignLevel) -> void:
 		% player.global_position.x
 	)
 
-	await fixture.wait_seconds(hurt_duration + 0.1)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)
 	await fixture.physics_frames(2)
 	fixture.expect(
 		player.call("get_current_health") == maximum_health - 2
@@ -149,7 +148,7 @@ func test_field_persists_player_contact_damage(level: CampaignLevel) -> void:
 
 	player.global_position = black_water.global_position + Vector2(2000.0, -20.0)
 	var health_after_separation := int(player.call("get_current_health"))
-	await fixture.wait_seconds(hurt_duration + 0.1)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)
 	await fixture.physics_frames(2)
 	fixture.expect(
 		player.call("get_current_health") == health_after_separation
@@ -168,4 +167,4 @@ func test_field_persists_player_contact_damage(level: CampaignLevel) -> void:
 		and hurt_event_count[0] == 3,
 		"Later Black Water Field contact resumes persistent Player damage"
 	)
-	await fixture.wait_seconds(hurt_duration + 0.1)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)

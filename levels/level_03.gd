@@ -5,12 +5,17 @@ const TERMINAL_OUTCOME_NONE := &"none"
 const TERMINAL_OUTCOME_PLAYER_DEFEAT := &"player_defeat"
 const TERMINAL_OUTCOME_ELK_KING_DEFEAT := &"elk_king_defeat"
 const ELK_KING_DEATH_STAGING_SEPARATION := 470.0
+const ACT_ANNOUNCEMENT_TEXT := "第三幕\n白鹿悲歌"
 
 @onready var elk_king = $Enemies/ElkKing
 
 var _terminal_outcome := TERMINAL_OUTCOME_NONE
 var _elk_king_death_staging_complete := false
 var _elk_king_death_tableau_reached := false
+
+
+func _get_act_announcement_text() -> String:
+	return ACT_ANNOUNCEMENT_TEXT
 
 
 func get_terminal_outcome() -> StringName:

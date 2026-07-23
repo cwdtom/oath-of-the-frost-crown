@@ -1,6 +1,7 @@
 [gd_scene format=4 uid="uid://ckqd1tr7v4ndo"]
 
 [ext_resource type="PackedScene" uid="uid://c51ln2t7to2xu" path="res://levels/level_base.tscn" id="1_nnn84"]
+[ext_resource type="Script" path="res://levels/level_02.gd" id="2_level_02"]
 [ext_resource type="PackedScene" uid="uid://bn6tiig2vnj2g" path="res://player/player_02.tscn" id="2_g685p"]
 [ext_resource type="PackedScene" uid="uid://cjuvjqlbkys25" path="res://levels/background.tscn" id="2_h518d"]
 [ext_resource type="Texture2D" uid="uid://c32d4iliihe8b" path="res://assets/tilesets/level02/desert.png" id="3_8yqd8"]
@@ -302,6 +303,7 @@ physics_layer_0/physics_material = SubResource("PhysicsMaterial_h518d")
 sources/1 = SubResource("TileSetAtlasSource_h518d")
 
 [node name="Level02" unique_id=1993614508 instance=ExtResource("1_nnn84")]
+script = ExtResource("2_level_02")
 _campaign_completion_source_path = NodePath("Enemies/BearKing")
 _campaign_victory_story_path = "res://levels/level_02_a_story.json"
 campaign_id = &"level_02"
@@ -412,4 +414,3 @@ tile_set = SubResource("TileSet_8yqd8")
 story_path = "res://levels/level_02_story.json"
 
 [node name="Announcer" parent="." index="9" unique_id=1141772961 instance=ExtResource("16_5l6ou")]
-announcement_text = "第二幕\n林中疑影"

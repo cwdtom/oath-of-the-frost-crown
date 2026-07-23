@@ -6,12 +6,17 @@ const STORY_SCENE := preload("res://ui/story.tscn")
 const TERMINAL_OUTCOME_NONE := &"none"
 const TERMINAL_OUTCOME_PLAYER_DEFEAT := &"player_defeat"
 const TERMINAL_OUTCOME_VALDEMAR_DEFEAT := &"valdemar_defeat"
+const ACT_ANNOUNCEMENT_TEXT := "第四幕\n寒冠之誓"
 
 @onready var valdemar = $Enemies/Valdemar
 
 var _play_pre_awakening_story := true
 var _terminal_outcome := TERMINAL_OUTCOME_NONE
 var _level_completion_reached := false
+
+
+func _get_act_announcement_text() -> String:
+	return ACT_ANNOUNCEMENT_TEXT
 
 
 func set_pre_awakening_story_enabled(enabled: bool) -> void:

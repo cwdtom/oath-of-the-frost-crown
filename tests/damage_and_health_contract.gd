@@ -14,7 +14,7 @@ const ACTOR_SPECS := [
 		"scene": LEVEL_01_SCENE,
 		"actor_path": NodePath("Player"),
 		"maximum_health": 5,
-		"hurt_recovery": 0.95,
+		"hurt_recovery": 1.55,
 		"death_signal": &"died",
 		"campaign_outcome": CampaignLevel.OUTCOME_DEFEAT,
 		"presentation": &"hud",
@@ -85,6 +85,7 @@ func _run() -> void:
 	await verify_player_rejects_invalid_debug_health_overrides()
 	await verify_player_debug_health_override()
 	await verify_player_03_health()
+	await verify_player_hurt_immunity_duration()
 	await verify_enemy_rejects_invalid_debug_health_overrides()
 	await verify_enemy_debug_health_override()
 	for spec in ACTOR_SPECS:
@@ -112,6 +113,40 @@ func verify_player_03_health() -> void:
 		"Player03 initializes at full eight health"
 	)
 	player.free()
+
+
+func verify_player_hurt_immunity_duration() -> void:
+	var actor_fixture := await instantiate_fixture(ACTOR_SPECS[0])
+	var player := actor_fixture["actor"] as DamageableActor
+	if player == null:
+		fixture.expect(false, "Player loads for its hurt-immunity duration check")
+		await cleanup_fixture(actor_fixture)
+		return
+
+	var maximum_health := int(player.call("get_maximum_health"))
+	player.take_damage(1, Vector2.ZERO)
+	var hurt_state := int(player.get("state"))
+	await fixture.wait_seconds(0.95)
+	player.set_physics_process(true)
+	await fixture.physics_frames(2)
+	player.set_physics_process(false)
+	fixture.expect(
+		int(player.get("state")) != hurt_state and player.call("is_hurt_immune"),
+		"Player recovers from its hurt response while Hurt Immunity remains active"
+	)
+	player.take_damage(1, Vector2.ZERO)
+	fixture.expect(
+		player.call("get_current_health") == maximum_health - 1,
+		"Player Hurt Immunity outlasts the 0.9-second hurt animation"
+	)
+
+	await fixture.wait_seconds(0.6)
+	player.take_damage(1, Vector2.ZERO)
+	fixture.expect(
+		player.call("get_current_health") == maximum_health - 2,
+		"Player Hurt Immunity ends after its 1.5-second duration"
+	)
+	await cleanup_fixture(actor_fixture)
 
 
 func verify_release_build_rejects_debug_health_overrides() -> void:
