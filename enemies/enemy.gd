@@ -235,7 +235,19 @@ func _handle_species_skill_collisions() -> void:
 
 
 func _is_species_skill_complete() -> bool:
-	return _get_moving_skill_distance() > 0.0 and _moving_skill_distance_left <= 0.0
+	return (
+		_get_moving_skill_distance() > 0.0
+		and (_moving_skill_distance_left <= 0.0 or _has_forward_moving_skill_collision())
+	)
+
+
+func _has_forward_moving_skill_collision() -> bool:
+	for collision_index in get_slide_collision_count():
+		var collision := get_slide_collision(collision_index)
+		if collision.get_normal().x * move_direction < 0.0:
+			return true
+
+	return false
 
 
 func _blocks_weapon_damage_during_skill() -> bool:

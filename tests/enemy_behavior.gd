@@ -150,6 +150,7 @@ func _run() -> void:
 	await test_persistent_skill_detection_retriggers_ready_skill()
 	await test_skill_ready_during_hurt_waits_for_hurt_completion()
 	await test_skill_damage_policy()
+	await test_moving_skills_stop_on_collision()
 	await test_death_presentation_and_lifetime()
 
 	await fixture.process_frames(2)
@@ -278,6 +279,84 @@ func test_persistent_skill_detection_retriggers_ready_skill() -> void:
 		)
 		enemies[index].queue_free()
 		players[index].queue_free()
+
+
+func test_moving_skills_stop_on_collision() -> void:
+	var examples := [
+		{
+			"name": "Wolf",
+			"scene": WOLF_SCENE,
+			"direction": 1.0,
+			"detector_offset": Vector2(100.0, 0.0),
+		},
+		{
+			"name": "WolfKing",
+			"scene": WOLF_KING_SCENE,
+			"direction": -1.0,
+			"detector_offset": Vector2(-150.0, 0.0),
+		},
+	]
+	var start_x := 50000.0
+	for example in examples:
+		var start_position := Vector2(start_x, 0.0)
+		var enemy := harness.instantiate_enemy(
+			example.scene,
+			start_position,
+			{"idle_duration": 10.0}
+		)
+		var detector := harness.add_body(start_position + example.detector_offset)
+		var wall := harness.add_environment_wall(
+			start_position + Vector2(80.0 * example.direction, 0.0),
+			Vector2(20.0, 200.0)
+		)
+
+		var collision_position := start_position
+		var collided_with_wall := false
+		var moving_skill_state := -1
+		var exited_skill_on_collision := false
+		for _frame in 15:
+			await fixture.physics_frames(1)
+			if not is_zero_approx(enemy.velocity.x):
+				moving_skill_state = enemy.state
+			for collision_index in enemy.get_slide_collision_count():
+				var collision := enemy.get_slide_collision(collision_index)
+				if collision.get_collider() == wall:
+					collision_position = enemy.global_position
+					collided_with_wall = true
+					exited_skill_on_collision = (
+						moving_skill_state >= 0 and enemy.state != moving_skill_state
+					)
+					break
+			if collided_with_wall:
+				break
+		var travel_distance: float = (
+			(collision_position.x - start_position.x) * example.direction
+		)
+		fixture.expect(
+			collided_with_wall and travel_distance > 0.0 and travel_distance < 80.0,
+			"%s collision ends its moving skill before full distance" % example.name
+		)
+		fixture.expect(
+			exited_skill_on_collision,
+			"%s ends its moving skill on the collision frame" % example.name
+		)
+		await fixture.physics_frames(3)
+		fixture.expect(
+			is_equal_approx(enemy.global_position.x, collision_position.x),
+			"%s stops moving immediately after its skill collision" % example.name
+		)
+		var health_before_hit: int = enemy.call("get_current_health")
+		await harness.deliver_hit(enemy)
+		fixture.expect(
+			enemy.call("get_current_health") == health_before_hit - 1,
+			"%s collision ends its moving skill weapon immunity" % example.name
+		)
+
+		enemy.queue_free()
+		detector.queue_free()
+		wall.queue_free()
+		await fixture.process_frames(1)
+		start_x += 1000.0
 	await fixture.process_frames(1)
 
 
