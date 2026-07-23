@@ -70,7 +70,10 @@ func test_reentry_restarts_completed_earthquake_safely() -> void:
 	)
 	detector_body.position += Vector2(400.0, 0.0)
 	await fixture.physics_frames(2)
-	await fixture.wait_seconds(1.05)
+	for _frame in 90:
+		if not earthquake_animation.is_playing():
+			break
+		await fixture.process_frames(1)
 	fixture.expect(
 		not earthquake_animation.is_playing(),
 		"The first earthquake finishes before the Player re-enters"
