@@ -3,6 +3,7 @@ extends SceneTree
 
 const PLAYER_04_SCENE := preload("res://player/player_04.tscn")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
+const PLAYER_HURT_IMMUNITY_WAIT := 1.55
 
 var fixture: HeadlessGameplayFixture
 
@@ -145,8 +146,6 @@ func test_cooldown_damage_does_not_delay_shield_recovery() -> void:
 	var cooldown := player.get_node("VisualRoot/ShieldSkill/Cooldown") as Timer
 	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
 	var break_duration := shield_animation_player.get_animation("break").length
-	var player_animation_player := player.get_node("AnimationPlayer") as AnimationPlayer
-	var hurt_duration := player_animation_player.get_animation("hurt").length
 	var maximum_health := int(player.call("get_maximum_health"))
 	fixture.expect(
 		is_equal_approx(cooldown.wait_time, 5.0),
@@ -163,7 +162,7 @@ func test_cooldown_damage_does_not_delay_shield_recovery() -> void:
 		player.call("get_current_health") == maximum_health - 1,
 		"Player takes normal damage during Player Shield Cooldown"
 	)
-	await fixture.wait_seconds(hurt_duration + 0.1)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)
 	player.take_damage(1, Vector2.ZERO)
 	fixture.expect(
 		player.call("get_current_health") == maximum_health - 2,
@@ -196,8 +195,6 @@ func test_existing_damage_rejection_preserves_available_shield() -> void:
 	var cooldown := player.get_node("VisualRoot/ShieldSkill/Cooldown") as Timer
 	var shield_animation_player := shield.get_node("AnimationPlayer") as AnimationPlayer
 	var break_duration := shield_animation_player.get_animation("break").length
-	var player_animation_player := player.get_node("AnimationPlayer") as AnimationPlayer
-	var hurt_duration := player_animation_player.get_animation("hurt").length
 	var maximum_health := int(player.call("get_maximum_health"))
 
 	player.call("set_damage_immune", true)
@@ -224,7 +221,7 @@ func test_existing_damage_rejection_preserves_available_shield() -> void:
 	)
 
 	player.take_damage(1, Vector2.ZERO)
-	await fixture.wait_seconds(hurt_duration + 0.1)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)
 	fixture.expect(
 		shield.visible and cooldown.is_stopped(),
 		"Ordinary hurt immunity rejects damage before the recovered Shield"

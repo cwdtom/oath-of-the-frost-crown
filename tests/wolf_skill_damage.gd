@@ -7,6 +7,7 @@ const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const DASH_DISTANCE := 300.0
 const SKILL_ANIMATION := &"skill"
+const PLAYER_HURT_IMMUNITY_WAIT := 1.55
 
 var fixture: HeadlessGameplayFixture
 var harness: EnemySceneHarness
@@ -102,7 +103,7 @@ func test_persistent_contact_retriggers_after_hurt_immunity() -> void:
 		"Persistent Enemy contact first damages Player once"
 	)
 	player.set_physics_process(false)
-	await fixture.wait_seconds(0.95)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)
 	fixture.expect(
 		hurt_event_count[0] == 1 and not player.is_hurt_immune(),
 		"Persistent contact waits while Player physics is suspended"
@@ -155,7 +156,7 @@ func test_contact_started_during_hurt_immunity_damages_afterward() -> void:
 	player.take_damage(1, Vector2.ZERO)
 	player.global_position = wolf_position + Vector2(-65.0, 0.0)
 
-	await fixture.wait_seconds(0.95)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)
 	player.set_physics_process(true)
 	await fixture.physics_frames(2)
 	fixture.expect(
@@ -186,7 +187,7 @@ func test_separated_enemy_does_not_retrigger_contact_damage() -> void:
 	player.take_damage(1, Vector2.ZERO)
 	player.global_position = wolf_position + Vector2(-68.0, 0.0)
 
-	await fixture.wait_seconds(0.95)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)
 	player.set_physics_process(true)
 	await fixture.physics_frames(2)
 	fixture.expect(
@@ -220,7 +221,7 @@ func test_simultaneous_contacts_deal_only_one_damage() -> void:
 	player.set_physics_process(false)
 	player.take_damage(1, Vector2.ZERO)
 
-	await fixture.wait_seconds(0.95)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)
 	player.set_physics_process(true)
 	await fixture.physics_frames(2)
 	fixture.expect(
@@ -255,7 +256,7 @@ func test_contact_source_without_damage_capability_does_not_retrigger() -> void:
 	player.global_position = wolf_position + Vector2(-65.0, 0.0)
 	wolf.remove_from_group("enemies")
 
-	await fixture.wait_seconds(0.95)
+	await fixture.wait_seconds(PLAYER_HURT_IMMUNITY_WAIT)
 	await fixture.physics_frames(1)
 	fixture.expect(
 		hurt_event_count[0] == 1 and player.get_current_health() == 4,

@@ -376,7 +376,7 @@ scale = Vector2(1.2, 1.2)
 position = Vector2(367, 379)
 
 [node name="Player" parent="." index="4" unique_id=1483695229 instance=ExtResource("2_lear0")]
-position = Vector2(3767, 265)
+position = Vector2(146, 349)
 
 [node name="Enemies" type="Node2D" parent="." index="5" unique_id=1209919518]
 
@@ -401,8 +401,6 @@ tile_map_data = PackedByteArray("AAACAA4AAAAUAAIAAAADAA4AAAAUAAIAAAAEAA4AAAAUAAI
 tile_set = SubResource("TileSet_1n5kv")
 
 [node name="Story" parent="." index="7" unique_id=1661462204 instance=ExtResource("6_story")]
-visible = false
 story_path = "res://levels/level_03_story.json"
 
 [node name="Announcer" parent="." index="9" unique_id=1141772961 instance=ExtResource("16_xgj7h")]
-announcement_text = "第三幕\n白鹿悲歌"

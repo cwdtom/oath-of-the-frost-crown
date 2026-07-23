@@ -51,7 +51,7 @@ _Avoid_: Scene instantiation, Level Advancement
 ### Combat
 
 **Player Hurt Immunity**:
-The temporary protection that follows accepted non-lethal damage to the Player and rejects otherwise applicable damage until the Player's hurt response finishes. It is distinct from explicit damage immunity granted for a cinematic or terminal outcome.
+The one-and-a-half-second protection that follows accepted non-lethal damage to the Player and rejects otherwise applicable damage, outlasting the nine-tenths-second hurt presentation. It is distinct from explicit damage immunity granted for a cinematic or terminal outcome.
 _Avoid_: Invincibility, damage immunity, invincibility frames
 
 **Persistent Damage Contact**:

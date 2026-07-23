@@ -13,6 +13,16 @@ extends "res://levels/campaign_level.gd"
 var story_camera: Camera2D = null
 
 
+func _enter_tree() -> void:
+	var act_announcer := get_node_or_null("Announcer")
+	if act_announcer != null:
+		act_announcer.set("announcement_text", _get_act_announcement_text())
+
+
+func _get_act_announcement_text() -> String:
+	return ""
+
+
 func prepare_for_campaign(play_opening_story: bool) -> void:
 	var level_player := get_node("Player")
 	level_player.restore_full_health()
@@ -45,7 +55,7 @@ func get_campaign_act_announcement_text() -> String:
 	var announcer := get_node_or_null("Announcer")
 	if announcer == null:
 		return ""
-	return str(announcer.call("get_announcement_text"))
+	return _get_act_announcement_text()
 
 
 func is_campaign_control_available() -> bool:
