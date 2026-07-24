@@ -5,7 +5,6 @@ const MAX_HEALTH := 2
 const SKILL_DISTANCE := 300.0
 const SKILL_SPEED := 400.0
 const SKILL_WARNING_ANIMATION := &"warn"
-const WOLF_WALL_CHECK_DISTANCE := 56.0
 
 
 func _get_initial_move_direction() -> float:
@@ -34,10 +33,6 @@ func _get_moving_skill_distance() -> float:
 
 func _get_moving_skill_speed() -> float:
 	return SKILL_SPEED
-
-
-func _get_wall_check_distance() -> float:
-	return WOLF_WALL_CHECK_DISTANCE
 
 
 func _handle_species_skill_collisions() -> void:

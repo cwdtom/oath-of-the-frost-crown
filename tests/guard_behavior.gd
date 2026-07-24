@@ -158,7 +158,7 @@ func test_sword_gleam_follows_guard_facing() -> void:
 		turning_guard_position,
 		{"idle_duration": 0.0, "patrol_range": 1000.0}
 	)
-	await fixture.physics_frames(12)
+	await fixture.physics_frames(24)
 
 	fixture.expect(
 		harness.enemy_sprite_is_flipped(turning_guard),

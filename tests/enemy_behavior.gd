@@ -149,11 +149,11 @@ func _run() -> void:
 	test_levels_keep_their_enemy_encounters()
 	test_level_03_keeps_elk_king_defeat_disconnected()
 	await test_initialization_patrol_limits_and_facing()
-	await test_scaled_environment_wall_reversal()
+	await test_scaled_environment_stall_reversal()
 	await test_persistent_skill_detection_retriggers_ready_skill()
 	await test_skill_ready_during_hurt_waits_for_hurt_completion()
 	await test_skill_damage_policy()
-	await test_moving_skills_stop_on_collision()
+	await test_moving_skills_end_on_horizontal_stall()
 	await test_death_presentation_and_lifetime()
 
 	await fixture.process_frames(2)
@@ -296,7 +296,7 @@ func test_persistent_skill_detection_retriggers_ready_skill() -> void:
 		players[index].queue_free()
 
 
-func test_moving_skills_stop_on_collision() -> void:
+func test_moving_skills_end_on_horizontal_stall() -> void:
 	var examples := [
 		{
 			"name": "Wolf",
@@ -328,10 +328,12 @@ func test_moving_skills_stop_on_collision() -> void:
 		await fixture.wait_seconds(float(example.get("warning_duration", 0.0)))
 
 		var collision_position := start_position
+		var collision_frame_distance := 0.0
 		var collided_with_wall := false
 		var moving_skill_state := -1
-		var exited_skill_on_collision := false
+		var continued_on_moving_collision := false
 		for _frame in 15:
+			var previous_x := enemy.global_position.x
 			await fixture.physics_frames(1)
 			if not is_zero_approx(enemy.velocity.x):
 				moving_skill_state = enemy.state
@@ -339,9 +341,12 @@ func test_moving_skills_stop_on_collision() -> void:
 				var collision := enemy.get_slide_collision(collision_index)
 				if collision.get_collider() == wall:
 					collision_position = enemy.global_position
+					collision_frame_distance = absf(
+						enemy.global_position.x - previous_x
+					)
 					collided_with_wall = true
-					exited_skill_on_collision = (
-						moving_skill_state >= 0 and enemy.state != moving_skill_state
+					continued_on_moving_collision = (
+						moving_skill_state >= 0 and enemy.state == moving_skill_state
 					)
 					break
 			if collided_with_wall:
@@ -351,22 +356,29 @@ func test_moving_skills_stop_on_collision() -> void:
 		)
 		fixture.expect(
 			collided_with_wall and travel_distance > 0.0 and travel_distance < 80.0,
-			"%s collision ends its moving skill before full distance" % example.name
+			"%s moving skill reaches the wall before its full distance" % example.name
 		)
 		fixture.expect(
-			exited_skill_on_collision,
-			"%s ends its moving skill on the collision frame" % example.name
+			collision_frame_distance > 0.1 and continued_on_moving_collision,
+			"%s collision does not end a moving skill while x still changes"
+			% example.name
 		)
-		await fixture.physics_frames(3)
+		var stall_start_x := enemy.global_position.x
+		await fixture.physics_frames(1)
 		fixture.expect(
-			is_equal_approx(enemy.global_position.x, collision_position.x),
-			"%s stops moving immediately after its skill collision" % example.name
+			absf(enemy.global_position.x - stall_start_x) <= 0.1,
+			"%s reaches a horizontal stall on its next blocked movement frame"
+			% example.name
+		)
+		fixture.expect(
+			enemy.state != moving_skill_state,
+			"%s ends its moving skill on the horizontal-stall frame" % example.name
 		)
 		var health_before_hit: int = enemy.call("get_current_health")
 		await harness.deliver_hit(enemy)
 		fixture.expect(
 			enemy.call("get_current_health") == health_before_hit - 1,
-			"%s collision ends its moving skill weapon immunity" % example.name
+			"%s horizontal stall ends its moving skill weapon immunity" % example.name
 		)
 
 		enemy.queue_free()
@@ -664,13 +676,14 @@ func consume_shield(enemy: CharacterBody2D) -> void:
 	)
 
 
-func test_scaled_environment_wall_reversal() -> void:
+func test_scaled_environment_stall_reversal() -> void:
 	var start_x := 5000.0
 	for example in ENEMY_EXAMPLES:
 		var initial_direction: float = example.initial_direction
 		var start_position := Vector2(start_x, 0.0)
+		var wall_distance := 80.0 if example.name == "Wolf" else 105.0
 		var wall := harness.add_environment_wall(
-			start_position + Vector2(initial_direction * 80.0, 36.0),
+			start_position + Vector2(initial_direction * wall_distance, 36.0),
 			Vector2(10.0, 8.0)
 		)
 		var enemy := harness.instantiate_enemy(
@@ -683,10 +696,28 @@ func test_scaled_environment_wall_reversal() -> void:
 			}
 		)
 
-		await fixture.physics_frames(12)
+		var reversed_on_stall := false
+		var previous_x := enemy.global_position.x
+		var maximum_forward_travel := 0.0
+		for _frame in 80:
+			await fixture.physics_frames(1)
+			var frame_distance := absf(enemy.global_position.x - previous_x)
+			maximum_forward_travel = maxf(
+				maximum_forward_travel,
+				(enemy.global_position.x - start_position.x) * initial_direction
+			)
+			if enemy.move_direction == -initial_direction:
+				reversed_on_stall = frame_distance <= 0.1
+				break
+			previous_x = enemy.global_position.x
 		fixture.expect(
-			(enemy.global_position.x - start_position.x) * initial_direction < 0.0,
-			"Scaled %s reverses away from an environment wall" % example.name
+			maximum_forward_travel > 0.1,
+			"Scaled %s approaches an obstacle instead of turning on proximity"
+			% example.name
+		)
+		fixture.expect(
+			reversed_on_stall,
+			"Scaled %s reverses on its first horizontal-stall frame" % example.name
 		)
 		fixture.expect(
 			harness.enemy_sprite_is_flipped(enemy),

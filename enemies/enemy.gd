@@ -14,8 +14,7 @@ const RUN_ANIMATION := &"run"
 const SKILL_ANIMATION := &"skill"
 const HURT_KNOCKBACK_DISTANCE := 100.0
 const ENVIRONMENT_COLLISION_MASK := 1
-const WALL_CHECK_DISTANCE := 72.0
-const WALL_CHECK_Y_OFFSETS := [-24.0, 24.0]
+const HORIZONTAL_STALL_TOLERANCE := 0.1
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
 enum {IDLE, RUN, HURT, DEAD, SKILL, WARN}
@@ -173,10 +172,6 @@ func _get_moving_skill_speed() -> float:
 	return 0.0
 
 
-func _get_wall_check_distance() -> float:
-	return WALL_CHECK_DISTANCE
-
-
 func _is_playing_animation(animation_name: StringName) -> bool:
 	return (
 		_get_species_animation_position(animation_name) >= 0.0
@@ -253,20 +248,11 @@ func _handle_species_skill_collisions() -> void:
 	pass
 
 
-func _is_species_skill_complete() -> bool:
+func _is_species_skill_complete(horizontal_movement_stalled: bool) -> bool:
 	return (
 		_get_moving_skill_distance() > 0.0
-		and (_moving_skill_distance_left <= 0.0 or _has_forward_moving_skill_collision())
+		and (_moving_skill_distance_left <= 0.0 or horizontal_movement_stalled)
 	)
-
-
-func _has_forward_moving_skill_collision() -> bool:
-	for collision_index in get_slide_collision_count():
-		var collision := get_slide_collision(collision_index)
-		if collision.get_normal().x * move_direction < 0.0:
-			return true
-
-	return false
 
 
 func _blocks_weapon_damage_during_skill() -> bool:
@@ -307,21 +293,6 @@ func turn_around() -> void:
 	velocity.x = move_direction * run_speed
 
 
-func is_front_blocked() -> bool:
-	var space_state := get_world_2d().direct_space_state
-	var world_scale := global_transform.get_scale()
-	var check_distance: float = _get_wall_check_distance() * absf(world_scale.x)
-	for y_offset in WALL_CHECK_Y_OFFSETS:
-		var from := global_position + Vector2(0.0, y_offset * absf(world_scale.y))
-		var to := from + Vector2(move_direction * check_distance, 0.0)
-		var query := PhysicsRayQueryParameters2D.create(from, to, ENVIRONMENT_COLLISION_MASK)
-		query.exclude = [get_rid()]
-		if not space_state.intersect_ray(query).is_empty():
-			return true
-
-	return false
-
-
 func apply_knockback(knockback_direction: Vector2) -> void:
 	if knockback_direction.is_zero_approx():
 		return
@@ -349,10 +320,6 @@ func update_run(delta: float) -> void:
 	var right_edge := start_x + patrol_range
 	var next_x := global_position.x + move_direction * run_speed * delta
 
-	if is_front_blocked():
-		turn_around()
-		return
-
 	if move_direction > 0.0 and next_x >= right_edge:
 		global_position.x = right_edge
 		move_direction = -1.0
@@ -367,19 +334,6 @@ func update_run(delta: float) -> void:
 
 	face_move_direction()
 	velocity.x = move_direction * run_speed
-
-
-func turn_around_from_environment_collision() -> void:
-	for collision_index in get_slide_collision_count():
-		var collision := get_slide_collision(collision_index)
-		if (
-			PhysicsServer2D.body_get_collision_layer(collision.get_collider_rid())
-			& ENVIRONMENT_COLLISION_MASK
-			!= 0
-			and collision.get_normal().x * move_direction < -0.5
-		):
-			turn_around()
-			return
 
 
 func start_skill() -> void:
@@ -416,7 +370,9 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
+	var was_patrolling := state == RUN
 	var was_using_skill := state == SKILL
+	var previous_x := global_position.x
 	match state:
 		IDLE:
 			update_idle(delta)
@@ -426,11 +382,18 @@ func _physics_process(delta: float) -> void:
 			_update_species_skill(delta)
 
 	move_and_slide()
-	if state == RUN:
-		turn_around_from_environment_collision()
+	var horizontal_movement_stalled := (
+		absf(global_position.x - previous_x) <= HORIZONTAL_STALL_TOLERANCE
+	)
+	if was_patrolling and state == RUN and horizontal_movement_stalled:
+		turn_around()
 	if was_using_skill and state == SKILL:
 		_handle_species_skill_collisions()
-	if was_using_skill and state == SKILL and _is_species_skill_complete():
+	if (
+		was_using_skill
+		and state == SKILL
+		and _is_species_skill_complete(horizontal_movement_stalled)
+	):
 		finish_skill()
 
 
