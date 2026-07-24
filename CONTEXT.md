@@ -142,6 +142,10 @@ _Avoid_: Generic multi-skill Enemy, unrelated Enemy species
 The forward-facing region in which the Player's presence allows an Enemy to initiate its species skill whenever that skill is ready. Remaining inside continues to satisfy this condition, so an Enemy releases the skill again when its cooldown ends without requiring the Player to leave and re-enter.
 _Avoid_: Aggro range, attack range
 
+**Enemy Movement Stall**:
+An active Enemy patrol, Wolf Dash, or Wolf King forward-skill movement frame in which movement was attempted but horizontal position changes by no more than one-tenth of a pixel. It alone reverses an environmentally blocked patrol or ends the moving skill; stationary states, obstacle proximity, collision contact by itself, and patrol-range boundaries are not Enemy Movement Stalls.
+_Avoid_: Obstacle detection, collision stop, stationary frame
+
 **Wolf Dash Warning**:
 The stationary seven-tenths-second warning that begins when a ready Wolf detects the Player, locks the Wolf's facing, and commits one subsequent dash in that direction. It grants the same weapon immunity as the ensuing dash, so neither Player departure from the Skill Detection Area nor incoming weapon contact cancels the committed dash.
 _Avoid_: Dash animation, cancellable range check, moving warning, vulnerable wind-up
