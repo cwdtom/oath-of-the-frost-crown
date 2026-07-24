@@ -18,7 +18,7 @@ const WALL_CHECK_DISTANCE := 72.0
 const WALL_CHECK_Y_OFFSETS := [-24.0, 24.0]
 const DamageAndHealthModule := preload("res://combat/damage_and_health.gd")
 
-enum {IDLE, RUN, HURT, DEAD, SKILL}
+enum {IDLE, RUN, HURT, DEAD, SKILL, WARN}
 
 var state := -1
 var _health: DamageAndHealth
@@ -115,6 +115,14 @@ func change_state(new_state: int) -> void:
 			)
 			face_move_direction()
 			call_deferred("_play_skill_presentations")
+		WARN:
+			velocity.x = 0.0
+			hurt_box_collision_shape.set_deferred(
+				"disabled",
+				_blocks_weapon_damage_during_skill()
+			)
+			face_move_direction()
+			_play_skill_warning_presentation()
 		DEAD:
 			velocity = Vector2.ZERO
 			remove_from_group("enemies")
@@ -147,6 +155,10 @@ func _get_run_animation() -> StringName:
 
 func _get_skill_animation() -> StringName:
 	return SKILL_ANIMATION
+
+
+func _get_skill_warning_animation() -> StringName:
+	return &""
 
 
 func _get_skill_cooldown_timer() -> Timer:
@@ -197,6 +209,13 @@ func _play_skill_presentations() -> void:
 
 	animation_state.travel(_get_skill_animation())
 	_play_species_skill_presentation()
+
+
+func _play_skill_warning_presentation() -> void:
+	if state != WARN:
+		return
+
+	animation_state.start(_get_skill_warning_animation())
 
 
 func _play_species_skill_presentation() -> void:
@@ -365,6 +384,13 @@ func turn_around_from_environment_collision() -> void:
 
 func start_skill() -> void:
 	skill_return_state = state
+	var warning_animation := _get_skill_warning_animation()
+	if not warning_animation.is_empty():
+		change_state(WARN)
+		await get_tree().create_timer(_get_animation_length(warning_animation)).timeout
+		if state != WARN:
+			return
+
 	skill_cooldown_timer.start()
 	change_state(SKILL)
 	_start_species_skill()
@@ -411,7 +437,10 @@ func _physics_process(delta: float) -> void:
 func _on_hurt_box_area_entered(area: Area2D) -> void:
 	if (
 		state == DEAD
-		or (state == SKILL and _blocks_weapon_damage_during_skill())
+		or (
+			(state == SKILL or state == WARN)
+			and _blocks_weapon_damage_during_skill()
+		)
 		or not area.is_in_group("weapons")
 	):
 		return
@@ -427,6 +456,7 @@ func _try_start_skill() -> void:
 	if (
 		state == DEAD
 		or state == SKILL
+		or state == WARN
 		or _health.is_hurt_immune()
 		or not skill_cooldown_timer.is_stopped()
 		or not skill_detect.has_overlapping_bodies()

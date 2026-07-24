@@ -13,6 +13,7 @@ const LEVEL_02_SCENE := preload("res://levels/level_02.tscn")
 const LEVEL_03_SCENE := preload("res://levels/level_03.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
+const WOLF_DASH_WARNING_DURATION := 0.7
 
 const ENEMY_EXAMPLES := [
 	{
@@ -42,6 +43,8 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": true,
 		"notifies_death": false,
 		"detector_offset": Vector2(100.0, 0.0),
+		"warning_duration": WOLF_DASH_WARNING_DURATION,
+		"warning_animation": &"warn",
 		"release_animation": &"skill",
 	},
 	{
@@ -261,17 +264,29 @@ func test_persistent_skill_detection_retriggers_ready_skill() -> void:
 			"%s releases its skill for Player presence" % ENEMY_EXAMPLES[index].name
 		)
 
-	for _frame in 132:
+	var stopped_releasing: Array[bool] = []
+	var released_again: Array[bool] = []
+	stopped_releasing.resize(ENEMY_EXAMPLES.size())
+	released_again.resize(ENEMY_EXAMPLES.size())
+	for _frame in 210:
 		for index in ENEMY_EXAMPLES.size():
 			var detector_shape := enemies[index].get_node(
 				"SkillDetect/CollisionShape2D"
 			) as CollisionShape2D
 			players[index].global_position = detector_shape.global_position
+			var is_releasing := is_species_skill_releasing(
+				enemies[index],
+				ENEMY_EXAMPLES[index]
+			)
+			if not is_releasing:
+				stopped_releasing[index] = true
+			elif stopped_releasing[index]:
+				released_again[index] = true
 		await fixture.physics_frames(1)
 
 	for index in ENEMY_EXAMPLES.size():
 		fixture.expect(
-			is_species_skill_releasing(enemies[index], ENEMY_EXAMPLES[index]),
+			released_again[index],
 			(
 				"%s releases its ready skill again while Player presence persists"
 				% ENEMY_EXAMPLES[index].name
@@ -288,6 +303,7 @@ func test_moving_skills_stop_on_collision() -> void:
 			"scene": WOLF_SCENE,
 			"direction": 1.0,
 			"detector_offset": Vector2(100.0, 0.0),
+			"warning_duration": WOLF_DASH_WARNING_DURATION,
 		},
 		{
 			"name": "WolfKing",
@@ -309,6 +325,7 @@ func test_moving_skills_stop_on_collision() -> void:
 			start_position + Vector2(80.0 * example.direction, 0.0),
 			Vector2(20.0, 200.0)
 		)
+		await fixture.wait_seconds(float(example.get("warning_duration", 0.0)))
 
 		var collision_position := start_position
 		var collided_with_wall := false
@@ -361,6 +378,12 @@ func test_moving_skills_stop_on_collision() -> void:
 
 
 func is_species_skill_releasing(enemy: CharacterBody2D, example: Dictionary) -> bool:
+	if (
+		example.has("warning_animation")
+		and harness.is_playing(enemy, example.warning_animation)
+	):
+		return true
+
 	if example.has("release_animation_player"):
 		var release_player := enemy.get_node(
 			example.release_animation_player
@@ -523,8 +546,9 @@ func test_skill_damage_policy() -> void:
 		await fixture.process_frames(1)
 
 		if example.blocks_skill_damage:
+			await fixture.wait_seconds(float(example.get("warning_duration", 0.0)))
 			var movement_x := enemy.global_position.x
-			await fixture.physics_frames(6)
+			await fixture.physics_frames(7)
 			fixture.expect(
 				(enemy.global_position.x - movement_x) * example.initial_direction > 0.0,
 				"%s keeps using its moving skill through weapon contact" % example.name

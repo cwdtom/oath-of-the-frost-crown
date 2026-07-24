@@ -68,8 +68,8 @@ func test_shield_break_window_delays_cooldown_without_hurt() -> void:
 	player.connect(&"hurt_taken", func() -> void: hurt_event_count[0] += 1)
 
 	fixture.expect(
-		is_equal_approx(cooldown.wait_time, 5.0) and cooldown.one_shot,
-		"Player Shield uses its one-shot five second Cooldown"
+		is_equal_approx(cooldown.wait_time, 7.0) and cooldown.one_shot,
+		"Player Shield uses its one-shot seven second Cooldown"
 	)
 	player.take_damage(1, Vector2.RIGHT)
 	await fixture.wait_seconds(0.15)
@@ -148,8 +148,8 @@ func test_cooldown_damage_does_not_delay_shield_recovery() -> void:
 	var break_duration := shield_animation_player.get_animation("break").length
 	var maximum_health := int(player.call("get_maximum_health"))
 	fixture.expect(
-		is_equal_approx(cooldown.wait_time, 5.0),
-		"Player Shield keeps its production five second Cooldown"
+		is_equal_approx(cooldown.wait_time, 7.0),
+		"Player Shield keeps its production seven second Cooldown"
 	)
 	cooldown.wait_time = 2.2
 

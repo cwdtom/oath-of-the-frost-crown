@@ -4,6 +4,7 @@ extends "res://enemies/enemy.gd"
 const MAX_HEALTH := 2
 const SKILL_DISTANCE := 300.0
 const SKILL_SPEED := 400.0
+const SKILL_WARNING_ANIMATION := &"warn"
 const WOLF_WALL_CHECK_DISTANCE := 56.0
 
 
@@ -21,6 +22,10 @@ func _get_sprite_flip(direction: float) -> bool:
 
 func _get_run_animation() -> StringName:
 	return &"running"
+
+
+func _get_skill_warning_animation() -> StringName:
+	return SKILL_WARNING_ANIMATION
 
 
 func _get_moving_skill_distance() -> float:

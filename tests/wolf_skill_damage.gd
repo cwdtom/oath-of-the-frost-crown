@@ -7,6 +7,7 @@ const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const DASH_DISTANCE := 300.0
 const SKILL_ANIMATION := &"skill"
+const WOLF_DASH_WARNING_DURATION := 0.7
 const PLAYER_HURT_IMMUNITY_WAIT := 1.55
 
 var fixture: HeadlessGameplayFixture
@@ -31,6 +32,9 @@ func _run() -> void:
 	await test_simultaneous_contacts_deal_only_one_damage()
 	await test_contact_source_without_damage_capability_does_not_retrigger()
 	await test_persistent_contact_damages_after_shield_break_window()
+	await test_close_player_receives_warning_before_dash()
+	await test_left_facing_wolf_warns_close_player_on_left()
+	await test_skill_detection_area_controls_warning()
 	await test_dash_distance_reentry_and_cooldown()
 	await test_dash_collision_and_weapon_immunity()
 
@@ -305,6 +309,130 @@ func test_persistent_contact_damages_after_shield_break_window() -> void:
 	await fixture.process_frames(1)
 
 
+func test_close_player_receives_warning_before_dash() -> void:
+	var wolf_position := Vector2(7500.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		wolf_position,
+		{"idle_duration": 10.0}
+	)
+	var hurt_event_count: Array[int] = [0]
+	var player := harness.instantiate_passive_player(
+		wolf_position + Vector2(61.0, 0.0),
+		func() -> void: hurt_event_count[0] += 1
+	)
+	var warning := wolf.get_node("WarnMark") as Node2D
+
+	await fixture.physics_frames(3)
+	fixture.expect(
+		warning.visible
+		and wolf.global_position.is_equal_approx(wolf_position)
+		and hurt_event_count[0] == 0,
+		(
+			"Close Player presence starts a stationary Wolf Dash Warning before damage; "
+			+ "visible=%s position=%s hurt_events=%s"
+			% [warning.visible, wolf.global_position, hurt_event_count[0]]
+		)
+	)
+	await fixture.wait_seconds(WOLF_DASH_WARNING_DURATION - 0.1)
+	fixture.expect(
+		warning.visible
+		and wolf.global_position.is_equal_approx(wolf_position)
+		and hurt_event_count[0] == 0,
+		"Wolf Dash Warning remains stationary and harmless for its full duration"
+	)
+	await fixture.wait_seconds(0.15)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		not warning.visible and hurt_event_count[0] == 1,
+		"Close Wolf dash begins and damages Player only after its warning"
+	)
+
+	wolf.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_left_facing_wolf_warns_close_player_on_left() -> void:
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		Vector2(8500.0, 0.0),
+		{"idle_duration": 0.0, "patrol_range": 20.0}
+	)
+	for _frame in 60:
+		await fixture.physics_frames(1)
+		if harness.enemy_sprite_is_flipped(wolf):
+			break
+	var warning_position := wolf.global_position
+	var player := harness.instantiate_passive_player(
+		warning_position + Vector2(-70.0, 0.0),
+		func() -> void: pass
+	)
+	var warning := wolf.get_node("WarnMark") as Node2D
+
+	await fixture.physics_frames(3)
+	fixture.expect(
+		harness.enemy_sprite_is_flipped(wolf)
+		and warning.visible
+		and wolf.global_position.is_equal_approx(warning_position),
+		(
+			"Left-facing Wolf warns a close Player on its left before dashing; "
+			+ "flipped=%s visible=%s start=%s current=%s overlaps=%s"
+			% [
+				harness.enemy_sprite_is_flipped(wolf),
+				warning.visible,
+				warning_position,
+				wolf.global_position,
+				(wolf.get_node("SkillDetect") as Area2D).get_overlapping_bodies().size(),
+			]
+		)
+	)
+
+	wolf.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_skill_detection_area_controls_warning() -> void:
+	var wolf_position := Vector2(9500.0, 0.0)
+	var wolf := harness.instantiate_enemy(
+		WOLF_SCENE,
+		wolf_position,
+		{"idle_duration": 10.0}
+	)
+	var player := harness.instantiate_passive_player(
+		wolf_position + Vector2(450.0, 0.0),
+		func() -> void: pass
+	)
+	var warning := wolf.get_node("WarnMark") as Node2D
+
+	await fixture.wait_seconds(WOLF_DASH_WARNING_DURATION + 0.1)
+	fixture.expect(
+		not warning.visible and wolf.global_position.is_equal_approx(wolf_position),
+		"Player beyond Wolf Skill Detection Area does not start a warning"
+	)
+	await harness.reenter_skill_detection(
+		player,
+		wolf_position + Vector2(100.0, 0.0)
+	)
+	fixture.expect(
+		warning.visible and wolf.global_position.is_equal_approx(wolf_position),
+		(
+			"Player entering Wolf Skill Detection Area starts a warning; "
+			+ "visible=%s position=%s overlaps=%s"
+			% [
+				warning.visible,
+				wolf.global_position,
+				(wolf.get_node("SkillDetect") as Area2D).get_overlapping_bodies().size(),
+			]
+		)
+	)
+
+	wolf.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
 func test_dash_distance_reentry_and_cooldown() -> void:
 	var start_position := Vector2(3500.0, 0.0)
 	var wolf := harness.instantiate_enemy(
@@ -316,19 +444,29 @@ func test_dash_distance_reentry_and_cooldown() -> void:
 		start_position + Vector2(100.0, 0.0),
 		func() -> void: pass
 	)
+	var warning := wolf.get_node("WarnMark") as Node2D
 
 	await fixture.physics_frames(3)
-	fixture.expect(wolf.global_position.x > start_position.x, "Gameplay detection starts Wolf dash")
 	fixture.expect(
-		harness.is_playing(wolf, SKILL_ANIMATION),
-		"Wolf dash starts its skill presentation"
+		warning.visible and wolf.global_position.is_equal_approx(start_position),
+		"Gameplay detection starts a stationary Wolf Dash Warning"
 	)
 	player.position = start_position - Vector2(1000.0, 0.0)
+	await fixture.wait_seconds(WOLF_DASH_WARNING_DURATION)
+	fixture.expect(
+		wolf.global_position.x > start_position.x
+		and harness.is_playing(wolf, SKILL_ANIMATION),
+		"Wolf completes its committed warning after Player leaves and starts its dash"
+	)
 	var speed_sample_x := wolf.global_position.x
-	await fixture.physics_frames(6)
+	await fixture.physics_frames(7)
 	fixture.expect(
 		absf(wolf.global_position.x - speed_sample_x - 40.0) <= 1.0,
-		"Wolf keeps its 400 pixel per second dash speed"
+		(
+			"Wolf keeps its 400 pixel per second dash speed; "
+			+ "sample_x=%s current_x=%s"
+			% [speed_sample_x, wolf.global_position.x]
+		)
 	)
 	player.position = wolf.global_position + Vector2(350.0, 0.0)
 	await fixture.physics_frames(2)
@@ -346,22 +484,26 @@ func test_dash_distance_reentry_and_cooldown() -> void:
 	)
 
 	await harness.reenter_skill_detection(player, wolf.global_position + Vector2(100.0, 0.0))
-	await fixture.wait_seconds(0.15)
+	await fixture.wait_seconds(0.2)
 	fixture.expect(
-		is_equal_approx(wolf.global_position.x, dash_end_x),
-		"Wolf cannot restart its dash during cooldown"
+		not warning.visible and is_equal_approx(wolf.global_position.x, dash_end_x),
+		"Wolf cannot start another warning during dash cooldown"
 	)
-	await fixture.wait_seconds(3.4)
+	await fixture.wait_seconds(3.2)
 	await harness.reenter_skill_detection(player, wolf.global_position + Vector2(100.0, 0.0))
 	await fixture.wait_seconds(0.1)
 	fixture.expect(
-		is_equal_approx(wolf.global_position.x, dash_end_x),
-		"Wolf keeps the full five second dash cooldown"
+		not warning.visible and is_equal_approx(wolf.global_position.x, dash_end_x),
+		"Wolf keeps the full five second cooldown from dash start"
 	)
-	await fixture.wait_seconds(0.4)
-	await harness.reenter_skill_detection(player, wolf.global_position + Vector2(100.0, 0.0))
+	await fixture.wait_seconds(0.6)
+	fixture.expect(
+		warning.visible and is_equal_approx(wolf.global_position.x, dash_end_x),
+		"Persistent Player presence starts another warning when cooldown expires"
+	)
+	await fixture.wait_seconds(WOLF_DASH_WARNING_DURATION)
 	await fixture.physics_frames(3)
-	fixture.expect(wolf.global_position.x > dash_end_x, "Wolf can dash again after cooldown expires")
+	fixture.expect(wolf.global_position.x > dash_end_x, "Wolf dashes again after its next warning")
 	player.position -= Vector2(1000.0, 0.0)
 
 
@@ -378,16 +520,26 @@ func test_dash_collision_and_weapon_immunity() -> void:
 		player_start,
 		func() -> void: hurt_event_count[0] += 1
 	)
+	var warning := wolf.get_node("WarnMark") as Node2D
+	var health_before_skill: int = wolf.get_current_health()
 	await fixture.physics_frames(3)
 
 	var early_weapon := harness.add_weapon(wolf.global_position)
 	await fixture.physics_frames(3)
 	early_weapon.queue_free()
-	await fixture.wait_seconds(0.5)
+	fixture.expect(
+		warning.visible and wolf.get_current_health() == health_before_skill,
+		"Wolf Dash Warning grants weapon immunity"
+	)
+	await fixture.wait_seconds(WOLF_DASH_WARNING_DURATION)
 	var late_weapon := harness.add_weapon(wolf.global_position)
 	await fixture.physics_frames(3)
 	late_weapon.queue_free()
-	await fixture.wait_seconds(0.25)
+	fixture.expect(
+		wolf.get_current_health() == health_before_skill,
+		"Wolf dash keeps the warning's weapon immunity"
+	)
+	await fixture.wait_seconds(0.8)
 
 	fixture.expect(hurt_event_count[0] == 1, "One Wolf dash collision damages Player once")
 	fixture.expect(
@@ -396,6 +548,7 @@ func test_dash_collision_and_weapon_immunity() -> void:
 	)
 	await harness.deliver_hit(wolf, Vector2(-20.0, 0.0))
 	fixture.expect(
-		wolf.is_in_group("enemies"),
-		"Wolf dash weapon immunity preserves both hits until damage is accepted afterward"
+		wolf.is_in_group("enemies")
+		and wolf.get_current_health() == health_before_skill - 1,
+		"Wolf accepts weapon damage after its warning and dash immunity end"
 	)
