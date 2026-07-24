@@ -188,7 +188,7 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 		thunder_area != null
 		and thunder_area.global_position.x < start_position.x - 400.0
 		and thunder_area.global_position.x >= start_position.x - 750.0,
-		"WolfKing selects thunder on its warning-locked left side"
+		"Wolf King selects thunder on its warning-locked left side"
 	)
 	fixture.expect(
 		thunder_area != null and is_equal_approx(thunder_area.global_position.y, 35.0),
@@ -251,13 +251,13 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 	await fixture.physics_frames(3)
 	fixture.expect(
 		warning.visible and is_equal_approx(wolf_king.global_position.x, skill_end_x),
-		"WolfKing starts its next warning after the three-second release cooldown"
+		"Wolf King starts its next warning after the three-second release cooldown"
 	)
 	await fixture.wait_seconds(SKILL_WARNING_DURATION + 0.05)
 	await fixture.physics_frames(3)
 	fixture.expect(
 		wolf_king.global_position.x < skill_end_x,
-		"WolfKing releases its next skill after the next complete warning"
+		"Wolf King releases its next skill after the next complete warning"
 	)
 
 	wolf_king.queue_free()
@@ -301,7 +301,7 @@ func test_hurt_does_not_cancel_pending_thunder() -> void:
 	)
 	fixture.expect(
 		not harness.enemy_sprite_is_flipped(wolf_king),
-		"Hurt WolfKing faces Player on its left"
+		"Hurt Wolf King faces Player on its left"
 	)
 	await fixture.wait_seconds(0.5)
 	fixture.expect(hurt_event_count[0] == 1, "Accepted damage does not cancel pending WolfKing thunder")
