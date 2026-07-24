@@ -12,5 +12,5 @@ script = ExtResource("3_player04")
 [node name="Shield" parent="VisualRoot/ShieldSkill" index="0" unique_id=655684110 instance=ExtResource("2_0wd0u")]
 
 [node name="Cooldown" type="Timer" parent="VisualRoot/ShieldSkill" index="1" unique_id=2083250404]
-wait_time = 5.0
+wait_time = 7.0
 one_shot = true

@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dt56vuorgrvwi" path="res://enemies/wolf.gd" id="1_8cidi"]
 [ext_resource type="Texture2D" uid="uid://dkxc556s8ofav" path="res://assets/enemies/wolf/east.png" id="1_fw1ev"]
 [ext_resource type="Texture2D" uid="uid://d0uwa67eu1wck" path="res://assets/enemies/wolf/idle/east/frame_000.png" id="2_0h01o"]
+[ext_resource type="PackedScene" uid="uid://bhpv3ccs4r5hs" path="res://enemies/warn_mark.tscn" id="2_7ac7i"]
 [ext_resource type="Texture2D" uid="uid://cpl6h4isvuagv" path="res://assets/enemies/wolf/dead/east/frame_000.png" id="3_6krve"]
 [ext_resource type="Texture2D" uid="uid://b1k3fa3niwd4u" path="res://assets/enemies/wolf/idle/east/frame_001.png" id="3_8cidi"]
 [ext_resource type="Texture2D" uid="uid://d2lh8xtukjfo4" path="res://assets/enemies/wolf/dead/east/frame_001.png" id="4_0mknq"]
@@ -62,6 +63,18 @@ tracks/1/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("WarnMark:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
 }
 
 [sub_resource type="Animation" id="Animation_2rp1f"]
@@ -187,6 +200,22 @@ tracks/0/keys = {
 "values": [ExtResource("31_0mknq")]
 }
 
+[sub_resource type="Animation" id="Animation_qkbfo"]
+resource_name = "warn"
+length = 0.7
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("WarnMark:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.7),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_0dc0p"]
 _data = {
 &"RESET": SubResource("Animation_d8eyj"),
@@ -194,7 +223,8 @@ _data = {
 &"hurt": SubResource("Animation_nkd1c"),
 &"idle": SubResource("Animation_6krve"),
 &"running": SubResource("Animation_0mknq"),
-&"skill": SubResource("Animation_0dc0p")
+&"skill": SubResource("Animation_0dc0p"),
+&"warn": SubResource("Animation_qkbfo")
 }
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_6krve"]
@@ -211,6 +241,9 @@ animation = &"running"
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_hvri8"]
 animation = &"skill"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_7ac7i"]
+animation = &"warn"
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_hvri8"]
 advance_mode = 2
@@ -236,12 +269,19 @@ switch_mode = 2
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_6krve"]
 
-[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_wdeg7"]
-
-[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_ceace"]
-
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_2rp1f"]
 switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_qkbfo"]
+switch_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_rmctw"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_pkui7"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_tq6ig"]
+switch_mode = 2
+advance_mode = 2
 
 [sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_1n5kv"]
 states/End/position = Vector2(763.5, 99.55438)
@@ -254,9 +294,11 @@ states/idle/position = Vector2(324.39, 99.10876)
 states/running/node = SubResource("AnimationNodeAnimation_bsw4q")
 states/running/position = Vector2(460.89, 100.85876)
 states/skill/node = SubResource("AnimationNodeAnimation_hvri8")
-states/skill/position = Vector2(462.695, -64.94748)
-transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_hvri8"), "idle", "running", SubResource("AnimationNodeStateMachineTransition_s5kak"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_n0e8f"), "running", "hurt", SubResource("AnimationNodeStateMachineTransition_tobgu"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_byhdk"), "hurt", "running", SubResource("AnimationNodeStateMachineTransition_y886q"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_gq3ci"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_05db2"), "running", "idle", SubResource("AnimationNodeStateMachineTransition_6krve"), "idle", "skill", SubResource("AnimationNodeStateMachineTransition_wdeg7"), "running", "skill", SubResource("AnimationNodeStateMachineTransition_ceace"), "skill", "idle", SubResource("AnimationNodeStateMachineTransition_2rp1f")]
-graph_offset = Vector2(96.38999, -121.657486)
+states/skill/position = Vector2(472.695, -63.527477)
+states/warn/node = SubResource("AnimationNodeAnimation_7ac7i")
+states/warn/position = Vector2(323.66748, -63.567474)
+transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_hvri8"), "idle", "running", SubResource("AnimationNodeStateMachineTransition_s5kak"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_n0e8f"), "running", "hurt", SubResource("AnimationNodeStateMachineTransition_tobgu"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_byhdk"), "hurt", "running", SubResource("AnimationNodeStateMachineTransition_y886q"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_gq3ci"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_05db2"), "running", "idle", SubResource("AnimationNodeStateMachineTransition_6krve"), "skill", "idle", SubResource("AnimationNodeStateMachineTransition_2rp1f"), "skill", "running", SubResource("AnimationNodeStateMachineTransition_qkbfo"), "running", "warn", SubResource("AnimationNodeStateMachineTransition_rmctw"), "idle", "warn", SubResource("AnimationNodeStateMachineTransition_pkui7"), "warn", "skill", SubResource("AnimationNodeStateMachineTransition_tq6ig")]
+graph_offset = Vector2(27.53999, -160.08746)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ymuxt"]
 size = Vector2(68, 77)
@@ -268,6 +310,10 @@ size = Vector2(400, 50.5)
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("1_8cidi")
+
+[node name="WarnMark" parent="." unique_id=1722422829 instance=ExtResource("2_7ac7i")]
+visible = false
+position = Vector2(-2, -103)
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=814845308]
 scale = Vector2(1.5, 1.5)

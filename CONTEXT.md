@@ -142,6 +142,14 @@ _Avoid_: Generic multi-skill Enemy, unrelated Enemy species
 The forward-facing region in which the Player's presence allows an Enemy to initiate its species skill whenever that skill is ready. Remaining inside continues to satisfy this condition, so an Enemy releases the skill again when its cooldown ends without requiring the Player to leave and re-enter.
 _Avoid_: Aggro range, attack range
 
+**Wolf Dash Warning**:
+The stationary seven-tenths-second warning that begins when a ready Wolf detects the Player, locks the Wolf's facing, and commits one subsequent dash in that direction. It grants the same weapon immunity as the ensuing dash, so neither Player departure from the Skill Detection Area nor incoming weapon contact cancels the committed dash.
+_Avoid_: Dash animation, cancellable range check, moving warning, vulnerable wind-up
+
+**Wolf Dash Cooldown**:
+The five-second interval beginning when a Wolf Dash Warning finishes and its committed dash starts. The Wolf cannot begin another warning during this interval, while continued Player presence in the Skill Detection Area initiates a new warning as soon as the interval has ended and the Wolf is otherwise ready.
+_Avoid_: Warning duration, cooldown from warning start, Player re-entry requirement
+
 **Hurt Completion Before Skill**:
 The rule that an Enemy completes its non-lethal hurt presentation and associated hurt immunity before starting a ready skill. If the Player remains in the Skill Detection Area, the Enemy begins casting as soon as the hurt state finishes.
 _Avoid_: Skill-interrupted hurt, early hurt-immunity termination
@@ -219,9 +227,9 @@ A passive, rechargeable protection possessed by Player 04 that begins each Level
 _Avoid_: Elk Shield, damage immunity, weapon block
 
 **Shield Break Window**:
-The interval in which a spent Player or Elk Shield presents its break and rejects every further damage event without causing a hit reaction, knockback, action interruption, or loss of Player control. It lasts until that presentation finishes; further hits do not repeat or change its presentation or timing, after which the shield's five-second cooldown begins and a still-valid Persistent Damage Contact may immediately damage the Player without requiring contact re-entry.
+The interval in which a spent Player or Elk Shield presents its break and rejects every further damage event without causing a hit reaction, knockback, action interruption, or loss of Player control. It lasts until that presentation finishes; further hits do not repeat or change its presentation or timing, after which the corresponding Shield Cooldown begins and a still-valid Persistent Damage Contact may immediately damage the Player without requiring contact re-entry.
 _Avoid_: Shield Cooldown, hurt immunity, reusable protection
 
 **Player Shield Cooldown**:
-The fixed five-second interval after Player 04's Shield Break Window ends and before the Player Shield becomes visible and available again. Damage received during this interval is resolved normally and neither resets nor extends it.
+The fixed seven-second interval after Player 04's Shield Break Window ends and before the Player Shield becomes visible and available again. Damage received during this interval is resolved normally and neither resets nor extends it.
 _Avoid_: Elk Shield Cooldown, hurt immunity
