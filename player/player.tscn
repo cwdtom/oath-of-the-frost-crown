@@ -54,6 +54,7 @@
 [ext_resource type="AudioStream" uid="uid://d2g654jfyxj10" path="res://assets/player/sounds/dead.wav" id="23_jfgyi"]
 [ext_resource type="AudioStream" uid="uid://cvrodcam0xc5f" path="res://assets/player/sounds/hurt.wav" id="30_n0b8q"]
 [ext_resource type="AudioStream" uid="uid://bj8bw7i6x0n4v" path="res://assets/player/sounds/running.wav" id="54_237xx"]
+[ext_resource type="AudioStream" uid="uid://d2srkvypdxlcj" path="res://assets/player/sounds/banned.wav" id="55_attack_rejection"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_5dxk1"]
 radius = 16.0
@@ -541,6 +542,10 @@ position = Vector2(-1, 3)
 shape = SubResource("CapsuleShape2D_5dxk1")
 
 [node name="Sound" type="AudioStreamPlayer2D" parent="." unique_id=273376865]
+volume_db = -8.0
+
+[node name="AttackRejectionFeedback" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("55_attack_rejection")
 volume_db = -8.0
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=287397958]

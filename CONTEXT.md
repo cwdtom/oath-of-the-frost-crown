@@ -51,8 +51,12 @@ _Avoid_: Scene instantiation, Level Advancement
 ### Combat
 
 **Player Attack Cooldown**:
-The fixed one-second gameplay interval shared by every Player form, beginning when the Player accepts an attack input and starts that attack; every new Player instance begins with no active interval, while a Story or another campaign pause suspends an active interval until gameplay resumes. Attack input received during the interval is discarded rather than buffered, so another attack requires a new press after the interval finishes; subsequent Player Hurt neither pauses nor resets it, and Thunder released by later Player forms remains part of the same attack rather than having an independent cooldown.
+The fixed one-second gameplay interval shared by every Player form, beginning when the Player accepts an attack input and starts that attack; every new Player instance begins with no active interval, while a Story or another campaign pause suspends an active interval until gameplay resumes. Every new attack press received during the interval is rejected with Player Attack Rejection Feedback rather than buffered, so another attack requires a new press after the interval finishes; subsequent Player Hurt neither pauses nor resets it, and Thunder released by later Player forms remains part of the same attack rather than having an independent cooldown.
 _Avoid_: Attack animation duration, Player Hurt Immunity, Thunder cooldown
+
+**Player Attack Rejection Feedback**:
+The audible response, shared by every Player form and every control mapped to attack, to each new attack press for which Player Attack Cooldown is the only reason the attack cannot begin. A later rejected press restarts the response instead of overlapping it, while the response may coexist with other Player sounds and plays to completion across cooldown expiry or a subsequent accepted attack; no response occurs while Player Hurt, Player Defeat, a Story, or another control lock already prevents attacking, and the response never accepts or buffers an attack.
+_Avoid_: Attack sound, unavailable-control feedback, buffered attack, overlapping rejection feedback
 
 **Player Hurt Immunity**:
 The one-and-a-half-second protection that follows accepted non-lethal damage to the Player and rejects otherwise applicable damage, outlasting the nine-tenths-second hurt presentation. It is distinct from explicit damage immunity granted for a cinematic or terminal outcome.
