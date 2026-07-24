@@ -158,6 +158,14 @@ _Avoid_: Obstacle detection, collision stop, stationary frame
 The stationary seven-tenths-second warning that begins when a ready Wolf detects the Player, locks the Wolf's facing, and commits one subsequent dash in that direction. It grants the same weapon immunity as the ensuing dash, so neither Player departure from the Skill Detection Area nor incoming weapon contact cancels the committed dash.
 _Avoid_: Dash animation, cancellable range check, moving warning, vulnerable wind-up
 
+**Wolf King Skill Warning**:
+The stationary seven-tenths-second warning that begins when a ready Wolf King detects the Player, locks the Wolf King's facing and release side, and commits one combined skill release, with its warning mark visible for the full interval while its body holds the presentation from warning onset. The mark disappears when the warning finishes, after which the body enters its run presentation and forward movement and thunder begin together toward the locked side; neither Player movement or departure from the Skill Detection Area nor incoming weapon contact retargets, cancels, interrupts, or resets the warning, and weapon contact cannot damage the Wolf King during it.
+_Avoid_: Movement-only warning, thunder-only warning, active skill release, vulnerable wind-up, continued body animation, cancellable range check, release-time retargeting
+
+**Wolf King Skill Cooldown**:
+The three-second interval beginning when a Wolf King Skill Warning finishes and its committed combined release starts. The Wolf King cannot begin another warning during this interval, while continued Player presence in the Skill Detection Area satisfies the release condition again when the interval has ended and the Wolf King is otherwise ready.
+_Avoid_: Warning duration, cooldown from warning start, Player re-entry requirement
+
 **Wolf Dash Cooldown**:
 The five-second interval beginning when a Wolf Dash Warning finishes and its committed dash starts. The Wolf cannot begin another warning during this interval, while continued Player presence in the Skill Detection Area initiates a new warning as soon as the interval has ended and the Wolf is otherwise ready.
 _Avoid_: Warning duration, cooldown from warning start, Player re-entry requirement

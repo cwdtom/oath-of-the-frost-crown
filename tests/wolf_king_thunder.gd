@@ -6,8 +6,10 @@ const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const DEAD_ANIMATION := &"dead"
 const RUN_ANIMATION := &"run"
+const WARN_ANIMATION := &"warn"
 const EXPECTED_HEALTH := 5
 const SKILL_DISTANCE := 300.0
+const SKILL_WARNING_DURATION := 0.7
 
 var fixture: HeadlessGameplayFixture
 var harness: EnemySceneHarness
@@ -25,6 +27,8 @@ func _run() -> void:
 	harness = EnemyHarness.new(fixture, world)
 
 	await test_moving_skill_has_no_wolf_contact_damage()
+	await test_warning_precedes_combined_release()
+	await test_warning_commits_locked_release_through_departure_and_weapon_contact()
 	await test_thunder_movement_delivery_and_cooldown()
 	await test_hurt_does_not_cancel_pending_thunder()
 	await test_death_cancels_thunder_during_paused_presentation()
@@ -58,6 +62,105 @@ func test_moving_skill_has_no_wolf_contact_damage() -> void:
 	await fixture.process_frames(1)
 
 
+func test_warning_precedes_combined_release() -> void:
+	var start_position := Vector2(3000.0, 0.0)
+	var player := harness.instantiate_passive_player(
+		start_position + Vector2(-150.0, 0.0),
+		func() -> void: pass
+	)
+	var wolf_king := harness.instantiate_enemy(
+		WOLF_KING_SCENE,
+		start_position,
+		{"idle_duration": 10.0}
+	)
+	var warning := wolf_king.get_node("WarnMark") as Node2D
+	var thunder_animation_player := wolf_king.get_node(
+		"Thunder/AnimationPlayer"
+	) as AnimationPlayer
+
+	await fixture.physics_frames(3)
+	fixture.expect(
+		warning.visible
+		and wolf_king.global_position.is_equal_approx(start_position)
+		and harness.is_playing(wolf_king, WARN_ANIMATION)
+		and not thunder_animation_player.is_playing(),
+		"Ready Wolf King starts a stationary warning before movement or thunder"
+	)
+	await fixture.wait_seconds(SKILL_WARNING_DURATION - 0.1)
+	fixture.expect(
+		warning.visible
+		and wolf_king.global_position.is_equal_approx(start_position)
+		and not thunder_animation_player.is_playing(),
+		"Wolf King warning remains visible and harmless for its full duration"
+	)
+	await fixture.wait_seconds(0.15)
+	await fixture.physics_frames(2)
+	fixture.expect(
+		not warning.visible
+		and wolf_king.global_position.x < start_position.x
+		and harness.is_playing(wolf_king, RUN_ANIMATION)
+		and thunder_animation_player.is_playing(),
+		(
+			"Wolf King movement and thunder begin together after its warning; "
+			+ "visible=%s position=%s run=%s thunder=%s"
+			% [
+				warning.visible,
+				wolf_king.global_position,
+				harness.is_playing(wolf_king, RUN_ANIMATION),
+				thunder_animation_player.is_playing(),
+			]
+		)
+	)
+
+	wolf_king.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
+func test_warning_commits_locked_release_through_departure_and_weapon_contact() -> void:
+	var start_position := Vector2(4000.0, 0.0)
+	var player := harness.instantiate_passive_player(
+		start_position + Vector2(-150.0, 0.0),
+		func() -> void: pass
+	)
+	var wolf_king := harness.instantiate_enemy(
+		WOLF_KING_SCENE,
+		start_position,
+		{"idle_duration": 10.0}
+	)
+	var warning := wolf_king.get_node("WarnMark") as Node2D
+	var thunder_animation_player := wolf_king.get_node(
+		"Thunder/AnimationPlayer"
+	) as AnimationPlayer
+
+	await fixture.physics_frames(3)
+	var health_before_warning: int = wolf_king.call("get_current_health")
+	player.global_position = start_position + Vector2(900.0, 0.0)
+	var weapon := harness.add_weapon(wolf_king.global_position)
+	await fixture.physics_frames(3)
+	weapon.queue_free()
+	fixture.expect(
+		warning.visible
+		and wolf_king.global_position.is_equal_approx(start_position)
+		and wolf_king.call("get_current_health") == health_before_warning,
+		"Wolf King warning continues without damage after Player departure and weapon contact"
+	)
+
+	await fixture.wait_seconds(SKILL_WARNING_DURATION)
+	await fixture.physics_frames(2)
+	var thunder := wolf_king.get_node("Thunder") as Area2D
+	fixture.expect(
+		wolf_king.global_position.x < start_position.x
+		and thunder.global_position.x < start_position.x - 400.0
+		and thunder_animation_player.is_playing(),
+		"Wolf King movement and thunder keep the release side locked at warning onset"
+	)
+
+	wolf_king.queue_free()
+	player.queue_free()
+	await fixture.process_frames(1)
+
+
 func test_thunder_movement_delivery_and_cooldown() -> void:
 	var start_position := Vector2(3500.0, 0.0)
 	var floor_body := harness.add_environment_wall(
@@ -75,15 +178,17 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 		start_position,
 		{"idle_duration": 10.0}
 	)
+	var warning := wolf_king.get_node("WarnMark") as Node2D
 
+	await fixture.wait_seconds(SKILL_WARNING_DURATION + 0.05)
 	await fixture.physics_frames(3)
 	await fixture.process_frames(1)
 	var thunder_area := find_top_level_area(wolf_king)
 	fixture.expect(
 		thunder_area != null
-		and thunder_area.global_position.x > start_position.x + 400.0
-		and thunder_area.global_position.x <= start_position.x + 750.0,
-		"WolfKing selects thunder on Player's right side"
+		and thunder_area.global_position.x < start_position.x - 400.0
+		and thunder_area.global_position.x >= start_position.x - 750.0,
+		"Wolf King selects thunder on its warning-locked left side"
 	)
 	fixture.expect(
 		thunder_area != null and is_equal_approx(thunder_area.global_position.y, 35.0),
@@ -145,8 +250,14 @@ func test_thunder_movement_delivery_and_cooldown() -> void:
 	var ready_detector := harness.add_body(wolf_king.global_position + Vector2(-150.0, 0.0))
 	await fixture.physics_frames(3)
 	fixture.expect(
+		warning.visible and is_equal_approx(wolf_king.global_position.x, skill_end_x),
+		"Wolf King starts its next warning after the three-second release cooldown"
+	)
+	await fixture.wait_seconds(SKILL_WARNING_DURATION + 0.05)
+	await fixture.physics_frames(3)
+	fixture.expect(
 		wolf_king.global_position.x < skill_end_x,
-		"WolfKing can use its skill after three seconds"
+		"Wolf King releases its next skill after the next complete warning"
 	)
 
 	wolf_king.queue_free()
@@ -174,6 +285,7 @@ func test_hurt_does_not_cancel_pending_thunder() -> void:
 		{"idle_duration": 10.0}
 	)
 
+	await fixture.wait_seconds(SKILL_WARNING_DURATION + 0.05)
 	await fixture.physics_frames(3)
 	await fixture.process_frames(1)
 	var thunder_area := find_top_level_area(wolf_king)
@@ -188,8 +300,8 @@ func test_hurt_does_not_cancel_pending_thunder() -> void:
 		"Weapon contact damages WolfKing during thunder delivery"
 	)
 	fixture.expect(
-		harness.enemy_sprite_is_flipped(wolf_king),
-		"Hurt WolfKing faces Player on its right"
+		not harness.enemy_sprite_is_flipped(wolf_king),
+		"Hurt Wolf King faces Player on its left"
 	)
 	await fixture.wait_seconds(0.5)
 	fixture.expect(hurt_event_count[0] == 1, "Accepted damage does not cancel pending WolfKing thunder")
@@ -226,6 +338,8 @@ func test_death_cancels_thunder_during_paused_presentation() -> void:
 	var detector_offset := 150.0 if harness.enemy_sprite_is_flipped(wolf_king) else -150.0
 	var detector_body := harness.add_body(wolf_king.global_position + Vector2(detector_offset, 0.0))
 	await fixture.physics_frames(3)
+	await fixture.wait_seconds(SKILL_WARNING_DURATION + 0.05)
+	await fixture.physics_frames(2)
 	await fixture.process_frames(1)
 	var thunder_area := find_top_level_area(wolf_king)
 	detector_body.queue_free()

@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://0m816bmdal5k" path="res://enemies/wolf_king.gd" id="1_85v78"]
 [ext_resource type="Texture2D" uid="uid://nlqtlu660gbo" path="res://assets/enemies/wolf_king/west.png" id="1_d35f0"]
 [ext_resource type="Texture2D" uid="uid://dp373v0evprko" path="res://assets/enemies/wolf_king/dead/west/frame_000.png" id="2_1gtv1"]
+[ext_resource type="PackedScene" uid="uid://bhpv3ccs4r5hs" path="res://enemies/warn_mark.tscn" id="2_71l3b"]
 [ext_resource type="Texture2D" uid="uid://bxgnxyreu6ja3" path="res://assets/enemies/wolf_king/idle/west/frame_000.png" id="2_l5bkt"]
 [ext_resource type="Texture2D" uid="uid://bw115rfxtd6kk" path="res://assets/enemies/wolf_king/dead/west/frame_001.png" id="3_85v78"]
 [ext_resource type="Texture2D" uid="uid://bc5qsl8ujhx2a" path="res://assets/enemies/wolf_king/idle/west/frame_001.png" id="3_xys14"]
@@ -61,6 +62,18 @@ tracks/1/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("WarnMark:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
 }
 
 [sub_resource type="Animation" id="Animation_7b0qd"]
@@ -127,6 +140,34 @@ tracks/0/keys = {
 "update": 1,
 "values": [ExtResource("20_54aiq"), ExtResource("21_dmbor"), ExtResource("22_rxur1"), ExtResource("23_gxyk5")]
 }
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("WarnMark:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_71l3b"]
+resource_name = "warn"
+length = 0.7
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("WarnMark:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.7),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_nf3d5"]
 _data = {
@@ -134,7 +175,8 @@ _data = {
 &"dead": SubResource("Animation_7b0qd"),
 &"hurt": SubResource("Animation_rilvr"),
 &"idle": SubResource("Animation_16nvf"),
-&"run": SubResource("Animation_1wrh6")
+&"run": SubResource("Animation_1wrh6"),
+&"warn": SubResource("Animation_71l3b")
 }
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_pp2ht"]
@@ -149,7 +191,11 @@ animation = &"idle"
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_dt23s"]
 animation = &"run"
 
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_71l3b"]
+animation = &"warn"
+
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_vnefl"]
+advance_mode = 2
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_cp778"]
 
@@ -171,6 +217,14 @@ switch_mode = 2
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_pp2ht"]
 switch_mode = 2
 
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_1dnxh"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_dt23s"]
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_acbrc"]
+switch_mode = 2
+advance_mode = 2
+
 [sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_mljax"]
 states/End/position = Vector2(350.55997, -209.84001)
 states/dead/node = SubResource("AnimationNodeAnimation_pp2ht")
@@ -181,8 +235,10 @@ states/idle/node = SubResource("AnimationNodeAnimation_1dnxh")
 states/idle/position = Vector2(349.80997, 98.909996)
 states/run/node = SubResource("AnimationNodeAnimation_dt23s")
 states/run/position = Vector2(537.30994, 99.455)
-transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_vnefl"), "idle", "run", SubResource("AnimationNodeStateMachineTransition_cp778"), "run", "idle", SubResource("AnimationNodeStateMachineTransition_sekp3"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_54aiq"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_tm16q"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_71l3b"), "run", "hurt", SubResource("AnimationNodeStateMachineTransition_1gtv1"), "hurt", "run", SubResource("AnimationNodeStateMachineTransition_85v78"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_pp2ht")]
-graph_offset = Vector2(55.07999, -185.52754)
+states/warn/node = SubResource("AnimationNodeAnimation_71l3b")
+states/warn/position = Vector2(350.93497, 247.71234)
+transitions = ["Start", "idle", SubResource("AnimationNodeStateMachineTransition_vnefl"), "idle", "run", SubResource("AnimationNodeStateMachineTransition_cp778"), "run", "idle", SubResource("AnimationNodeStateMachineTransition_sekp3"), "dead", "End", SubResource("AnimationNodeStateMachineTransition_54aiq"), "hurt", "dead", SubResource("AnimationNodeStateMachineTransition_tm16q"), "idle", "hurt", SubResource("AnimationNodeStateMachineTransition_71l3b"), "run", "hurt", SubResource("AnimationNodeStateMachineTransition_1gtv1"), "hurt", "run", SubResource("AnimationNodeStateMachineTransition_85v78"), "hurt", "idle", SubResource("AnimationNodeStateMachineTransition_pp2ht"), "idle", "warn", SubResource("AnimationNodeStateMachineTransition_1dnxh"), "run", "warn", SubResource("AnimationNodeStateMachineTransition_dt23s"), "warn", "run", SubResource("AnimationNodeStateMachineTransition_acbrc")]
+graph_offset = Vector2(-55.079987, -230.28766)
 
 [node name="WolfKing" type="CharacterBody2D" unique_id=840433274 groups=["enemies"]]
 collision_layer = 4
@@ -190,6 +246,10 @@ collision_mask = 3
 script = ExtResource("1_85v78")
 patrol_range = 300.0
 run_speed = 150.0
+
+[node name="WarnMark" parent="." unique_id=1722422829 instance=ExtResource("2_71l3b")]
+visible = false
+position = Vector2(-1, -77)
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1277239556]
 texture = ExtResource("1_d35f0")
