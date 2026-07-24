@@ -559,3 +559,6 @@ limit_left = 0
 limit_top = 0
 position_smoothing_enabled = true
 rotation_smoothing_enabled = true
+
+[node name="AttackCooldown" type="Timer" parent="." unique_id=1871193191]
+one_shot = true

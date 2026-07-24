@@ -36,6 +36,7 @@ var _health := DamageAndHealthModule.new(MAX_HEALTH)
 @onready var visual_root: Node2D = $VisualRoot
 @onready var body_collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var weapon_collision_shape: CollisionShape2D = $VisualRoot/WeaponMount/Area2D/CollisionShape2D
+@onready var attack_cooldown: Timer = $AttackCooldown
 @onready var thunder := get_node_or_null("Player_Thunder") as Area2D
 @onready var thunder_animation_player := get_node_or_null("Player_Thunder/AnimationPlayer") as AnimationPlayer
 
@@ -207,8 +208,9 @@ func _physics_process(delta: float) -> void:
 	if _hurt_response_active or state == DEAD:
 		return
 
-	if wants_attack:
+	if wants_attack and attack_cooldown.is_stopped():
 		change_state(ATTACK)
+		attack_cooldown.start()
 		set_attack_return_conditions(direction)
 		return
 
