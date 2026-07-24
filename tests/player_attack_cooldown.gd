@@ -26,7 +26,7 @@ func _run() -> void:
 
 
 func test_player_attack_cooldown_presents_player_attack_rejection_feedback() -> void:
-	var player := await instantiate_player()
+	var player := await prepare_player_for_input_test()
 	if player == null:
 		return
 
@@ -94,7 +94,7 @@ func test_player_attack_cooldown_presents_player_attack_rejection_feedback() -> 
 
 
 func test_each_new_rejection_restarts_player_attack_rejection_feedback() -> void:
-	var player := await instantiate_player()
+	var player := await prepare_player_for_input_test()
 	if player == null:
 		return
 
@@ -116,7 +116,7 @@ func test_each_new_rejection_restarts_player_attack_rejection_feedback() -> void
 
 
 func test_player_hurt_prevents_player_attack_rejection_feedback() -> void:
-	var player := await instantiate_player()
+	var player := await prepare_player_for_input_test()
 	if player == null:
 		return
 
@@ -135,7 +135,7 @@ func test_player_hurt_prevents_player_attack_rejection_feedback() -> void:
 	await fixture.process_frames(1)
 
 
-func instantiate_player() -> CharacterBody2D:
+func prepare_player_for_input_test() -> CharacterBody2D:
 	var player := fixture.instantiate_scene(PLAYER_SCENE) as CharacterBody2D
 	fixture.expect(player != null, "Player loads through its production input seam")
 	if player == null:
