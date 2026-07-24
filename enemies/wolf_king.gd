@@ -11,6 +11,7 @@ const THUNDER_GROUND_RAY_UP_DISTANCE := 800.0
 const THUNDER_GROUND_RAY_DOWN_DISTANCE := 1400.0
 const WOLF_KING_SKILL_DISTANCE := 300.0
 const WOLF_KING_SKILL_SPEED := 600.0
+const WOLF_KING_SKILL_WARNING_ANIMATION := &"warn"
 
 var _rng := RandomNumberGenerator.new()
 var _player: Node2D = null
@@ -38,6 +39,10 @@ func _get_max_health() -> int:
 
 func _get_skill_animation() -> StringName:
 	return RUN_ANIMATION
+
+
+func _get_skill_warning_animation() -> StringName:
+	return WOLF_KING_SKILL_WARNING_ANIMATION
 
 
 func _get_moving_skill_distance() -> float:
@@ -125,7 +130,7 @@ func _get_thunder_bottom_offset() -> float:
 
 
 func _get_thunder_x_offset() -> float:
-	return _get_player_side() * _rng.randf_range(
+	return move_direction * _rng.randf_range(
 		THUNDER_CAST_MIN_DISTANCE,
 		THUNDER_CAST_MAX_DISTANCE
 	)

@@ -14,6 +14,7 @@ const LEVEL_03_SCENE := preload("res://levels/level_03.tscn")
 const EnemyHarness := preload("res://tests/enemy_scene_harness.gd")
 const HeadlessGameplayFixture := preload("res://tests/headless_gameplay_fixture.gd")
 const WOLF_DASH_WARNING_DURATION := 0.7
+const WOLF_KING_SKILL_WARNING_DURATION := 0.7
 
 const ENEMY_EXAMPLES := [
 	{
@@ -106,6 +107,8 @@ const ENEMY_EXAMPLES := [
 		"blocks_skill_damage": true,
 		"notifies_death": true,
 		"detector_offset": Vector2(-150.0, 0.0),
+		"warning_duration": WOLF_KING_SKILL_WARNING_DURATION,
+		"warning_animation": &"warn",
 		"release_animation_player": NodePath("Thunder/AnimationPlayer"),
 		"release_animation": &"cast",
 	},
@@ -310,6 +313,7 @@ func test_moving_skills_end_on_horizontal_stall() -> void:
 			"scene": WOLF_KING_SCENE,
 			"direction": -1.0,
 			"detector_offset": Vector2(-150.0, 0.0),
+			"warning_duration": WOLF_KING_SKILL_WARNING_DURATION,
 		},
 	]
 	var start_x := 50000.0
